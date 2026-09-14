@@ -82,4 +82,11 @@ Desktop.ini
 *.old
 ## Node (just in case mixed project)
 node_modules/
+dist/
+.swa/
+.azurite/
+api/local.settings.json
+.playwright-cli/
+output/playwright/
+.copilot-azure/
 # End

@@ -1,0 +1,38 @@
+{
+  "name": "education-hub",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:all": "concurrently -k -n storage,api,web \"npm:dev:storage\" \"npm:dev:api\" \"npm:dev -- --host 127.0.0.1 --port 5173\"",
+    "dev:storage": "azurite --location .azurite --silent",
+    "dev:api": "powershell.exe -NoProfile -Command \"& 'C:\\Program Files\\Microsoft\\Azure Functions Core Tools\\func.exe' start --prefix api --port 7071\"",
+    "build": "vite build",
+    "preview": "vite preview",
+    "install:api": "npm install --prefix api",
+    "start:api": "func start --prefix api",
+    "start:swa": "swa start http://localhost:5173 --api-location api",
+    "seed:content": "node api/scripts/seed-content.mjs",
+    "content:coverage": "node api/scripts/content-coverage.mjs",
+    "test": "node api/scripts/run-tests.mjs",
+    "test:billing": "node api/scripts/test-billing.mjs",
+    "wait:storage": "node api/scripts/wait-for-azurite.mjs"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^4.3.0",
+    "katex": "^0.18.7",
+    "lucide-react": "^0.468.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^5.9.0",
+    "vite": "^6.0.0"
+  },
+  "devDependencies": {
+    "azurite": "^3.35.0",
+    "concurrently": "^9.2.4"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
