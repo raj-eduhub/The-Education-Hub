@@ -1,0 +1,38 @@
+# Content review
+
+Explanations, worked examples, practice questions, and exam questions are written by a model and shown to children aged 11 to 16. Content review is where an administrator reads that content and decides whether a learner should see it.
+
+The need is not theoretical. A generated Year 10 worked example on sampling came back using t-distributions, finite population correction, and confidence intervals, none of which is GCSE content. Storing content centrally made that reviewable; this screen is what makes it actionable.
+
+## Review states
+
+Every stored row carries a `reviewStatus` of `pending`, `approved`, or `rejected`. New content is always `pending`.
+
+Regeneration resets the state. If an administrator regenerates a row and the model returns different text, the row returns to `pending` and must be looked at again; if the text is byte-for-byte identical, the existing decision stands.
+
+## The screen
+
+`Content review` appears in the primary navigation for administrators only, and both the list and the decision endpoint refuse a non-administrator with 403. Reviewing decides what every learner sees, so it is not a parent-level permission.
+
+Content can be filtered by status, type, year, and subject. Each card shows the stored content rendered the way a learner would see it, including typeset maths, along with its topic, sub-topic, storage key, and which model wrote it. Approve and Reject are single clicks, and the row leaves the list because the list is filtered by status.
+
+## Serving only approved content
+
+Set `REQUIRE_REVIEWED_CONTENT=true` to serve approved content only.
+
+With the gate on, a learner request for content that is pending or rejected returns "waiting to be approved by a teacher" and **the model is not called**. That is deliberate: generating on a miss would only produce more unapproved content, at cost, that still could not be served. Administrators bypass the gate so they can continue reviewing.
+
+The default is `false`, because switching it on before a year has been reviewed would leave learners with an empty lesson. The intended sequence is to seed a year, review it, then enable the gate.
+
+## Limits
+
+- Rejected content stays in the table and is simply not served. There is no bulk delete, and no way to edit content by hand: the options are approve, reject, or regenerate and review again.
+- There is no reviewer queue, assignment, or audit trail beyond `reviewedBy` and `reviewedAt` on the row.
+- The list is capped at 100 rows per request with no paging, so large backlogs are worked through using the filters.
+- Approving does not check correctness. It records that a human looked.
+
+## Related: the billing webhook route
+
+While testing the money path, `POST /api/billing/webhook` was found to be answered by the `billing` function rather than the webhook function: the wildcard route `billing/{action}` shadowed the literal route `billing/webhook`, so every Stripe delivery received 403 from the access check. A paid subscription would never have been activated in production.
+
+The webhook is now handled inside the function that owns the route, before the access check, and `api/scripts/test-billing-routes.mjs` asserts over HTTP that the route is never again answered with 403. Unit tests could not have caught it: both functions were correct in isolation and only the routing was wrong.
