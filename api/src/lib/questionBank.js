@@ -2,6 +2,7 @@
 // stored. Practice is for building fluency with a hint and a full answer; exam
 // is mark-based with a mark scheme, in the style and demand of the board.
 import { contentTypes } from "./contentPolicy.js";
+import { many, parseLabelledSections, single } from "./labelledText.js";
 
 const labels = {
   [contentTypes.PRACTICE]: ["QUESTION", "HINT", "ANSWER", "WORKING"],
@@ -44,26 +45,19 @@ export function questionPrompt(type, topic, subtopic, { board, tier, year, notat
 export function parseQuestion(type, text) {
   const wanted = labels[type];
   if (!wanted) return null;
-  const item = { question: "", hint: "", answer: "", marks: 0, markScheme: [], working: [] };
-  for (const line of String(text ?? "").split("\n")) {
-    const match = line.trim().match(/^[*#\-\s]*(QUESTION|HINT|ANSWER|MARKS|MARKSCHEME|WORKING)S?[*\s]*:\s*(.+)$/i);
-    if (!match) continue;
-    const label = match[1].toUpperCase();
-    const content = match[2].replace(/\*\*/g, "").trim();
-    if (!content) continue;
-    if (label === "QUESTION" && !item.question) item.question = content;
-    else if (label === "HINT" && !item.hint) item.hint = content;
-    else if (label === "ANSWER" && !item.answer) item.answer = content;
-    else if (label === "MARKS" && !item.marks) item.marks = Math.max(1, Math.min(6, parseInt(content, 10) || 0));
-    else if (label === "MARKSCHEME") item.markScheme.push(content);
-    else if (label === "WORKING") item.working.push(content);
-  }
-  if (!item.question || !item.answer) return null;
+  const sections = parseLabelledSections(text, wanted);
+  const question = single(sections, "QUESTION");
+  const answer = single(sections, "ANSWER");
+  if (!question || !answer) return null;
+
   if (type === contentTypes.EXAM) {
-    // A mark-based question is unusable without marks, so fall back to the
-    // number of creditworthy points rather than discarding a good question.
-    if (!item.marks) item.marks = Math.max(1, Math.min(6, item.markScheme.length));
-    return { question: item.question, marks: item.marks, markScheme: item.markScheme, answer: item.answer };
+    const markScheme = many(sections, "MARKSCHEME");
+    // A mark-based question with no creditworthy points is poor material, so it
+    // is refused rather than stored; the seeding run picks it up again later.
+    if (!markScheme.length) return null;
+    const stated = parseInt(single(sections, "MARKS"), 10);
+    const marks = Math.max(1, Math.min(6, Number.isFinite(stated) && stated > 0 ? stated : markScheme.length));
+    return { question, marks, markScheme, answer };
   }
-  return { question: item.question, hint: item.hint, working: item.working, answer: item.answer };
+  return { question, hint: single(sections, "HINT"), working: many(sections, "WORKING"), answer };
 }

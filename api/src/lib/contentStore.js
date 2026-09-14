@@ -236,6 +236,13 @@ export async function setReviewStatus(topicId, rowKey, status, reviewer) {
   return { topicId, rowKey, reviewStatus: status };
 }
 
+export async function deleteContent(topicId, rowKey) {
+  const current = await readyClient();
+  await current.deleteEntity(topicId, rowKey).catch((error) => {
+    if (error.statusCode !== 404) throw error;
+  });
+}
+
 export async function reviewSummary() {
   const current = await readyClient();
   const totals = { pending: 0, approved: 0, rejected: 0 };

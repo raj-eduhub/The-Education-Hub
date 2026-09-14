@@ -1,3 +1,5 @@
+import { many, parseLabelledSections, single } from "./labelledText.js";
+
 // Shared by the content endpoint and the offline seeding script so a stored
 // example and a freshly generated one always have the same shape.
 export function workedExamplePrompt(topic, subtopic, { notation = false } = {}) {
@@ -20,20 +22,16 @@ export function workedExamplePrompt(topic, subtopic, { notation = false } = {}) 
 }
 
 export function parseWorkedExample(text) {
-  const example = { formulae: [], question: "", steps: [], answer: "" };
-  for (const line of String(text ?? "").split("\n")) {
-    const match = line.trim().match(/^[*#\-\s]*(FORMULA|QUESTION|STEP|ANSWER)S?[*\s]*:\s*(.+)$/i);
-    if (!match) continue;
-    const label = match[1].toUpperCase();
-    // Markdown emphasis is stripped, but LaTeX dollar delimiters are preserved.
-    const content = match[2].replace(/\*\*/g, "").trim();
-    if (!content) continue;
-    if (label === "FORMULA") example.formulae.push(content);
-    else if (label === "STEP") example.steps.push(content);
-    else if (label === "QUESTION" && !example.question) example.question = content;
-    else if (label === "ANSWER" && !example.answer) example.answer = content;
-  }
-  return example.question && example.steps.length ? example : null;
+  const sections = parseLabelledSections(text, ["FORMULA", "QUESTION", "STEP", "ANSWER"]);
+  const question = single(sections, "QUESTION");
+  const steps = many(sections, "STEP");
+  if (!question || !steps.length) return null;
+  return {
+    formulae: many(sections, "FORMULA"),
+    question,
+    steps,
+    answer: single(sections, "ANSWER"),
+  };
 }
 
 export function exampleSystemPrompt(stage, year, examBoard, tier, subject) {

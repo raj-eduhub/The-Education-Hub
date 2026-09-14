@@ -18,7 +18,8 @@
     "test": "node api/scripts/run-tests.mjs",
     "test:billing": "node api/scripts/test-billing.mjs",
     "wait:storage": "node api/scripts/wait-for-azurite.mjs",
-    "review:content": "node api/scripts/review-content.mjs"
+    "review:content": "node api/scripts/review-content.mjs",
+    "prune:content": "node api/scripts/prune-content.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.0",
