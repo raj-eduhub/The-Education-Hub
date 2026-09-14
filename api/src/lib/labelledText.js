@@ -41,7 +41,16 @@ export function parseLabelledSections(text, labels) {
 }
 
 function clean(value) {
-  return String(value).replace(bullet, "").replace(/\*\*/g, "").trim();
+  return normaliseLatex(String(value).replace(bullet, "").replace(/\*\*/g, "").trim());
+}
+
+// The model frequently doubles its backslashes, so a command arrives as
+// \\text{ cm} where \text{ cm} was meant. A doubled backslash is a line break
+// in LaTeX, so the typesetter broke the line and rendered the command name as
+// italic variables: a question reading "AB = 8" with "textcm" on the line below.
+// Inline maths at this level never wants a line break, so the doubling is undone.
+export function normaliseLatex(text) {
+  return String(text ?? "").replace(/\\{2,}(?=[a-zA-Z{])/g, "\\");
 }
 
 // Single-valued fields can still arrive across several lines in block form, so

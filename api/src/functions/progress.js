@@ -1,13 +1,13 @@
 import { app } from "@azure/functions";
 import { getLearningAccess } from "../lib/learningAccess.js";
-import { getProgress, recordActivity, recordAttempt } from "../lib/progressStore.js";
+import { getProgress, getReviewQueue, recordActivity, recordAttempt } from "../lib/progressStore.js";
 
 const modes = ["learn", "practice", "exam", "review", "diagnostic"];
 
 app.http("progress", {
   methods: ["GET", "POST"],
   authLevel: "anonymous",
-  route: "progress",
+  route: "progress/{action?}",
   handler: async (request, context) => {
     try {
       const access = await getLearningAccess(request);
@@ -17,6 +17,13 @@ app.http("progress", {
       if (request.method === "GET") {
         const yearValue = access.profile?.year ?? Number(request.query.get("year"));
         const year = Number.isInteger(yearValue) && yearValue >= 7 && yearValue <= 11 ? yearValue : undefined;
+        if (request.params.action === "review") {
+          return { jsonBody: await getReviewQueue(email, {
+            year,
+            subject: request.query.get("subject") ?? undefined,
+            limit: Math.max(1, Math.min(50, Number(request.query.get("limit")) || 20)),
+          }) };
+        }
         return { jsonBody: await getProgress(email, year) };
       }
 
@@ -46,6 +53,8 @@ app.http("progress", {
       if (!valid) return { status: 400, jsonBody: { error: "Valid attempt details are required." } };
 
       const result = await recordAttempt(email, {
+        contentType: typeof body.contentType === "string" ? body.contentType.slice(0, 20) : "",
+        contentRowKey: typeof body.contentRowKey === "string" ? body.contentRowKey.slice(0, 60) : "",
         year: registeredYear,
         subject: body.subject,
         topicId: body.topicId,

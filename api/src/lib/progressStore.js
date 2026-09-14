@@ -62,6 +62,8 @@ function publicAttempt(entity) {
     topicId: entity.topicId,
     topicTitle: entity.topicTitle,
     kind: entity.kind ?? "attempt",
+    contentType: entity.contentType ?? "",
+    contentRowKey: entity.contentRowKey ?? "",
     mode: entity.mode,
     accuracy: entity.accuracy,
     confidence: entity.confidence,
@@ -114,6 +116,9 @@ export async function recordAttempt(email, input) {
     topicTitle: input.topicTitle,
     mode: input.mode,
     kind: input.kind === "auto" ? "auto" : "attempt",
+    // Which stored question was answered, so Review can re-ask the ones missed.
+    contentType: input.contentType ?? "",
+    contentRowKey: input.contentRowKey ?? "",
     accuracy,
     // The property is omitted rather than stored as a placeholder value.
     ...(confidence === null ? {} : { confidence }),
@@ -185,6 +190,57 @@ export async function recordActivity(email, input) {
   };
   await attempts.createEntity(entity);
   return { activity: publicAttempt(entity) };
+}
+
+// The review queue: questions the learner did not get right, ordered so the
+// most overdue and least secure come first. Spaced retrieval needs to re-ask
+// the specific thing that was missed, not just revisit the topic.
+export async function getReviewQueue(email, { year, subject, limit = 20 } = {}) {
+  const { attempts, mastery } = await getProgress(email, year);
+  const masteryByTopic = new Map(mastery.map((item) => [item.topicId, item]));
+
+  // Latest outcome per stored question, so something since answered correctly
+  // drops out of the queue.
+  const latest = new Map();
+  for (const attempt of attempts) {
+    if (!attempt.contentRowKey || !attempt.topicId) continue;
+    if (subject && attempt.subject !== subject) continue;
+    const key = `${attempt.topicId}/${attempt.contentRowKey}`;
+    const existing = latest.get(key);
+    if (!existing || attempt.completedAt > existing.completedAt) latest.set(key, attempt);
+  }
+
+  const now = Date.now();
+  const due = [];
+  for (const [key, attempt] of latest) {
+    if (Number(attempt.accuracy) >= 0.8) continue;
+    const topic = masteryByTopic.get(attempt.topicId);
+    const reviewAt = topic?.nextReviewAt ? new Date(topic.nextReviewAt).getTime() : 0;
+    due.push({
+      key,
+      topicId: attempt.topicId,
+      topicTitle: attempt.topicTitle,
+      subject: attempt.subject,
+      contentType: attempt.contentType || "practice",
+      contentRowKey: attempt.contentRowKey,
+      accuracy: Number(attempt.accuracy) || 0,
+      lastSeen: attempt.completedAt,
+      overdue: reviewAt > 0 && reviewAt <= now,
+      masteryScore: topic?.masteryScore ?? 0,
+    });
+  }
+
+  due.sort((left, right) =>
+    Number(right.overdue) - Number(left.overdue) ||
+    left.accuracy - right.accuracy ||
+    left.masteryScore - right.masteryScore ||
+    String(left.lastSeen).localeCompare(String(right.lastSeen)));
+
+  const topicsDue = mastery
+    .filter((item) => (!subject || item.subject === subject) && item.nextReviewAt && new Date(item.nextReviewAt).getTime() <= now)
+    .map((item) => ({ topicId: item.topicId, topicTitle: item.topicTitle, masteryScore: item.masteryScore, nextReviewAt: item.nextReviewAt }));
+
+  return { queue: due.slice(0, limit), topicsDue, totalDue: due.length };
 }
 
 export async function getProgress(email, year) {

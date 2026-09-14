@@ -53,6 +53,7 @@ import { formatTopicGuide, getTopicGuide } from "./topicGuides.js";
 import { subtopicsFor } from "./subtopics.js";
 import { MathsText } from "./MathsText.jsx";
 import { QuestionPanel } from "./QuestionPanel.jsx";
+import { ReviewPanel } from "./ReviewPanel.jsx";
 import { ContentReview } from "./ContentReview.jsx";
 import "katex/dist/katex.min.css";
 import "./styles.css";
@@ -138,6 +139,17 @@ async function previewApiRequest(url, options = {}) {
   const { pathname } = new URL(url, window.location.origin);
   const method = options.method ?? "GET";
   if (pathname === "/api/progress" && method === "GET") return previewResponse(previewProgress);
+  if (pathname.startsWith("/api/progress/review")) {
+    return previewResponse({
+      queue: [{
+        key: "y7-maths-algebra/practice-0-core-core", topicId: "y7-maths-algebra", topicTitle: "Expressions and Equations",
+        subject: "Maths", contentType: "practice", contentRowKey: "practice-0-core-core",
+        accuracy: 0.33, lastSeen: "2026-09-10T16:00:00.000Z", overdue: true, masteryScore: 48,
+      }],
+      topicsDue: [{ topicId: "y7-maths-algebra", topicTitle: "Expressions and Equations", masteryScore: 48, nextReviewAt: "2026-09-03T16:00:00.000Z" }],
+      totalDue: 1,
+    });
+  }
   if (pathname === "/api/progress" && method === "POST") {
     const input = JSON.parse(options.body);
     const mastery = { id: input.topicId, ...input, attempts: 1, masteryScore: Math.round(input.accuracy * 100), totalTimeSeconds: input.durationSeconds, lastPractised: new Date().toISOString(), nextReviewAt: new Date(Date.now() + 86400000).toISOString() };
@@ -219,6 +231,8 @@ function App() {
   const [bankIndex, setBankIndex] = useState(0);
   const [marking, setMarking] = useState(false);
   const [markResult, setMarkResult] = useState(null);
+  const [reviewQueue, setReviewQueue] = useState({ status: "idle", items: [], topicsDue: [], totalDue: 0 });
+  const [reviewPosition, setReviewPosition] = useState(0);
   const exampleTicket = useRef(0);
   const bankTicket = useRef(0);
   const explanationTicket = useRef(0);
@@ -502,6 +516,7 @@ function App() {
     setLearningMode(nextMode);
     setBankIndex(0);
     setMarkResult(null);
+    setReviewPosition(0);
     setActivityStartedAt(Date.now());
     setExamRunning(false);
     setExamSeconds(0);
@@ -578,6 +593,60 @@ function App() {
     if (learningMode !== "practice" && learningMode !== "exam") return;
     loadBankItem(learningMode, selectedTopic, bankIndex);
   }, [bankIndex, learnerProfile, learningMode, loadBankItem, selectedTopic, view]);
+
+  const loadReviewQueue = useCallback(async () => {
+    setReviewQueue((current) => ({ ...current, status: "loading" }));
+    try {
+      const response = await appRequest(`/api/progress/review?year=${learnerYear}&subject=${encodeURIComponent(subject)}`);
+      const data = await readJson(response);
+      if (!response.ok) throw new Error(data.error ?? "The review queue could not be loaded.");
+      setReviewQueue({ status: "ready", items: data.queue ?? [], topicsDue: data.topicsDue ?? [], totalDue: data.totalDue ?? 0 });
+      setReviewPosition(0);
+    } catch (failure) {
+      setReviewQueue({ status: "error", items: [], topicsDue: [], totalDue: 0, error: failure.message });
+    }
+  }, [appRequest, learnerYear, subject]);
+
+  useEffect(() => {
+    if (view !== "learning" || !learnerProfile || learningMode !== "review") return;
+    loadReviewQueue();
+  }, [learnerProfile, learningMode, loadReviewQueue, view]);
+
+  // Each queue entry names an exact stored question, so it is fetched by key
+  // rather than regenerated.
+  const reviewItem = reviewQueue.items[reviewPosition] ?? null;
+  const loadReviewQuestion = useCallback(async (entry) => {
+    if (!entry) return;
+    const ticket = bankTicket.current + 1;
+    bankTicket.current = ticket;
+    setBankItem({ status: "loading" });
+    setMarkResult(null);
+    try {
+      const response = await appRequest("/api/content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: entry.contentType,
+          year: learnerYear,
+          examBoard: boardFor(learnerProfile, subject),
+          tier: learnerProfile?.tier,
+          subject,
+          topic: { id: entry.topicId, title: entry.topicTitle, unit: "Review", outcomes: [] },
+          rowKey: entry.contentRowKey,
+        }),
+      });
+      const data = await readJson(response);
+      if (!response.ok) throw new Error(data.error ?? "That question could not be loaded again.");
+      if (bankTicket.current === ticket) setBankItem({ status: "ready", ...data.content });
+    } catch (failure) {
+      if (bankTicket.current === ticket) setBankItem({ status: "error", error: failure.message });
+    }
+  }, [appRequest, learnerProfile, learnerYear, subject]);
+
+  useEffect(() => {
+    if (learningMode !== "review") return;
+    loadReviewQuestion(reviewItem);
+  }, [learningMode, loadReviewQuestion, reviewItem]);
 
   const loadWorkedExample = useCallback(async (topic, subtopic, { refresh = false } = {}) => {
     if (!topic || !subtopic) return;
@@ -669,6 +738,8 @@ Question: ${questionContext}
 My answer: ${learnerAnswer}
 
 Mark my answer.`,
+          contentType: bankItem.marks ? "exam" : "practice",
+          contentRowKey: bankItem.rowKey ?? "",
           history: [
             { role: "user", text: `Give me a ${learningMode} question on ${selectedTopic.title}.` },
             { role: "assistant", text: questionContext },
@@ -1079,7 +1150,20 @@ Mark my answer.`,
         </section>
 
         <section className="learning-layout">
-          {learningMode === "practice" || learningMode === "exam" ? <QuestionPanel
+          {learningMode === "review" ? <ReviewPanel
+            error={bankItem.error}
+            item={bankItem}
+            marking={marking}
+            maths={maths}
+            onNext={() => setReviewPosition((current) => Math.min(current + 1, Math.max(0, reviewQueue.items.length - 1)))}
+            onPractise={() => chooseMode("practice")}
+            onRetry={() => loadReviewQuestion(reviewItem)}
+            onSubmit={submitBankAnswer}
+            queue={{ ...reviewQueue, position: reviewPosition, onRetry: loadReviewQueue }}
+            result={markResult}
+            status={bankItem.status}
+            topic={reviewItem ? { id: reviewItem.topicId, title: reviewItem.topicTitle, unit: "Review" } : selectedTopic}
+          /> : learningMode === "practice" || learningMode === "exam" ? <QuestionPanel
             error={bankItem.error}
             examRunning={examRunning}
             examSeconds={examSeconds}

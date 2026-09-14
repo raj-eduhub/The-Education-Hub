@@ -165,6 +165,9 @@ app.http("tutor", {
             topicTitle: topic.title,
             mode,
             kind: "auto",
+            // Carried through so Review can re-ask this exact question later.
+            contentType: typeof body.contentType === "string" ? body.contentType.slice(0, 20) : "",
+            contentRowKey: typeof body.contentRowKey === "string" ? body.contentRowKey.slice(0, 60) : "",
             accuracy: mark.accuracy,
             confidence: null,
             durationSeconds: Number(body.durationSeconds) || 60,

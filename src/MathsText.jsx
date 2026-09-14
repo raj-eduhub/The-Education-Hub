@@ -6,9 +6,17 @@ import katex from "katex";
 // still reads as a sentence if the model omits the notation entirely.
 const segmentPattern = /\$([^$]+)\$/g;
 
+// Content stored before the parser normalised this still carries doubled
+// backslashes, which LaTeX reads as a line break: a question rendered as
+// "AB = 8" with "textcm" italicised on the next line. Repairing it here fixes
+// what is already stored without regenerating any of it.
+function normaliseLatex(expression) {
+  return expression.replace(/\\{2,}(?=[a-zA-Z{])/g, "\\");
+}
+
 function render(expression) {
   try {
-    return katex.renderToString(expression, { throwOnError: false, displayMode: false, output: "html" });
+    return katex.renderToString(normaliseLatex(expression), { throwOnError: false, displayMode: false, output: "html" });
   } catch {
     return null;
   }

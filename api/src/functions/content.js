@@ -38,12 +38,22 @@ app.http("content", {
       // Question banks are indexed in their own right, and vary by board from
       // Year 9, when GCSE preparation begins.
       const bankIndex = Math.max(0, Math.min(50, Number(body.index) || 0));
-      const key = contentKey(type, topic.id, {
+      // Review re-asks an exact stored question, so the key can be given directly
+      // rather than derived from an index.
+      const explicitRowKey = typeof body.rowKey === "string" && /^[a-zA-Z0-9-]{1,60}$/.test(body.rowKey) ? body.rowKey : "";
+      const key = explicitRowKey
+        ? { partitionKey: topic.id, rowKey: explicitRowKey }
+        : contentKey(type, topic.id, {
         index: isQuestionBank(type) ? bankIndex : subtopic?.index,
         board: variesByBoard(type) && year >= 9 ? examBoard : null,
         tier: year >= 10 ? tier : null,
       });
       if (!key) return { status: 400, jsonBody: { error: "That topic or sub-topic reference is not valid." } };
+      // A question asked for by key must already exist; generating a different
+      // one under that key would defeat the point of re-asking it.
+      if (explicitRowKey && !/^[a-z0-9][a-z0-9-]{0,120}$/.test(topic.id)) {
+        return { status: 400, jsonBody: { error: "That topic reference is not valid." } };
+      }
 
       const route = routeFor(type, subject);
       if (!route) return { status: 400, jsonBody: { error: "That content type is not supported." } };
@@ -61,7 +71,7 @@ app.http("content", {
       if (!skipStore) {
         const stored = await getContent(key);
         if (stored && (!reviewedOnly || stored.reviewStatus === "approved")) {
-          return { jsonBody: { content: { ...stored, source: "stored" }, route, generated: false } };
+          return { jsonBody: { content: { ...stored, rowKey: key.rowKey, source: "stored" }, route, generated: false } };
         }
         if (stored && reviewedOnly) {
           return {
@@ -117,7 +127,7 @@ app.http("content", {
         origin: "model",
         model: deployment,
       });
-      return { jsonBody: { content: { ...payload, source: "model" }, route, generated: true } };
+      return { jsonBody: { content: { ...payload, rowKey: key.rowKey, source: "model" }, route, generated: true } };
     } catch (error) {
       context.error("Curriculum content failure", error.message);
       return { status: 503, jsonBody: { error: "That part of the lesson could not be prepared. Please try again." } };
