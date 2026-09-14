@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Install API dependencies
+        working-directory: api
+        run: npm ci
+
+      # The billing suite reads and writes Table Storage, so the emulator stands
+      # in for Azure. Azurite is already a dev dependency, so the version here
+      # matches the one used locally. Suites that need the Functions host detect
+      # that it is absent and skip themselves rather than failing.
+      - name: Start Azurite
+        run: |
+          npx azurite --silent --location "${RUNNER_TEMP}/azurite" &
+          node api/scripts/wait-for-azurite.mjs
+
+      - name: Run tests
+        env:
+          AZURE_STORAGE_CONNECTION_STRING: UseDevelopmentStorage=true
+        run: npm test
+
+      - name: Build the frontend
+        env:
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+        run: npm run build
