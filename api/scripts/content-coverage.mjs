@@ -15,7 +15,14 @@ if (!process.env.AZURE_STORAGE_CONNECTION_STRING) {
 }
 
 const detail = process.argv.includes("--detail");
-const rows = await listContent();
+// Paged so a large table is read completely rather than a first page only.
+const rows = [];
+let cursor = "";
+do {
+  const page = await listContent({ cursor });
+  rows.push(...page.rows);
+  cursor = page.cursor;
+} while (cursor);
 const stored = new Set(rows.map((row) => `${row.topicId}/${row.rowKey}`));
 const reviewed = rows.filter((row) => row.reviewed).length;
 

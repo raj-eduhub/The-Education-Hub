@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { BadgeCheck, ChevronRight, CircleSlash, ClipboardCheck, RefreshCw } from "lucide-react";
+import { BadgeCheck, ChevronDown, ChevronRight, CircleSlash, ClipboardCheck, RefreshCw } from "lucide-react";
 import { readJson } from "./auth.js";
 import { subjects } from "./curriculum.js";
 import { MathsText } from "./MathsText.jsx";
@@ -44,6 +44,10 @@ export function ContentReview({ request }) {
   const [status, setStatus] = useState("loading");
   const [error, setError] = useState("");
   const [busyRow, setBusyRow] = useState("");
+  const [cursor, setCursor] = useState("");
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [bulk, setBulk] = useState(null);
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   const load = useCallback(async () => {
     setStatus("loading");
@@ -59,6 +63,7 @@ export function ContentReview({ request }) {
       const data = await readJson(listResponse);
       if (!listResponse.ok) throw new Error(data.error ?? "Content could not be loaded.");
       setRows(data.rows ?? []);
+      setCursor(data.cursor ?? "");
       setSummary(await readJson(summaryResponse));
       setStatus("ready");
     } catch (failure) {
@@ -68,6 +73,47 @@ export function ContentReview({ request }) {
   }, [filters, request]);
 
   useEffect(() => { load(); }, [load]);
+
+  async function loadMore() {
+    setLoadingMore(true);
+    try {
+      const query = new URLSearchParams();
+      for (const [key, value] of Object.entries(filters)) if (value) query.set(key, value);
+      query.set("limit", "25");
+      query.set("cursor", cursor);
+      const response = await request(`/api/review?${query.toString()}`);
+      const data = await readJson(response);
+      if (!response.ok) throw new Error(data.error ?? "More content could not be loaded.");
+      setRows((items) => [...items, ...(data.rows ?? [])]);
+      setCursor(data.cursor ?? "");
+    } catch (failure) {
+      setError(failure.message);
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
+  // Applies one decision to everything matching the current filters, not just
+  // the rows on screen, so a reviewed batch can be cleared in one action.
+  async function applyBulk(decision) {
+    setBulkBusy(true);
+    setError("");
+    try {
+      const response = await request("/api/review/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ decision, ...filters }),
+      });
+      const data = await readJson(response);
+      if (!response.ok) throw new Error(data.error ?? "That decision could not be applied.");
+      setBulk(null);
+      await load();
+    } catch (failure) {
+      setError(failure.message);
+    } finally {
+      setBulkBusy(false);
+    }
+  }
 
   async function decide(row, decision) {
     setBusyRow(row.rowKey + row.topicId);
@@ -95,6 +141,10 @@ export function ContentReview({ request }) {
       setBusyRow("");
     }
   }
+
+  // The API refuses an unfiltered bulk decision, so the control reflects that
+  // rather than offering an action that will be rejected.
+  const narrowed = Boolean(filters.type || filters.year || filters.subject);
 
   function update(name, value) {
     setFilters((current) => ({ ...current, [name]: value }));
@@ -133,6 +183,26 @@ export function ContentReview({ request }) {
       </select></label>
     </div>
 
+    {status === "ready" && rows.length > 0 && <div className="review-bulk">
+      <span>
+        {filters.status === "pending" ? "Reviewing" : "Showing"} {rows.length}{cursor ? "+" : ""} matching {filters.type || "item"}
+        {rows.length === 1 ? "" : "s"}
+        {filters.year ? ` in Year ${filters.year}` : ""}{filters.subject ? ` ${filters.subject}` : ""}.
+      </span>
+      {bulk ? <span className="review-bulk-confirm">
+        <strong>{bulk === "approved" ? "Approve" : "Reject"} everything matching these filters?</strong>
+        <button className={bulk === "approved" ? "approve" : "reject"} disabled={bulkBusy} onClick={() => applyBulk(bulk)} type="button">
+          {bulkBusy ? "Applying..." : "Yes, apply to all"}
+        </button>
+        <button className="secondary-button" disabled={bulkBusy} onClick={() => setBulk(null)} type="button">Cancel</button>
+      </span> : <span className="review-bulk-actions">
+        {narrowed ? <>
+          <button className="approve" onClick={() => setBulk("approved")} type="button"><BadgeCheck size={15} /> Approve all matching</button>
+          <button className="reject" onClick={() => setBulk("rejected")} type="button"><CircleSlash size={15} /> Reject all matching</button>
+        </> : <em>Choose a type, year or subject to act on a batch.</em>}
+      </span>}
+    </div>}
+
     {status === "loading" && <p className="example-status" role="status">Loading content...</p>}
     {error && <p className="login-error" role="alert">{error}</p>}
     {status === "ready" && rows.length === 0 && <p className="review-empty">Nothing matches these filters. {filters.status === "pending" && "Everything here has been reviewed."}</p>}
@@ -167,5 +237,9 @@ export function ContentReview({ request }) {
         </article>;
       })}
     </div>
+
+    {cursor && status === "ready" && <button className="review-more" disabled={loadingMore} onClick={loadMore} type="button">
+      <ChevronDown size={16} /> {loadingMore ? "Loading..." : "Load more"}
+    </button>}
   </section>;
 }

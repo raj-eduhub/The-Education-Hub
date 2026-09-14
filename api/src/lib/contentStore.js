@@ -117,18 +117,42 @@ function statusOf(entity) {
   return entity.reviewStatus ?? (entity.reviewed === true ? "approved" : "pending");
 }
 
-export async function listContent({ type, year, subject, status, limit = 0, withPayload = false } = {}) {
-  const current = await readyClient();
+// Only values validated here reach the filter string.
+function serverFilter({ type, year, subject, topicId }) {
   const clauses = [];
-  // Only values validated here reach the filter string.
   if (type && Object.values(contentTypes).includes(type)) clauses.push(`type eq '${type}'`);
   if (Number.isInteger(Number(year)) && Number(year) >= 7 && Number(year) <= 11) clauses.push(`year eq ${Number(year)}`);
   if (typeof subject === "string" && /^[A-Za-z ]{1,40}$/.test(subject)) clauses.push(`subject eq '${subject}'`);
-  const options = clauses.length ? { queryOptions: { filter: clauses.join(" and ") } } : {};
+  if (typeof topicId === "string" && /^[a-z0-9][a-z0-9-]{0,120}$/.test(topicId)) clauses.push(`PartitionKey eq '${topicId}'`);
+  return clauses.length ? clauses.join(" and ") : undefined;
+}
+
+export async function listContent({ type, year, subject, topicId, status, limit = 0, withPayload = false, cursor } = {}) {
+  const current = await readyClient();
+  const filter = serverFilter({ type, year, subject, topicId });
   const rows = [];
-  for await (const entity of current.listEntities(options)) {
+  // Status is filtered here rather than in the query, because rows written
+  // before review existed carry no reviewStatus column. Pages are consumed
+  // whole and the cursor only ever advances past a completed page, so no row
+  // is skipped or returned twice.
+  let nextCursor;
+  const pages = current.listEntities(filter ? { queryOptions: { filter } } : {})
+    .byPage({ maxPageSize: 200, continuationToken: cursor || undefined });
+  for await (const page of pages) {
+    for (const entity of page) {
+      const entityStatus = statusOf(entity);
+      if (status && reviewStatuses.includes(status) && entityStatus !== status) continue;
+      rows.push(toRow(entity, withPayload));
+    }
+    nextCursor = page.continuationToken;
+    if (limit && rows.length >= limit) break;
+  }
+  return { rows, cursor: nextCursor ?? "" };
+}
+
+function toRow(entity, withPayload) {
+  {
     const entityStatus = statusOf(entity);
-    if (status && reviewStatuses.includes(status) && entityStatus !== status) continue;
     const row = {
       topicId: entity.partitionKey,
       rowKey: entity.rowKey,
@@ -148,10 +172,49 @@ export async function listContent({ type, year, subject, status, limit = 0, with
     if (withPayload) {
       try { row.payload = JSON.parse(entity.payload); } catch { row.payload = null; }
     }
-    rows.push(row);
-    if (limit && rows.length >= limit) break;
+    return row;
   }
-  return rows;
+}
+
+// Applies one decision to every row matching the filter. Deliberately requires
+// a filter: approving the entire table by accident would defeat the point of
+// reviewing it.
+export async function bulkReview({ decision, filters = {}, reviewer, max = 1000 }) {
+  if (!reviewStatuses.includes(decision)) return null;
+  const narrowed = ["type", "year", "subject", "topicId"].some((key) => filters[key]);
+  if (!narrowed && filters.all !== true) return { refused: "unfiltered" };
+
+  const current = await readyClient();
+  const filter = serverFilter(filters);
+  const status = filters.status ?? "pending";
+  const targets = [];
+  const pages = current.listEntities(filter ? { queryOptions: { filter } } : {}).byPage({ maxPageSize: 200 });
+  for await (const page of pages) {
+    for (const entity of page) {
+      if (status && reviewStatuses.includes(status) && statusOf(entity) !== status) continue;
+      targets.push({ partitionKey: entity.partitionKey, rowKey: entity.rowKey });
+      if (targets.length >= max) break;
+    }
+    if (targets.length >= max) break;
+  }
+
+  const reviewedAt = new Date().toISOString();
+  let changed = 0;
+  // Table Storage has no cross-partition batch, so these run in small waves.
+  const wave = 16;
+  for (let start = 0; start < targets.length; start += wave) {
+    await Promise.all(targets.slice(start, start + wave).map(async (target) => {
+      await current.updateEntity({
+        ...target,
+        reviewStatus: decision,
+        reviewed: decision === "approved",
+        reviewedBy: reviewer ?? "",
+        reviewedAt,
+      }, "Merge");
+      changed += 1;
+    }));
+  }
+  return { changed, matched: targets.length, capped: targets.length >= max };
 }
 
 export async function setReviewStatus(topicId, rowKey, status, reviewer) {

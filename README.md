@@ -130,6 +130,13 @@ See [progress recording](docs/progress-recording.md) for what is observable, and
 
 Curriculum content is written by a model and read by children, so an administrator can approve or reject every stored row before learners see it. Set `REQUIRE_REVIEWED_CONTENT=true` to serve approved content only, in which case a miss returns "waiting to be approved" rather than generating more unapproved content.
 
+Batches can be cleared without clicking through them:
+
+```bash
+npm run review:content -- --year 10 --subject Maths --type practice --sample 5
+npm run review:content -- --year 10 --subject Maths --type practice --approve
+```
+
 See [content review](docs/content-review.md) for the review states and the rollout sequence.
 
 ## AI tutor guardrails

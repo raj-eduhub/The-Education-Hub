@@ -24,11 +24,29 @@ With the gate on, a learner request for content that is pending or rejected retu
 
 The default is `false`, because switching it on before a year has been reviewed would leave learners with an empty lesson. The intended sequence is to seed a year, review it, then enable the gate.
 
+## Clearing a backlog
+
+Reviewing hundreds of rows one at a time is not a realistic workflow, so a decision can be applied to a whole batch.
+
+In the screen, narrowing by type, year, or subject enables "Approve all matching" and "Reject all matching", which act on everything the filters select rather than only the rows on screen. A confirmation step stands between the button and the change. Without a narrowing filter the buttons are withheld, because the API refuses an unfiltered bulk decision: approving the entire table by accident would defeat the point of reviewing it.
+
+From the command line, the realistic sequence is to read a sample from a batch and judge the batch:
+
+```bash
+npm run review:content -- --year 10 --subject Maths --type practice --sample 5
+npm run review:content -- --year 10 --subject Maths --type practice --approve
+npm run review:content -- --topic y10-maths-number --reject
+```
+
+Without `--approve` or `--reject` the script only reports and samples, so it is safe to run while deciding. A single bulk call is capped at 1000 rows.
+
+Listing is paged with a cursor. Pages are consumed whole and the cursor only advances past a completed page, so no row is skipped or returned twice even though review status is filtered after the query.
+
 ## Limits
 
 - Rejected content stays in the table and is simply not served. There is no bulk delete, and no way to edit content by hand: the options are approve, reject, or regenerate and review again.
 - There is no reviewer queue, assignment, or audit trail beyond `reviewedBy` and `reviewedAt` on the row.
-- The list is capped at 100 rows per request with no paging, so large backlogs are worked through using the filters.
+- Bulk decisions apply to every row matching the filters, including rows not yet loaded on screen. The count shown next to the buttons is the number loaded, not necessarily the number that will change.
 - Approving does not check correctness. It records that a human looked.
 
 ## Related: the billing webhook route
