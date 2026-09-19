@@ -12,7 +12,6 @@ import {
   ClipboardList,
   FlaskConical,
   GraduationCap,
-  Library,
   LayoutDashboard,
   Landmark,
   ListFilter,
@@ -32,7 +31,10 @@ import {
   Sparkles,
   Target,
   Timer,
+  Square,
   UserRound,
+  Volume2,
+  X,
   Users,
 } from "lucide-react";
 import { curriculum, subjects, topicsFor } from "./curriculum.js";
@@ -52,7 +54,8 @@ import { loadDiagnostic, personaliseTopics, saveDiagnostic } from "./diagnostic.
 import { boardFor, loadLearnerProfile, saveLearnerProfile } from "./learnerProfile.js";
 import { formatTopicGuide, getTopicGuide } from "./topicGuides.js";
 import { subtopicsFor } from "./subtopics.js";
-import { MathsText } from "./MathsText.jsx";
+import { hasMaths, MathsText } from "./MathsText.jsx";
+import { speak, speechSupported, stopSpeaking } from "./speech.js";
 import { QuestionPanel } from "./QuestionPanel.jsx";
 import { ReviewPanel } from "./ReviewPanel.jsx";
 import { ContentReview } from "./ContentReview.jsx";
@@ -293,6 +296,11 @@ function App() {
   // Engagement for the topic currently open, flushed when the learner moves on.
   const activity = useRef({ startedAt: Date.now(), questionsAsked: 0, examplesOpened: 0, topicId: null, topicTitle: "", subject: "" });
   const [prompt, setPrompt] = useState("");
+  // The tutor is a chat the learner opens, not a panel competing with the
+  // lesson for space. It appears once they ask for it, below the explanation.
+  const [tutorOpen, setTutorOpen] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+  const canSpeak = speechSupported();
   const [messages, setMessages] = useState([
     {
       role: "assistant",
@@ -375,19 +383,16 @@ function App() {
   const selectedSubtopic =
     subtopics.find((subtopic) => subtopic.id === selectedSubtopicId) ?? subtopics[0];
   // Only Maths content is typeset, and only when the stored row was written for it.
+  // Maths always typesets; every other subject typesets whatever carries LaTeX,
+  // which is most of the science, computing, geography and DT formulae.
   const maths = subject === "Maths";
+  const typeset = (text) => maths || hasMaths(text);
 
-  const progress = useMemo(() => {
-    return subjects.map((item) => ({
-      subject: item,
-      total: topicsFor({
-        year: learnerYear,
-        subject: item,
-        examBoard: boardFor(learnerProfile, item),
-        tier: learnerProfile?.tier,
-      }).length,
-    }));
-  }, [learnerProfile, learnerYear]);
+  useEffect(() => {
+    // A voice carrying on about the previous topic is worse than no voice.
+    stopSpeaking();
+    setSpeaking(false);
+  }, [selectedTopicId, learningMode, subject, view]);
 
   const checkSession = useCallback(async () => {
     setAuthStatus("checking");
@@ -867,7 +872,7 @@ Mark my answer.`,
         {
           role: "assistant",
           text:
-            "I could not reach the Azure AI tutor yet. Check the backend environment variables and your Google sign-in, then try again.",
+            "I could not reach the AI tutor yet. Check the backend environment variables and your sign-in, then try again.",
         },
       ]);
     } finally {
@@ -880,7 +885,24 @@ Mark my answer.`,
     sendTutorPrompt(prompt);
   }
 
+  // The authored explanation is on screen and correct, so it is what gets read.
+  // Waiting for the model would mean fifteen seconds of silence after a click.
+  function readAloud() {
+    if (explanation.status !== "ready") return;
+    const started = speak([explanation.explanation, ...(explanation.keyIdeas ?? [])], {
+      onEnd: () => setSpeaking(false),
+    });
+    setSpeaking(started);
+  }
+
+  function silence() {
+    stopSpeaking();
+    setSpeaking(false);
+  }
+
   function startActivity() {
+    setTutorOpen(true);
+    if (canSpeak) readAloud();
     setActivityStartedAt(Date.now());
     setAttemptMessage("");
     if (learningMode === "exam") {
@@ -1115,19 +1137,6 @@ Mark my answer.`,
           })}
         </nav>}
 
-        {view === "learning" && <section className="progress-panel" aria-label="Curriculum coverage">
-          <div className="panel-title">
-            <Library size={18} />
-            <span>Coverage</span>
-          </div>
-          {progress.map((item) => (
-            <div className="progress-row" key={item.subject}>
-              <span>{item.subject}</span>
-              <strong>{item.total} {item.total === 1 ? "topic" : "topics"}</strong>
-            </div>
-          ))}
-        </section>}
-
         <div className="account-panel">
           {currentUser?.picture ? <img alt="" src={currentUser.picture} /> : <span>{currentUser?.name?.charAt(0) ?? "U"}</span>}
           <div><strong>{currentUser?.name}</strong><small>{currentUser?.email}</small></div>
@@ -1160,7 +1169,7 @@ Mark my answer.`,
             </label>
             <div className="model-pill">
               <Sparkles size={16} />
-              <span>Azure AI tutor</span>
+              <span>AI tutor</span>
             </div>
           </div>
         </header>
@@ -1278,16 +1287,16 @@ Mark my answer.`,
                 {explanation.status === "loading" && <p className="example-status" role="status">Loading this topic...</p>}
                 {explanation.status === "error" && <p className="login-error" role="alert">{explanation.error}</p>}
                 {explanation.status === "ready" && <>
-                  <p>{explanation.explanation}</p>
+                  <p><MathsText enabled={typeset(explanation.explanation)}>{explanation.explanation}</MathsText></p>
                   <ul>
-                    {(explanation.keyIdeas ?? []).map((idea) => <li key={idea}>{idea}</li>)}
+                    {(explanation.keyIdeas ?? []).map((idea) => <li key={idea}><MathsText enabled={typeset(idea)}>{idea}</MathsText></li>)}
                   </ul>
                 </>}
               </section>
               {explanation.status === "ready" && (explanation.formulae ?? []).length > 0 && (
                 <section className="guide-section formula-guide">
                   <h4>Key formulas</h4>
-                  {explanation.formulae.map((formula) => <code key={formula}><MathsText enabled={maths}>{formula}</MathsText></code>)}
+                  {explanation.formulae.map((formula) => <code className={typeset(formula) ? "typeset" : ""} key={formula}><MathsText enabled={typeset(formula)}>{formula}</MathsText></code>)}
                 </section>
               )}
               <section className="guide-section worked-example">
@@ -1316,14 +1325,14 @@ Mark my answer.`,
                   <>
                     {workedExample.formulae?.length > 0 && (
                       <div className="example-formulae">
-                        {workedExample.formulae.map((formula) => <code className={maths ? "typeset" : ""} key={formula}><MathsText enabled={maths}>{formula}</MathsText></code>)}
+                        {workedExample.formulae.map((formula) => <code className={typeset(formula) ? "typeset" : ""} key={formula}><MathsText enabled={typeset(formula)}>{formula}</MathsText></code>)}
                       </div>
                     )}
-                    <p><strong>Question:</strong> <MathsText enabled={maths}>{workedExample.question}</MathsText></p>
+                    <p><strong>Question:</strong> <MathsText enabled={typeset(workedExample.question)}>{workedExample.question}</MathsText></p>
                     <ol>
-                      {workedExample.steps.map((step, index) => <li key={`${index}-${step}`}><MathsText enabled={maths}>{step}</MathsText></li>)}
+                      {workedExample.steps.map((step, index) => <li key={`${index}-${step}`}><MathsText enabled={typeset(step)}>{step}</MathsText></li>)}
                     </ol>
-                    {workedExample.answer && <p className="worked-answer"><strong>Answer:</strong> <MathsText enabled={maths}>{workedExample.answer}</MathsText></p>}
+                    {workedExample.answer && <p className="worked-answer"><strong>Answer:</strong> <MathsText enabled={typeset(workedExample.answer)}>{workedExample.answer}</MathsText></p>}
                   </>
                 ) : <p className="example-raw">{workedExample.raw}</p>)}
               </section>
@@ -1343,6 +1352,21 @@ Mark my answer.`,
                 </div>
               ))}
             </div>
+            <div className="lesson-actions">
+              <button className="start-activity" disabled={isThinking} onClick={startActivity} type="button">
+                <Play size={15} /> {learningModes[learningMode].action}
+              </button>
+              {canSpeak && explanation.status === "ready" && (speaking
+                ? <button className="ask-tutor listening" onClick={silence} type="button">
+                    <Square size={15} /> Stop reading
+                  </button>
+                : <button className="ask-tutor" onClick={readAloud} type="button">
+                    <Volume2 size={16} /> Read this aloud
+                  </button>)}
+              {!tutorOpen && <button className="ask-tutor" onClick={() => setTutorOpen(true)} type="button">
+                <MessageCircle size={16} /> Ask the tutor a question
+              </button>}
+            </div>
             <div className="attempt-actions">
               <button onClick={() => setAttemptOpen(true)} type="button"><CheckCircle2 size={17} /> Record progress</button>
               {attemptMessage && <span role="status">{attemptMessage}</span>}
@@ -1357,7 +1381,7 @@ Mark my answer.`,
             />}
           </article>}
 
-          <section className="tutor-panel" aria-label="AI tutor chat">
+          {tutorOpen && <section className="tutor-panel" aria-label="AI tutor chat">
             <div className="chat-header">
               <MessageCircle size={20} />
               <div>
@@ -1365,6 +1389,7 @@ Mark my answer.`,
                 <p>{learningModes[learningMode].label} / {selectedTopic.title}</p>
               </div>
               <button className="start-activity" disabled={isThinking} onClick={startActivity} type="button"><Play size={15} /> {learningModes[learningMode].action}</button>
+              <button aria-label="Close the tutor" className="close-tutor" onClick={() => setTutorOpen(false)} title="Close the tutor" type="button"><X size={18} /></button>
             </div>
 
             <div className="messages">
@@ -1390,7 +1415,7 @@ Mark my answer.`,
                 <Send size={18} />
               </button>
             </form>
-          </section>
+          </section>}
         </section>
       </section>}
     </main>

@@ -22,6 +22,16 @@ function render(expression) {
   }
 }
 
+// Whether a string carries typesettable maths: a dollar-delimited span holding a
+// LaTeX control character. Prices such as "$5 and $10" do not match, so this is
+// safe to consult for every subject - and Science, Computing, Geography and
+// Design Technology all carry formulae, not just Maths.
+const latexPattern = /\$[^$]*[\^_{}][^$]*\$/;
+
+export function hasMaths(text) {
+  return latexPattern.test(String(text ?? ""));
+}
+
 export function MathsText({ children, enabled = true }) {
   const segments = useMemo(() => {
     const text = String(children ?? "");

@@ -176,7 +176,6 @@ button {
   color: #ffffff;
 }
 
-.progress-panel,
 .lesson-panel,
 .tutor-panel {
   background: #ffffff;
@@ -185,40 +184,12 @@ button {
   box-shadow: 0 12px 36px rgba(33, 45, 75, 0.08);
 }
 
-.progress-panel {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: none;
-  margin-top: auto;
-  padding: 14px;
-}
-
-.panel-title,
-.progress-row,
 .model-pill,
 .panel-heading,
 .chat-header,
 .outcome {
   align-items: center;
   display: flex;
-}
-
-.panel-title {
-  color: #ffffff;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.progress-row {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  color: #d8e4f7;
-  justify-content: space-between;
-  padding: 10px 0;
-}
-
-.progress-row strong {
-  color: #ffffff;
-  font-size: 0.85rem;
 }
 
 .workspace {
@@ -516,15 +487,55 @@ button {
 .learning-layout {
   display: grid;
   gap: 20px;
-  grid-template-columns: minmax(260px, 0.8fr) minmax(320px, 1.2fr);
+  /* One column: the lesson uses the full width, and the tutor - when the learner
+     opens it - is a chat box beneath rather than a panel competing for space. */
+  grid-template-columns: minmax(0, 1fr);
   min-height: 0;
 }
 
 .lesson-panel,
 .tutor-panel {
-  min-height: 420px;
+  min-height: 320px;
   padding: 20px;
 }
+
+.lesson-actions {
+  align-items: center;
+  border-top: 1px solid #e6ecf5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 16px;
+}
+
+.ask-tutor {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #b5c4d6;
+  border-radius: 6px;
+  color: #174d85;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: 0.9rem;
+  gap: 7px;
+  padding: 9px 14px;
+}
+
+.ask-tutor:hover { border-color: #174d85; }
+
+.close-tutor {
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: #54657d;
+  cursor: pointer;
+  display: inline-flex;
+  padding: 6px;
+}
+
+.close-tutor:hover { background: #eef3f8; color: #14213d; }
 
 .panel-heading,
 .chat-header {
@@ -4307,4 +4318,11 @@ button {
 
 @media (prefers-reduced-motion: reduce) {
   .signup-pending-page .spin { animation: none; }
+}
+
+/* Reading the lesson aloud. */
+.ask-tutor.listening {
+  background: #eef4fb;
+  border-color: #174d85;
+  color: #174d85;
 }

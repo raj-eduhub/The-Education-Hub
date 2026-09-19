@@ -50,7 +50,7 @@ export function SubscriptionPage({ checkoutState, currentUser, onCheckout, onPri
           <ul>
             <li><Check size={17} />Complete Year 7-11 curriculum</li>
             <li><Check size={17} />Initial diagnostic and personal learning path</li>
-            <li><Check size={17} />Azure AI tutor across four learning modes</li>
+            <li><Check size={17} />AI tutor across four learning modes</li>
             <li><Check size={17} />Student and parent progress dashboards</li>
             <li><Check size={17} />Cancel any time from Account and privacy</li>
           </ul>
