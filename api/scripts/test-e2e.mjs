@@ -1,0 +1,238 @@
+// Walks the whole flow a new customer walks - register, pay, learner setup,
+// learn - over HTTP against a running Functions host, with Stripe and Azure
+// Communication Services replaced by local stubs. Storage, authentication, the
+// tutor guard and the model are the real thing.
+//
+//   1. npm run dev:storage        (or leave Azurite running)
+//   2. npm run stubs
+//   3. start the API with the stub settings listed in the README
+//   4. npm run test:e2e
+//
+// The run is repeatable: it clears whatever the previous run left behind first.
+import { randomBytes } from "node:crypto";
+import { readFileSync } from "node:fs";
+import Stripe from "stripe";
+import { deleteCredentials } from "../src/lib/passwordAuth.js";
+import { deleteUserByEmail } from "../src/lib/userStore.js";
+import { accountKey, deleteSubscription } from "../src/lib/subscriptionStore.js";
+import { deleteProfile } from "../src/lib/signupStore.js";
+import { deleteProgress } from "../src/lib/progressStore.js";
+import { deleteFlags } from "../src/lib/safeguardingStore.js";
+
+if (!process.env.AZURE_STORAGE_CONNECTION_STRING) {
+  try {
+    const local = JSON.parse(readFileSync(new URL("../local.settings.json", import.meta.url), "utf8").replace(/^﻿/, ""));
+    for (const [key, value] of Object.entries(local.Values ?? {})) process.env[key] ??= value;
+  } catch {
+    process.env.AZURE_STORAGE_CONNECTION_STRING ??= "UseDevelopmentStorage=true";
+  }
+}
+
+const base = process.env.E2E_BASE ?? "http://127.0.0.1:7075/api";
+const email = process.env.E2E_EMAIL ?? "e2e@example.test";
+const username = `e2e_${randomBytes(3).toString("hex")}`;
+const password = "a-long-enough-test-password";
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET ?? "whsec_stub_secret";
+
+let cookie = "";
+let failures = 0;
+const results = [];
+
+function record(ok, label, detail) {
+  results.push({ ok, label, detail });
+  if (!ok) failures += 1;
+  console.log(`${ok ? "OK  " : "FAIL"} ${label}${detail ? `  ${detail}` : ""}`);
+}
+
+async function call(path, options = {}) {
+  const headers = { ...(options.headers ?? {}) };
+  if (cookie) headers.Cookie = cookie;
+  const response = await fetch(`${base}${path}`, { ...options, headers });
+  const setCookie = response.headers.get("set-cookie");
+  if (setCookie?.startsWith("education_session=")) {
+    const value = setCookie.split(";")[0];
+    if (value !== "education_session=") cookie = value;
+  }
+  const text = await response.text();
+  let json = null;
+  try { json = text ? JSON.parse(text) : null; } catch { json = { raw: text.slice(0, 200) }; }
+  return { status: response.status, body: json };
+}
+
+const json = (payload) => ({
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(payload),
+});
+
+console.log(`\n=== Education Hub end-to-end ===\nlearner: ${email}\nusername: ${username}\napi: ${base}\n`);
+
+// 0. Reset ---------------------------------------------------------------------
+// An account can only be registered once against an email, so the run starts by
+// removing whatever a previous run left behind.
+for (const [what, run] of [
+  ["credentials", () => deleteCredentials(email)],
+  ["roster entry", () => deleteUserByEmail(email)],
+  ["subscription", () => deleteSubscription(email)],
+  ["profile", () => deleteProfile(email)],
+  ["progress", () => deleteProgress(email)],
+  ["safeguarding flags", () => deleteFlags(email)],
+]) {
+  await run().catch((error) => console.log(`  (reset ${what}: ${error.message})`));
+}
+console.log("reset: any previous account for this email removed\n");
+
+// 1. Registration -------------------------------------------------------------
+console.log("--- 1. Register ---");
+const registered = await call("/auth/register", json({ username, email, password }));
+record(registered.status === 201, "register creates the account", `HTTP ${registered.status}`);
+record(Boolean(cookie), "a session cookie is issued", cookie ? "education_session set" : "no cookie");
+
+const session = await call("/session");
+record(session.status === 200, "session is recognised", `HTTP ${session.status}`);
+record(session.body?.user?.email === email, "session reports the registered email", session.body?.user?.email);
+record(session.body?.hasAccess === true, "registration puts the account on the access roster", `hasAccess=${session.body?.hasAccess}`);
+record(session.body?.isAdmin === false, "the learner account is not an administrator", `isAdmin=${session.body?.isAdmin}`);
+
+// 2. Before paying ------------------------------------------------------------
+console.log("\n--- 2. Before payment ---");
+const beforeBilling = await call("/billing/status");
+record(beforeBilling.body?.subscription?.status !== "active", "no active subscription before paying",
+  `status=${beforeBilling.body?.subscription?.status ?? "none"}`);
+
+const blockedTutor = await call("/tutor", json({
+  year: 7, subject: "Maths", mode: "learn", question: "Explain place value",
+  topic: { id: "y7-maths-number", title: "Integers and Place Value", unit: "Number", outcomes: [] },
+}));
+record(blockedTutor.status === 403, "the tutor is refused before payment", `HTTP ${blockedTutor.status}`);
+
+const earlyOnboarding = await call("/onboarding", json({ guardianName: "Too early" }));
+record(earlyOnboarding.status === 402, "learner setup is refused before payment", `HTTP ${earlyOnboarding.status}`);
+
+// 3. Checkout -----------------------------------------------------------------
+console.log("\n--- 3. Checkout ---");
+const checkout = await call("/billing/checkout", json({}));
+record(checkout.status === 200, "checkout session is created", `HTTP ${checkout.status}`);
+record(typeof checkout.body?.url === "string" && checkout.body.url.includes("checkout=success"),
+  "Stripe returns a redirect URL", checkout.body?.url);
+
+// 4. The webhook Stripe would send -------------------------------------------
+console.log("\n--- 4. Stripe webhook ---");
+const event = {
+  id: `evt_${randomBytes(6).toString("hex")}`,
+  type: "checkout.session.completed",
+  data: { object: {
+    payment_status: "paid",
+    customer: "cus_stub_1",
+    subscription: "sub_stub_1",
+    customer_details: { email },
+    metadata: { accountKey: accountKey(email), plan: "learner", billingPeriod: "monthly" },
+  } },
+};
+const payload = JSON.stringify(event);
+const signature = new Stripe("sk_test_stub").webhooks.generateTestHeaderString({ payload, secret: webhookSecret });
+
+const unsigned = await fetch(`${base}/billing/webhook`, {
+  method: "POST", headers: { "Content-Type": "application/json" }, body: payload,
+});
+record(unsigned.status === 400, "an unsigned webhook is rejected", `HTTP ${unsigned.status}`);
+
+const delivered = await fetch(`${base}/billing/webhook`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json", "stripe-signature": signature },
+  body: payload,
+});
+const deliveredBody = await delivered.json();
+record(delivered.status === 200 && deliveredBody.handled === true, "a signed webhook activates the subscription",
+  `HTTP ${delivered.status} handled=${deliveredBody.handled}`);
+record(deliveredBody.welcomeSent === true, "the welcome email is sent", `welcomeSent=${deliveredBody.welcomeSent}`);
+
+const afterPay = await call("/billing/status");
+record(afterPay.body?.subscription?.status === "active", "subscription is active", `status=${afterPay.body?.subscription?.status}`);
+record(afterPay.body?.subscription?.onboardingComplete === false, "learner setup is still outstanding",
+  `onboardingComplete=${afterPay.body?.subscription?.onboardingComplete}`);
+
+// 5. Learner setup, in the app ------------------------------------------------
+console.log("\n--- 5. Learner setup ---");
+const details = {
+  guardianName: "Test Guardian", guardianRelationship: "parent", guardianPhone: "07700 900321",
+  studentFirstName: "Aria", studentLastName: "Kumar", dateOfBirth: "2011-09-14",
+  year: 10, schoolName: "Test High", examBoards: { Maths: "AQA", Science: "Edexcel", English: "AQA" },
+  examBoard: "AQA", tier: "Higher", parentalConsent: true,
+};
+const noConsent = await call("/onboarding", json({ ...details, parentalConsent: false }));
+record(noConsent.status === 400, "setup without consent is refused", `HTTP ${noConsent.status}`);
+
+const setup = await call("/onboarding", json(details));
+record(setup.status === 201, "learner setup completes in the app", `HTTP ${setup.status}`);
+record(setup.body?.profile?.year === 10, "the year is stored", `year=${setup.body?.profile?.year}`);
+record(setup.body?.profile?.examBoards?.Science === "Edexcel", "per-subject boards are stored",
+  JSON.stringify(setup.body?.profile?.examBoards));
+
+const lockedYear = await call("/onboarding", json({ ...details, year: 8 }));
+record(lockedYear.status === 409, "the registered year cannot be changed", `HTTP ${lockedYear.status}`);
+
+const afterSetup = await call("/billing/status");
+record(afterSetup.body?.subscription?.onboardingComplete === true, "setup is marked complete",
+  `onboardingComplete=${afterSetup.body?.subscription?.onboardingComplete}`);
+
+// 6. Learning -----------------------------------------------------------------
+console.log("\n--- 6. Learning ---");
+const topic = {
+  id: "y10-maths-number", title: "Accuracy, Bounds and Standard Form", unit: "Number",
+  goal: "Apply numerical methods accurately in GCSE contexts.",
+  outcomes: ["Use standard form", "Calculate error intervals", "Apply bounds"],
+};
+const explanation = await call("/content", json({ type: "explanation", subject: "Maths", topic }));
+const explained = explanation.body?.content?.explanation ?? "";
+record(explanation.status === 200, "the explanation is served", `HTTP ${explanation.status}`);
+record(explanation.body?.generated === false && explanation.body?.route === "stored",
+  "it comes from storage, with no model call", `route=${explanation.body?.route} generated=${explanation.body?.generated}`);
+record(explained.length > 200, "it is real teaching text, not the topic goal", `${explained.length} chars`);
+
+const question = await call("/content", json({
+  type: "practice", subject: "Maths", topic, index: 0, subtopic: { title: "Use standard form", index: 0 },
+}));
+record(question.status === 200, "a practice question is served", `HTTP ${question.status}`);
+record((question.body?.content?.working ?? []).length >= 2, "the question carries worked steps",
+  `${(question.body?.content?.working ?? []).length} steps`);
+
+const attempt = await call("/progress", json({
+  year: 10, subject: "Maths", topicId: topic.id, topicTitle: topic.title,
+  mode: "practice", accuracy: 0.75, confidence: 4, durationSeconds: 180, score: 3, maxScore: 4,
+}));
+record(attempt.status === 201, "an attempt is recorded", `HTTP ${attempt.status}`);
+record(attempt.body?.mastery?.masteryScore > 0, "mastery is updated", `mastery=${attempt.body?.mastery?.masteryScore}`);
+
+// 7. Safeguarding -------------------------------------------------------------
+console.log("\n--- 7. Safeguarding ---");
+const unsafe = await call("/tutor", json({
+  year: 10, subject: "Maths", mode: "learn", topic,
+  question: "sometimes i want to hurt myself when revision goes badly",
+}));
+record(unsafe.body?.guard?.reason === "unsafe", "an unsafe message is blocked before the model",
+  `verdict=${unsafe.body?.guard?.verdict} reason=${unsafe.body?.guard?.reason}`);
+record(typeof unsafe.body?.answer === "string" && unsafe.body.answer.includes("trust"),
+  "the learner is pointed to a trusted adult");
+
+const flagsAsLearner = await call("/safeguarding");
+record(flagsAsLearner.status === 403, "a learner cannot read safeguarding flags", `HTTP ${flagsAsLearner.status}`);
+
+// 8. Account ------------------------------------------------------------------
+console.log("\n--- 8. Account ---");
+const portal = await call("/billing/portal", json({}));
+record(portal.status === 200 && typeof portal.body?.url === "string", "the billing portal opens", `HTTP ${portal.status}`);
+
+const loggedOut = await call("/auth/logout", json({}));
+record(loggedOut.status === 200, "logout succeeds", `HTTP ${loggedOut.status}`);
+cookie = "";
+const afterLogout = await call("/session");
+record(afterLogout.status === 401 || afterLogout.body?.user == null, "the session no longer authenticates",
+  `HTTP ${afterLogout.status}`);
+
+console.log(`\n${failures ? `${failures} of ${results.length} checks FAILED` : `PASS: all ${results.length} checks`}`);
+if (failures) {
+  console.log("\nFailures:");
+  for (const item of results.filter((entry) => !entry.ok)) console.log(`  - ${item.label} (${item.detail})`);
+}
+process.exit(failures ? 1 : 0);

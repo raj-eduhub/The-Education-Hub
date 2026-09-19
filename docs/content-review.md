@@ -42,12 +42,27 @@ Without `--approve` or `--reject` the script only reports and samples, so it is 
 
 Listing is paged with a cursor. Pages are consumed whole and the cursor only advances past a completed page, so no row is skipped or returned twice even though review status is filtered after the query.
 
+## What is checked before a human sees it
+
+Reviewing is the last gate, not the first. Before a generated row reaches the
+review screen it has already been refused if it has no working or no mark scheme,
+if it echoes the prompt's own field description, or if it cannot be parsed at all.
+`npm run prune:content` then removes stored rows that break the curriculum rules:
+content above the specification, questions that point at a diagram the learner is
+never shown, and rows written against a topic or outcome the catalogue no longer
+contains. Running it before a review session means the reviewer spends their time
+on judgement rather than on rejecting obvious defects.
+
+Explanations are not generated at all. They are authored in
+`src/data/topicContent/` and written to storage on every seeding run, so the
+review screen sees them only when the authored text changes.
+
 ## Limits
 
 - Rejected content stays in the table and is simply not served. There is no bulk delete, and no way to edit content by hand: the options are approve, reject, or regenerate and review again.
 - There is no reviewer queue, assignment, or audit trail beyond `reviewedBy` and `reviewedAt` on the row.
 - Bulk decisions apply to every row matching the filters, including rows not yet loaded on screen. The count shown next to the buttons is the number loaded, not necessarily the number that will change.
-- Approving does not check correctness. It records that a human looked.
+- Approving does not check correctness. It records that a human looked. A bulk approval run recorded as "spot-check" approved twenty rows, one of which stated a length "to the nearest 0.5 cm" as 53.6 cm - a measurement that cannot occur. Bulk approval is for clearing a batch a human has actually sampled.
 
 ## Related: the billing webhook route
 

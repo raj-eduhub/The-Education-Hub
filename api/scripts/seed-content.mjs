@@ -6,10 +6,10 @@
 //   node api/scripts/seed-content.mjs --year 7 --dry-run --concurrency 4
 import { readFileSync } from "node:fs";
 import { curriculumByYear } from "../../src/data/curriculumCatalog.js";
-import { getTopicGuide } from "../../src/topicGuides.js";
+import { getAuthoredExample, getTopicGuide } from "../../src/topicGuides.js";
 import { callFoundry, deployment } from "../src/lib/foundry.js";
 import { contentKey, getContent, saveContent } from "../src/lib/contentStore.js";
-import { contentTypes, mayUseModel, routeFor, usesMathsNotation, variesByBoard } from "../src/lib/contentPolicy.js";
+import { contentTypes, mayUseModel, routeFor, supportsQuestionBank, usesMathsNotation, variesByBoard, variesByTier } from "../src/lib/contentPolicy.js";
 import { parseQuestion, questionPrompt } from "../src/lib/questionBank.js";
 import { exampleSystemPrompt, parseWorkedExample, workedExamplePrompt } from "../src/lib/workedExample.js";
 
@@ -46,20 +46,24 @@ if (![contentTypes.EXAMPLE, contentTypes.PRACTICE, contentTypes.EXAM].includes(c
   throw new Error(`--type must be example, practice, or exam. Received: ${contentType}`);
 }
 
-const counts = { explanations: 0, skipped: 0, generated: 0, failed: 0, wouldGenerate: 0 };
+const counts = { explanations: 0, authored: 0, skipped: 0, generated: 0, failed: 0, wouldGenerate: 0 };
 let claimed = 0;
 const jobs = [];
 
 for (const year of years) {
   const entry = curriculumByYear[year];
   if (!entry) throw new Error(`Year ${year} is not in the catalogue.`);
-  const variantTier = year >= 10 ? tier : null;
+  // Untiered subjects store one copy, not one per tier.
+  const tierFor = (subject) => (year >= 10 && variesByTier(subject) ? tier : null);
   for (const [subject, topics] of Object.entries(entry.subjects)) {
     if (onlySubject && subject !== onlySubject) continue;
     for (const topic of topics) {
-      // Explanations are authored curriculum text, copied straight from the catalogue.
+      // Explanations are authored curriculum text. They are written every run
+      // rather than only on a miss, so an edit to the authored content reaches
+      // storage; saveContent keeps the review decision when the text is
+      // unchanged and returns the row to pending when it is not.
       const explanationKey = contentKey(contentTypes.EXPLANATION, topic.id);
-      if (explanationKey && !(await getContent(explanationKey))) {
+      if (explanationKey) {
         const guide = getTopicGuide(subject, topic);
         if (!dryRun) {
           await saveContent(explanationKey, { explanation: guide.explanation, keyIdeas: guide.keyIdeas, formulae: guide.formulae }, {
@@ -69,12 +73,16 @@ for (const year of years) {
         counts.explanations += 1;
       }
       if (explanationsOnly) continue;
+      const variantTier = tierFor(subject);
       if (contentType === contentTypes.EXAMPLE) {
         for (const [index, outcome] of topic.outcomes.entries()) {
           jobs.push({ year, subject, topic, index, outcome, variantTier, board: null });
         }
         continue;
       }
+      // Practical topics are taught through explanation and worked example; a
+      // typed question cannot set or mark a ruler-and-compass construction.
+      if (!supportsQuestionBank(topic.id)) continue;
       // Question banks: several questions per topic, for each board the year uses.
       const variantBoards = variesByBoard(contentType) && year >= 9 ? boards : [null];
       for (const board of variantBoards) {
@@ -94,10 +102,30 @@ async function runJob(job) {
   if (await getContent(key)) { counts.skipped += 1; return; }
   const route = routeFor(contentType, subject);
   if (!mayUseModel(route)) { counts.skipped += 1; return; }
+  const label = `Year ${year} ${subject} / ${topic.title} / ${board ?? "core"} / ${contentType} ${index + 1}`;
+
+  // An authored worked example is stored as it is. It costs no tokens, it is
+  // already correct, and until now these sat unused in the codebase while the
+  // model was paid to write replacements for them. Checked before --limit,
+  // because that budget exists to cap model calls.
+  if (contentType === contentTypes.EXAMPLE && index === 0) {
+    const authored = getAuthoredExample(subject, topic);
+    if (authored) {
+      if (dryRun) { console.log(`WOULD STORE AUTHORED ${label}`); return; }
+      await saveContent(key, { ...authored, notation: usesMathsNotation(subject) }, {
+        type: contentType, subject, year, topicTitle: topic.title, subtopicTitle: outcome,
+        origin: "catalogue",
+      });
+      counts.authored += 1;
+      console.log(`WROTE ${label} (authored, no model call)`);
+      return;
+    }
+  }
+
   // Claimed before the await so concurrent workers cannot overshoot --limit.
   if (claimed >= limit) return;
   claimed += 1;
-  const label = `Year ${year} ${subject} / ${topic.title} / ${board ?? "core"} / ${contentType} ${index + 1}`;
+
   if (dryRun) { counts.wouldGenerate += 1; console.log(`WOULD ${label}`); return; }
   try {
     const notation = usesMathsNotation(subject);
@@ -128,7 +156,10 @@ async function runJob(job) {
 // A small worker pool keeps a full-year run to minutes rather than hours.
 let cursor = 0;
 async function worker() {
-  while (cursor < jobs.length && claimed < limit) {
+  // The loop does not stop at --limit, because authored content is stored with
+  // no model call and must still be reached. runJob applies the budget to the
+  // jobs that would actually call the model.
+  while (cursor < jobs.length) {
     const job = jobs[cursor];
     cursor += 1;
     await runJob(job);
@@ -136,4 +167,4 @@ async function worker() {
 }
 await Promise.all(Array.from({ length: concurrency }, worker));
 
-console.log(`\nexplanations stored: ${counts.explanations}   examples ${dryRun ? "to generate" : "generated"}: ${dryRun ? counts.wouldGenerate : counts.generated}   already stored: ${counts.skipped}   failed: ${counts.failed}`);
+console.log(`\nexplanations stored: ${counts.explanations}   authored examples stored: ${counts.authored}   ${dryRun ? "to generate" : "generated"}: ${dryRun ? counts.wouldGenerate : counts.generated}   already stored: ${counts.skipped}   failed: ${counts.failed}`);

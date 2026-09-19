@@ -1,3 +1,5 @@
+import { contentFor } from "./data/topicContent/index.js";
+
 const mathsExamples = {
   "y7-maths-number": {
     formulae: ["Subtracting a negative: a - (-b) = a + b"],
@@ -263,9 +265,18 @@ const subjectMethods = {
 };
 
 export function getTopicGuide(subject, topic) {
+  // Authored teaching text first. Until this existed, every explanation was the
+  // topic's one-line goal restated, which told a learner what the topic was for
+  // and nothing about the topic itself.
+  const authored = contentFor(topic.id);
+  const keyIdeas = authored?.keyIdeas?.length
+    ? authored.keyIdeas
+    : topic.outcomes.map((outcome) => `${outcome}.`);
+  const explanation = authored?.explanation ?? topic.goal;
+  const formulae = authored?.formulae ?? [];
+
   const maths = subject === "Maths" ? mathsExamples[topic.id] : null;
-  const keyIdeas = topic.outcomes.map((outcome) => `${outcome}.`);
-  if (maths) return { explanation: topic.goal, keyIdeas, ...maths };
+  if (maths) return { explanation, keyIdeas, ...maths, formulae: maths.formulae ?? formulae };
 
   const method = subjectMethods[subject] ?? [
     "Identify the key knowledge required by the question.",
@@ -273,13 +284,22 @@ export function getTopicGuide(subject, topic) {
     "Check the result against the learning goal.",
   ];
   return {
-    explanation: topic.goal,
+    explanation,
     keyIdeas,
-    formulae: [],
+    formulae,
     question: `Show how you would ${topic.outcomes[0].charAt(0).toLowerCase()}${topic.outcomes[0].slice(1)} in a question about ${topic.title}.`,
     steps: method,
     answer: `A strong response demonstrates ${topic.outcomes[0].toLowerCase()} and explains each decision using accurate subject knowledge.`,
   };
+}
+
+// The authored worked example for a topic, when one exists. Kept separate from
+// getTopicGuide because that falls back to a generic template for subjects with
+// no authored example, and a template is not worth storing or showing.
+export function getAuthoredExample(subject, topic) {
+  const authored = subject === "Maths" ? mathsExamples[topic.id] : null;
+  if (!authored?.question || !authored.steps?.length) return null;
+  return { formulae: authored.formulae ?? [], question: authored.question, steps: authored.steps, answer: authored.answer };
 }
 
 export function formatTopicGuide(subject, topic) {

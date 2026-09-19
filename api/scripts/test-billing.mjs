@@ -9,7 +9,7 @@ import { handleStripeEvent } from "../src/lib/billingEvents.js";
 import {
   accountKey, deleteSubscription, getSubscription, getSubscriptionEntityByAccountKey, savePendingSubscription,
 } from "../src/lib/subscriptionStore.js";
-import { getSignupInvite } from "../src/lib/signupStore.js";
+import { deleteProfile, getProfile, saveLearnerProfile } from "../src/lib/signupStore.js";
 
 if (!process.env.AZURE_STORAGE_CONNECTION_STRING) {
   try {
@@ -90,26 +90,36 @@ try {
     assert.equal(afterPaid.status, "active");
     assert.equal(afterPaid.onboardingComplete, false);
   });
-  check("the signup invitation is emailed to the payer", () => {
+  check("a welcome email is sent to the payer", () => {
     assert.equal(sent.length, 1);
     assert.equal(sent[0].email, email);
-    assert.match(sent[0].signupUrl, /^https:\/\/example\.test\/\?signup=/);
+    assert.equal(sent[0].appUrl, appUrl);
   });
-  const token = decodeURIComponent(sent[0].signupUrl.split("signup=")[1]);
-  check("the emailed token opens a real invitation", () => {
-    assert.ok(token.length > 20);
+  // The email is a receipt, not a key. Nothing about getting started may depend
+  // on it, so it must carry no token and no deadline.
+  check("the welcome email carries no signup token", () => {
+    const body = JSON.stringify(sent[0]);
+    assert.equal(body.includes("signup="), false, "no signup token may be emailed");
+    assert.equal(Object.keys(sent[0]).includes("signupUrl"), false);
   });
-  const invite = await getSignupInvite(token);
-  check("the invitation resolves to this account", () => {
-    assert.ok(invite, "invite should exist");
-    assert.equal(invite.email, email);
+  // Learner setup happens in the app, against the account that just paid.
+  await saveLearnerProfile(email, {
+    guardianName: "Test Guardian", guardianRelationship: "parent", guardianPhone: "07700 900000",
+    studentFirstName: "Test", studentLastName: "Learner", dateOfBirth: "2012-04-01",
+    year: 7, schoolName: "Test School", examBoards: {}, tier: "Higher", parentalConsent: true,
+  });
+  const profile = await getProfile(email);
+  check("learner setup writes the profile against the paying account", () => {
+    assert.ok(profile, "profile should exist");
+    assert.equal(profile.studentFirstName, "Test");
+    assert.equal(profile.year, 7);
   });
 
   // Stripe retries. A replayed event must not issue a second invitation.
   const replay = await handleStripeEvent(checkoutEvent("evt_paid_1"), { appUrl, sendEmail });
   check("a replayed checkout event is ignored", () => {
     assert.equal(replay.duplicate, true);
-    assert.equal(sent.length, 1, "no second invitation should be sent");
+    assert.equal(sent.length, 1, "no second welcome email should be sent");
   });
 
   // An unpaid session must never grant access.
@@ -139,14 +149,14 @@ try {
   });
   const afterMailDown = await getSubscription(email);
   const entity = await getSubscriptionEntityByAccountKey(key);
-  check("access is still granted when the invitation email fails", () => {
+  check("access is still granted when the welcome email fails", () => {
     assert.equal(mailDown?.handled, true);
-    assert.equal(mailDown?.invitationSent, false);
+    assert.equal(mailDown?.welcomeSent, false);
     assert.equal(afterMailDown.status, "active");
   });
   check("the failed delivery is recorded so it can be resent", () => {
-    assert.equal(entity.signupInviteDelivery, "failed");
-    assert.match(entity.signupInviteError, /not configured/i);
+    assert.equal(entity.welcomeDelivery, "failed");
+    assert.match(entity.welcomeError, /not configured/i);
   });
 
   // Lifecycle events must move the status.
@@ -186,7 +196,8 @@ try {
   });
 } finally {
   await deleteSubscription(email);
+  await deleteProfile(email).catch(() => {});
 }
 
-console.log(failures ? `\n${failures} billing check(s) FAILED` : "\nPASS: checkout activation, invitation delivery, replay protection, unpaid and orphan events refused, mail-outage resilience, lifecycle status changes, signature verification");
+console.log(failures ? `\n${failures} billing check(s) FAILED` : "\nPASS: checkout activation, welcome delivery with no token, in-app learner setup, replay protection, unpaid and orphan events refused, mail-outage resilience, lifecycle status changes, signature verification");
 process.exit(failures ? 1 : 0);

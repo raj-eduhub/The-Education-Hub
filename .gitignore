@@ -89,4 +89,5 @@ api/local.settings.json
 .playwright-cli/
 output/playwright/
 .copilot-azure/
+api/scripts/.stub-log.json
 # End

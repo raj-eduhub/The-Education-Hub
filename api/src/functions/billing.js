@@ -10,13 +10,26 @@ import {
 import { userCanAccess } from "../lib/userStore.js";
 import { handleStripeEvent } from "../lib/billingEvents.js";
 
-const priceIds = {
-  monthly: process.env.STRIPE_PRICE_MONTHLY,
-  annual: process.env.STRIPE_PRICE_ANNUAL,
-};
+// One plan, billed monthly. The billing period still travels in the Stripe
+// metadata so the webhook, the subscription record and the billing portal keep
+// the shape they already had.
+const billingPeriod = "monthly";
+const priceId = () => process.env.STRIPE_PRICE_MONTHLY;
 
 function stripeClient() {
   if (!process.env.STRIPE_SECRET_KEY) throw new Error("Stripe is not configured.");
+  // Local development only: point the SDK at a stub so the payment path can be
+  // walked end to end without a Stripe account. Guarded on the Functions host
+  // running in Development, so setting the variable in Azure does nothing.
+  const base = process.env.STRIPE_API_BASE;
+  if (base && process.env.AZURE_FUNCTIONS_ENVIRONMENT === "Development") {
+    const url = new URL(base);
+    return new Stripe(process.env.STRIPE_SECRET_KEY, {
+      host: url.hostname,
+      port: Number(url.port) || (url.protocol === "https:" ? 443 : 80),
+      protocol: url.protocol === "https:" ? "https" : "http",
+    });
+  }
   return new Stripe(process.env.STRIPE_SECRET_KEY);
 }
 
@@ -81,11 +94,7 @@ app.http("billing", {
       const origin = process.env.APP_BASE_URL ?? new URL(request.url).origin;
 
       if (action === "checkout") {
-        const body = await request.json();
-        if (!["monthly", "annual"].includes(body.billingPeriod)) {
-          return { status: 400, jsonBody: { error: "A billing period is required." } };
-        }
-        const price = priceIds[body.billingPeriod];
+        const price = priceId();
         if (!price) return { status: 503, jsonBody: { error: "This subscription price is not configured yet." } };
         const key = accountKey(email);
         const session = await stripe.checkout.sessions.create({
@@ -98,15 +107,12 @@ app.http("billing", {
           allow_promotion_codes: true,
           success_url: `${origin}/?checkout=success`,
           cancel_url: `${origin}/?checkout=cancelled`,
-          metadata: { accountKey: key, plan: "learner", billingPeriod: body.billingPeriod },
+          metadata: { accountKey: key, plan: "learner", billingPeriod },
           subscription_data: {
-            metadata: { accountKey: key, plan: "learner", billingPeriod: body.billingPeriod },
+            metadata: { accountKey: key, plan: "learner", billingPeriod },
           },
         });
-        await savePendingSubscription(email, {
-          plan: "learner",
-          billingPeriod: body.billingPeriod,
-        });
+        await savePendingSubscription(email, { plan: "learner", billingPeriod });
         return { jsonBody: { url: session.url } };
       }
 

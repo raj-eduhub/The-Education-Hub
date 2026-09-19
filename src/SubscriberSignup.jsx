@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ArrowRight, CalendarDays, CheckCircle2, GraduationCap, LockKeyhole, ShieldCheck, UserRound, UsersRound } from "lucide-react";
-import { apiFetch, readJson } from "./auth.js";
+import { apiFetch, authFetch, readJson } from "./auth.js";
 import { subjects } from "./curriculum.js";
 
 const years = [7, 8, 9, 10, 11];
@@ -9,9 +9,20 @@ const years = [7, 8, 9, 10, 11];
 const signupBoards = ["AQA", "Edexcel"];
 const defaultBoards = Object.fromEntries(subjects.map((subject) => [subject, signupBoards[0]]));
 
-export function SubscriberSignup({ preview = false, token }) {
-  const [invite, setInvite] = useState(preview ? { email: "parent@example.com" } : null);
-  const [status, setStatus] = useState(preview ? "ready" : "loading");
+// Collects the student and guardian details. Two ways in:
+//
+//   in-app    signed in, payment just taken, no token - the normal path
+//   by link   an emailed one-time token, kept for invitations already sent
+//
+// The emailed path also sets the account password, because that flow could be
+// reached by someone who had not signed in. The in-app path never needs to: the
+// person filling this in is already authenticated.
+export function SubscriberSignup({ preview = false, token, account, onComplete }) {
+  const byLink = Boolean(token);
+  const [invite, setInvite] = useState(
+    preview ? { email: "parent@example.com" } : byLink ? null : { email: account?.email ?? "" }
+  );
+  const [status, setStatus] = useState(preview || !byLink ? "ready" : "loading");
   const [error, setError] = useState("");
   const [form, setForm] = useState({
     guardianName: "",
@@ -29,7 +40,7 @@ export function SubscriberSignup({ preview = false, token }) {
   });
 
   useEffect(() => {
-    if (preview) return;
+    if (preview || !byLink) return;
     apiFetch(`/api/signup/${encodeURIComponent(token)}`)
       .then(async (response) => {
         const data = await readJson(response);
@@ -41,7 +52,7 @@ export function SubscriberSignup({ preview = false, token }) {
         setError(loadError.message);
         setStatus("error");
       });
-  }, [preview, token]);
+  }, [byLink, preview, token]);
 
   // GCSE preparation begins in Year 9, so the board is chosen from then on.
   // Foundation and Higher entry is only decided for the exam years.
@@ -61,14 +72,20 @@ export function SubscriberSignup({ preview = false, token }) {
     setStatus("submitting");
     setError("");
     try {
-      const response = await apiFetch(`/api/signup/${encodeURIComponent(token)}`, {
+      const details = { ...form, examBoard: form.examBoards.Maths };
+      if (!byLink) delete details.password;
+      const request = byLink ? apiFetch : authFetch;
+      const url = byLink ? `/api/signup/${encodeURIComponent(token)}` : "/api/onboarding";
+      const response = await request(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, examBoard: form.examBoards.Maths }),
+        body: JSON.stringify(details),
       });
       const data = await readJson(response);
-      if (!response.ok) throw new Error(data.error ?? "Signup could not be completed.");
+      if (!response.ok) throw new Error(data.error ?? "Learner setup could not be completed.");
       setStatus("complete");
+      // In the app the learner can go straight in; there is nothing to sign in to again.
+      if (!byLink) onComplete?.(data.profile);
     } catch (submitError) {
       setError(submitError.message);
       setStatus("ready");
@@ -77,20 +94,24 @@ export function SubscriberSignup({ preview = false, token }) {
 
   if (status === "loading") return <main className="signup-status-page"><p>Checking your secure signup link...</p></main>;
   if (status === "error") return <main className="signup-status-page"><div><LockKeyhole size={28} /><h1>Signup link unavailable</h1><p>{error}</p></div></main>;
-  if (status === "complete") return <main className="signup-status-page"><div><CheckCircle2 size={32} /><p className="eyebrow">Signup complete</p><h1>The learning account is ready</h1><p>Sign in with <strong>{invite.email}</strong> to open the learner's curriculum.</p><a href="/">Continue to sign in</a></div></main>;
+  if (status === "complete") return <main className="signup-status-page"><div><CheckCircle2 size={32} /><p className="eyebrow">Setup complete</p><h1>The learning account is ready</h1>
+    {byLink
+      ? <><p>Sign in with <strong>{invite.email}</strong> to open the learner's curriculum.</p><a href="/">Continue to sign in</a></>
+      : <p>Opening the curriculum...</p>}
+  </div></main>;
 
   return <main className="subscriber-signup-page">
-    <header className="signup-header"><span><GraduationCap size={22} /></span><strong>Education Hub</strong><small>Paid subscription confirmed</small></header>
+    <header className="signup-header"><span><GraduationCap size={22} /></span><strong>Education Hub</strong><small>Subscription active</small></header>
     <div className="signup-layout">
       <section className="signup-intro">
         <p className="eyebrow">Secure account setup</p>
         <h1>Tell us about the learner</h1>
-        <p>Complete the student and parent or guardian details linked to the paid subscription.</p>
+        <p>One more step. These details build the learning path and are linked to your subscription.</p>
         <div><ShieldCheck size={19} /><span><strong>The school year is permanent</strong><small>Check it carefully. Once submitted, it cannot be changed from the app.</small></span></div>
       </section>
 
       <form className="signup-form" onSubmit={submit}>
-        <label>Set your account password<input type="password" autoComplete="new-password" minLength={15} maxLength={128} required value={form.password} onChange={event => update("password", event.target.value)} /></label>
+        {byLink && <label>Set your account password<input type="password" autoComplete="new-password" minLength={15} maxLength={128} required value={form.password} onChange={event => update("password", event.target.value)} /></label>}
         <section>
           <div className="signup-section-heading"><UsersRound size={20} /><div><h2>Parent or guardian</h2><p>Account holder and primary contact</p></div></div>
           <div className="signup-fields two-columns">
@@ -146,7 +167,7 @@ export function SubscriberSignup({ preview = false, token }) {
 
         <label className="signup-consent"><input checked={form.parentalConsent} onChange={(event) => update("parentalConsent", event.target.checked)} type="checkbox" /><span>I confirm that I am the parent, legal guardian, or carer and consent to Education Hub processing these details to provide the learning service.</span></label>
         {error && <p className="signup-error" role="alert">{error}</p>}
-        <button className="signup-submit" disabled={!form.parentalConsent || status === "submitting"} type="submit">{status === "submitting" ? "Creating account..." : "Create learning account"}<ArrowRight size={18} /></button>
+        <button className="signup-submit" disabled={!form.parentalConsent || status === "submitting"} type="submit">{status === "submitting" ? "Saving..." : "Start learning"}<ArrowRight size={18} /></button>
       </form>
     </div>
   </main>;

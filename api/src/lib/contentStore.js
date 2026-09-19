@@ -39,7 +39,10 @@ export function contentKey(type, topicId, { index, board, tier } = {}) {
   // Worked examples keep their original key shape so rows already stored stay readable.
   if (type === contentTypes.EXAMPLE) return { partitionKey: topicId, rowKey: `example-${position}-${tierPart}` };
   if (!isQuestionBank(type)) return null;
-  const boardPart = board === "AQA" || board === "Edexcel" ? board : "core";
+  // Every board offered at signup must key its own content. OCR used to fall
+  // through to "core", so an OCR learner silently shared rows with a learner
+  // whose board was not set at all.
+  const boardPart = ["AQA", "Edexcel", "OCR"].includes(board) ? board : "core";
   return { partitionKey: topicId, rowKey: `${type}-${position}-${boardPart}-${tierPart}` };
 }
 

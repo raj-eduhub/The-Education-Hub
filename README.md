@@ -56,13 +56,15 @@ GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 - KS3 and KS4/GCSE stage switcher
 - Maths, Science, English, History, Geography, Computing, and Design Technology topic paths
 - Learning goals and outcome checklists
-- Paid onboarding with parent/guardian contact details and student name, date of birth, school, and an immutable Year 7-11 selection
+- Register first, then subscribe: an account is created before payment, and learner setup happens in the app straight after checkout rather than through an emailed link
 - Per-subject GCSE exam board selection at signup, so a learner can sit AQA in one subject and Edexcel in another
 - Short initial diagnostic of up to five questions with topic-level strengths, development areas, and next steps
 - Personalised topic ordering that places priority areas first while retaining the complete curriculum
 - Evidence-gated grade predictions; no grade is displayed before at least 15 assessment checks
-- Broad curriculum catalogue with 210 modules and 630 outcomes across Years 7-11
-- Automatic year, GCSE exam-board, tier, subject, and unit filtering
+- Broad curriculum catalogue with 210 modules and 630 outcomes across Years 7-11, validated against the DfE subject content and the AQA specifications
+- Authored explanations, key ideas and formulae for every one of the 210 topics, served from storage so the model is never asked to write the core teaching text
+- Automatic year, GCSE exam-board, tier, subject, and unit filtering, with tiering applied only to the tiered qualifications
+- `npm run validate:curriculum` enforcing catalogue structure, tiering, board coverage and authored-content coverage as part of `npm test`
 - AI tutor chat for explanations, original quiz questions, worked examples, and answer feedback
 - Learn, Practice, Exam, and Review modes with Socratic teaching, adaptive questions, timed mark-based work, and spaced retrieval
 - Azure Table Storage attempts and mastery records tracking accuracy, confidence, time, and last-practised dates
@@ -70,8 +72,9 @@ GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 - Full curriculum tracker showing completed, in-progress, review-due, and not-started topics
 - Subject and status filters, topic search, coverage totals, and direct links back into the learning hub
 - Administrator dashboard for adding, deactivating, reactivating, and removing application users
-- Subscription entry page with immediate monthly or annual payment and Stripe-hosted checkout
-- One-time, 48-hour signup link emailed after confirmed payment through Azure Communication Services
+- Safeguarding dashboard recording every message the tutor refused, with per-learner history, guardian contact details, and an email alert to administrators on a safety flag
+- One subscription at GBP 9.99 per month, with no free trial, through Stripe-hosted checkout
+- Welcome email after confirmed payment through Azure Communication Services, carrying no token and no deadline
 - Self-service billing portal, privacy notice, subscription terms, and permanent Education Hub account deletion
 - Azure Static Web Apps configuration in `staticwebapp.config.json`
 - Server-side Azure AI Foundry integration in `api/src/functions/tutor.js`
@@ -94,12 +97,14 @@ AZURE_STORAGE_SUBSCRIPTIONS_TABLE=EducationHubSubscriptions
 AZURE_STORAGE_SIGNUP_INVITES_TABLE=EducationHubSignupInvites
 AZURE_STORAGE_PROFILES_TABLE=EducationHubProfiles
 AZURE_STORAGE_CONTENT_TABLE=EducationHubContent
+AZURE_STORAGE_SAFEGUARDING_TABLE=EducationHubSafeguarding
+SAFEGUARDING_ALERT_EMAILS=safeguarding@example.com
+SAFEGUARDING_ALERT_COOLDOWN_MINUTES=60
 REQUIRE_REVIEWED_CONTENT=false
 APP_BASE_URL=https://your-static-web-app.azurestaticapps.net
 STRIPE_SECRET_KEY=sk_live_server-side-only
 STRIPE_WEBHOOK_SECRET=whsec_server-side-only
 STRIPE_PRICE_MONTHLY=price_monthly
-STRIPE_PRICE_ANNUAL=price_annual
 AZURE_COMMUNICATION_EMAIL_CONNECTION_STRING=endpoint=https://your-resource.communication.azure.com/;accesskey=server-side-secret
 AZURE_COMMUNICATION_EMAIL_SENDER=DoNotReply@your-verified-domain.example
 ```
@@ -114,9 +119,62 @@ Do not commit `.env`, `api/local.settings.json`, or real keys.
 
 ## Subscription setup
 
-Create one Stripe product with monthly and annual recurring prices and no trial, then copy their price IDs into the server settings above. Configure a Stripe webhook for `https://your-static-web-app.azurestaticapps.net/api/billing/webhook` and subscribe it to `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, and `customer.subscription.deleted`.
+Create one Stripe product with a single monthly recurring price of GBP 9.99 and no trial, then copy that price ID into `STRIPE_PRICE_MONTHLY` above. Configure a Stripe webhook for `https://your-static-web-app.azurestaticapps.net/api/billing/webhook` and subscribe it to `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, and `customer.subscription.deleted`.
 
-The frontend never handles card details. It creates an authenticated checkout request and redirects to Stripe Checkout. After Stripe confirms successful payment, the signed webhook creates a hashed, one-use signup token and Azure Communication Services emails a 48-hour signup link to the payer. Configure the Stripe customer portal so account holders can update payment details and cancel.
+The frontend never handles card details. It creates an authenticated checkout request and redirects to Stripe Checkout. Configure the Stripe customer portal so account holders can update payment details and cancel.
+
+## Running the whole flow locally
+
+Stripe and Azure Communication Services are the only two paid services the signup
+path touches, and `npm run stubs` stands in for both. The stub settings live in
+`api/local.settings.json`, which is not committed, so nothing here reaches a
+deployed environment. The Stripe and email overrides they switch on are refused
+unless the Functions host is running in Development.
+
+```bash
+npm run stubs        # Stripe on 4242, email on 4243
+npm run dev:all      # Azurite, the API on 7071, the site on 5173
+```
+
+Then open http://127.0.0.1:5173 and use it: register, subscribe, set the learner
+up, start learning. The Stripe stub has no card form, so "Continue to secure
+payment" returns straight to the app - and, like Stripe, it then delivers the
+signed `checkout.session.completed` webhook, which is what actually activates the
+subscription. It arrives a beat late on purpose, so the "Confirming your
+subscription" screen is exercised rather than skipped.
+
+Everything either stub receives is written to `api/scripts/.stub-log.json`,
+including the full text of every email that would have been sent - the welcome
+receipt and any safeguarding alert.
+
+To walk the same flow without a browser:
+
+```bash
+npm run test:e2e
+```
+
+It registers an account, checks that the tutor and learner setup are both refused
+before payment, creates a checkout session, delivers a signed Stripe webhook (and
+checks an unsigned one is rejected), completes learner setup in the app, serves an
+authored explanation and a stored practice question, records an attempt, and
+confirms the tutor guard blocks an unsafe message and that a learner cannot read
+safeguarding flags. The run is repeatable: it clears the previous account first.
+Set `E2E_EMAIL` to use a particular address, and `E2E_BASE` to point at a
+different host (`http://127.0.0.1:5173/api` goes through the site).
+
+Storage, authentication, the curriculum content, the tutor guard and the model are
+all real in that run. Only Stripe and the email service are stubbed.
+
+## Registration flow
+
+1. **Register or sign in** on the combined account screen, with a username and password or a Google account.
+2. **Subscribe** at GBP 9.99 per month through Stripe-hosted checkout. There is no free trial, so the first payment is taken immediately.
+3. **Learner setup** opens in the app as soon as Stripe confirms the payment: parent or guardian contact details, the student's name, date of birth and school, the immutable Year 7-11 selection, and per-subject exam boards from Year 9.
+4. **Learning begins.**
+
+Stripe returns the customer before its webhook necessarily has, so the app waits and re-checks the subscription rather than showing the paywall to somebody who has just paid.
+
+Learner setup used to happen through a one-time signup link emailed after payment, valid for 48 hours. That put a deadline and a spam filter between a paying customer and the product. The `/api/signup/{token}` route still accepts any link already sent, but no new invitations are issued.
 
 The displayed GBP prices are product copy; the Stripe price objects are the billing source of truth. Confirm the final pricing, tax treatment, privacy wording, parental-consent flow, and UK consumer requirements with qualified legal and tax advisers before launch.
 
@@ -173,7 +231,17 @@ Seeding skips anything already stored, so it is safe to re-run and resumable wit
 
 Regenerating replaces content every learner sees, so the "New example" control and the `refresh` flag on `POST /api/content` are restricted to administrators.
 
-Generated examples are unreviewed model output, and pitch varies. Seed a year, review the stored rows, then move on; see [the curriculum model](docs/curriculum-model.md) for the review state that is still missing.
+Explanations are authored and are written on every seeding run, so editing
+`src/data/topicContent/` and re-running `npm run seed:content -- --explanations-only`
+updates storage without calling the model at all.
+
+Generated questions are unreviewed model output. The prompt now excludes content
+above the specification and the parser refuses a question that echoes the prompt,
+carries no working, or points at a diagram the learner cannot see, but pitch still
+varies. Seed a year, run `npm run prune:content` to strip anything that breaks the
+curriculum rules, review the stored rows, then move on; see
+[the curriculum model](docs/curriculum-model.md) for the rules and the corrections
+behind them.
 
 ## Tests
 

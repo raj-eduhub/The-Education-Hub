@@ -1,8 +1,7 @@
 // The money path: what a Stripe event does to a learner's access. Kept out of the
 // HTTP handler so it can be tested directly with synthetic events, without a
 // signing secret, a server, or a live Stripe account.
-import { sendSignupEmail } from "./email.js";
-import { createSignupInvite } from "./signupStore.js";
+import { sendWelcomeEmail } from "./email.js";
 import { getSubscriptionEntityByAccountKey, updateSubscriptionByAccountKey } from "./subscriptionStore.js";
 
 export const subscriptionEvents = [
@@ -17,7 +16,7 @@ function periodEnd(subscription) {
     : null;
 }
 
-export async function handleStripeEvent(event, { appUrl, sendEmail = sendSignupEmail, log = () => {} } = {}) {
+export async function handleStripeEvent(event, { appUrl, sendEmail = sendWelcomeEmail, log = () => {} } = {}) {
   const object = event.data.object;
 
   if (event.type === "checkout.session.completed" && object.payment_status === "paid") {
@@ -31,8 +30,9 @@ export async function handleStripeEvent(event, { appUrl, sendEmail = sendSignupE
 
     // Access is granted before the email is attempted. The learner has paid, so a
     // mail outage must not decide whether they get what they bought, and Stripe
-    // must not be told the event failed just because delivery did.
-    const token = await createSignupInvite(email);
+    // must not be told the event failed just because delivery did. The email is
+    // now only a receipt: learner setup happens in the app, so nothing about
+    // getting started depends on it arriving.
     await updateSubscriptionByAccountKey(key, {
       plan: object.metadata.plan,
       billingPeriod: object.metadata.billingPeriod,
@@ -43,23 +43,23 @@ export async function handleStripeEvent(event, { appUrl, sendEmail = sendSignupE
       lastCheckoutEventId: event.id,
     });
 
-    let invitationSent = false;
+    let welcomeSent = false;
     let deliveryError = "";
     try {
-      await sendEmail({ email, signupUrl: `${appUrl}/?signup=${encodeURIComponent(token)}` });
-      invitationSent = true;
+      await sendEmail({ email, appUrl });
+      welcomeSent = true;
     } catch (failure) {
-      // Recorded rather than thrown, so the invitation can be resent without
+      // Recorded rather than thrown, so a failed receipt can be resent without
       // replaying the payment event.
       deliveryError = failure.message;
-      log(`Signup email failed for a paid account: ${failure.message}`);
+      log(`Welcome email failed for a paid account: ${failure.message}`);
     }
     await updateSubscriptionByAccountKey(key, {
-      signupInviteSentAt: invitationSent ? new Date().toISOString() : "",
-      signupInviteDelivery: invitationSent ? "sent" : "failed",
-      signupInviteError: deliveryError.slice(0, 300),
+      welcomeSentAt: welcomeSent ? new Date().toISOString() : "",
+      welcomeDelivery: welcomeSent ? "sent" : "failed",
+      welcomeError: deliveryError.slice(0, 300),
     });
-    return { handled: true, invitationSent, accountKey: key };
+    return { handled: true, welcomeSent, accountKey: key };
   }
 
   if (subscriptionEvents.includes(event.type)) {

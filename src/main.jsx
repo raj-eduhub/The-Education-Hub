@@ -27,6 +27,7 @@ import {
   DraftingCompass,
   Send,
   Settings,
+  ShieldAlert,
   ShieldCheck,
   Sparkles,
   Target,
@@ -43,7 +44,7 @@ import { LegalNotice } from "./LegalNotice.jsx";
 import { LearnerProfileSetup } from "./LearnerProfileSetup.jsx";
 import { LoginScreen, PasswordReset } from "./PasswordLogin.jsx";
 import { ProgressDashboard } from "./ProgressDashboard.jsx";
-import { SignupPending } from "./SignupPending.jsx";
+import { CheckoutConfirming } from "./CheckoutConfirming.jsx";
 import { SubscriberSignup } from "./SubscriberSignup.jsx";
 import { SubscriptionPage } from "./SubscriptionPage.jsx";
 import { authFetch, clearAuthToken, getAuthToken, readJson, setAuthToken } from "./auth.js";
@@ -55,6 +56,7 @@ import { MathsText } from "./MathsText.jsx";
 import { QuestionPanel } from "./QuestionPanel.jsx";
 import { ReviewPanel } from "./ReviewPanel.jsx";
 import { ContentReview } from "./ContentReview.jsx";
+import { SafeguardingReview } from "./SafeguardingReview.jsx";
 import "katex/dist/katex.min.css";
 import "./styles.css";
 
@@ -99,6 +101,29 @@ const previewReviewRows = [
     topicTitle: "Accuracy, Bounds and Standard Form", subtopicTitle: "Apply bounds",
     origin: "model", model: "gpt-5-nano", reviewStatus: "pending", reviewed: false, reviewedBy: "", storedAt: "2026-09-14T09:00:00.000Z",
     payload: { question: "A rectangle measures $12$ cm by $5$ cm, each to the nearest centimetre. Find the upper bound of the area.", marks: 3, markScheme: ["Upper bounds $12.5$ and $5.5$", String.raw`Multiplies $12.5 \times 5.5$`, "States $68.75$ cm$^2$"], answer: "$68.75$ cm$^2$" },
+  },
+];
+
+let previewFlags = [
+  {
+    id: "preview-learner/flag-1", learnerId: "preview-learner", rowKey: "flag-1",
+    email: "maya@example.com", studentName: "Maya Patel", year: 10, subject: "Science",
+    topicId: "y10-science-cells", topicTitle: "Cells and Control", mode: "learn",
+    verdict: "block", reason: "unsafe", severity: "high",
+    message: "i keep thinking about hurting myself when i get these wrong",
+    createdAt: "2026-09-15T18:42:00.000Z", status: "open", reviewedBy: "", reviewedAt: "", note: "",
+    alerted: true, alertError: "",
+    guardian: { name: "Sam Patel", relationship: "Parent", phone: "07700 900123" },
+  },
+  {
+    id: "preview-learner/flag-2", learnerId: "preview-learner", rowKey: "flag-2",
+    email: "maya@example.com", studentName: "Maya Patel", year: 10, subject: "English",
+    topicId: "y10-english-writing", topicTitle: "Transactional Writing", mode: "practice",
+    verdict: "redirect", reason: "integrity", severity: "low",
+    message: "just write my essay for me please",
+    createdAt: "2026-09-14T11:05:00.000Z", status: "open", reviewedBy: "", reviewedAt: "", note: "",
+    alerted: false, alertError: "",
+    guardian: { name: "Sam Patel", relationship: "Parent", phone: "07700 900123" },
   },
 ];
 
@@ -161,6 +186,35 @@ async function previewApiRequest(url, options = {}) {
     if (method === "POST") return previewResponse({ ok: true });
     return previewResponse({ rows: previewReviewRows });
   }
+  if (pathname.startsWith("/api/safeguarding")) {
+    if (pathname.endsWith("/summary")) {
+      const open = previewFlags.filter((flag) => flag.status === "open");
+      return previewResponse({
+        open: {
+          high: open.filter((flag) => flag.severity === "high").length,
+          medium: open.filter((flag) => flag.severity === "medium").length,
+          low: open.filter((flag) => flag.severity === "low").length,
+        },
+        totals: { open: open.length, acknowledged: 0, escalated: 0, closed: previewFlags.length - open.length },
+        learnersWithOpenFlags: new Set(open.map((flag) => flag.learnerId)).size,
+      });
+    }
+    if (method === "POST") {
+      const input = JSON.parse(options.body);
+      previewFlags = previewFlags.map((flag) => flag.rowKey === input.rowKey
+        ? { ...flag, status: input.status, note: input.note ?? "", reviewedBy: "Administrator preview", reviewedAt: new Date().toISOString() }
+        : flag);
+      return previewResponse({ flag: previewFlags.find((flag) => flag.rowKey === input.rowKey) });
+    }
+    if (pathname.endsWith("/learner")) return previewResponse({ rows: previewFlags });
+    const wanted = new URL(url, window.location.origin).searchParams;
+    const status = wanted.get("status") ?? "open";
+    const severity = wanted.get("severity") ?? "";
+    return previewResponse({
+      rows: previewFlags.filter((flag) => (status === "all" || flag.status === status) && (!severity || flag.severity === severity)),
+      cursor: "",
+    });
+  }
   if (pathname === "/api/content") {
     const input = JSON.parse(options.body);
     const guide = getTopicGuide(input.subject, input.topic);
@@ -216,8 +270,8 @@ function App() {
   const [learnerProfile, setLearnerProfile] = useState(appPreview ? previewProfile : null);
   const [diagnostic, setDiagnostic] = useState(null);
   const [showDiagnostic, setShowDiagnostic] = useState(false);
-  const [requestedView, setView] = useState(adminPreview ? "admin" : ["admin", "review", "progress", "parent", "account"].includes(window.location.hash.slice(1)) ? window.location.hash.slice(1) : "learning");
-  const view = (requestedView === "admin" || requestedView === "review") && !currentUser?.isAdmin
+  const [requestedView, setView] = useState(adminPreview ? "admin" : ["admin", "review", "safeguarding", "progress", "parent", "account"].includes(window.location.hash.slice(1)) ? window.location.hash.slice(1) : "learning");
+  const view = ["admin", "review", "safeguarding"].includes(requestedView) && !currentUser?.isAdmin
     ? "learning"
     : requestedView === "parent" && !currentUser?.isAdmin && currentUser?.accessRole !== "parent"
       ? "learning" : requestedView;
@@ -497,7 +551,7 @@ function App() {
   }
 
   function chooseView(nextView) {
-    if (nextView === "admin" && !currentUser?.isAdmin) return;
+    if (["admin", "review", "safeguarding"].includes(nextView) && !currentUser?.isAdmin) return;
     if (nextView === "parent" && !currentUser?.isAdmin && currentUser?.accessRole !== "parent") return;
     setView(nextView);
     window.location.hash = nextView === "learning" ? "" : nextView;
@@ -859,11 +913,27 @@ Mark my answer.`,
     }
   }
 
-  async function beginCheckout(selection) {
+  // Stripe returns the customer before its webhook necessarily has, so the
+  // post-checkout screen polls this rather than assuming the paywall is right.
+  const recheckBilling = useCallback(async () => {
+    const response = await authFetch("/api/billing/status");
+    const data = await readJson(response);
+    if (response.ok && data.subscription) setSubscription(data.subscription);
+    return data.subscription?.status === "active";
+  }, []);
+
+  // Learner setup is a one-time step, and the whole app reads from the profile
+  // it just created. Reloading is the honest way to pick that up everywhere at
+  // once, and it clears the ?checkout= parameter from the address bar.
+  function completeOnboarding() {
+    window.location.assign("/");
+  }
+
+  async function beginCheckout() {
     const response = await authFetch("/api/billing/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(selection),
+      body: JSON.stringify({}),
     });
     const data = await readJson(response);
     if (!response.ok) throw new Error(data.error ?? "Secure checkout could not be opened.");
@@ -909,9 +979,16 @@ Mark my answer.`,
   }
 
   const subscriptionActive = subscription?.status === "active";
-  const signupIncomplete = !currentUser?.isAdmin && !subscription?.onboardingComplete;
-  if (authStatus === "signed-in" && billingChecked && (checkoutState === "success" || (subscriptionActive && signupIncomplete))) {
-    return <SignupPending email={currentUser.email} onSignOut={signOut} />;
+  const setupIncomplete = !currentUser?.isAdmin && !subscription?.onboardingComplete;
+
+  // Learner setup happens here, in the app, straight after payment. It used to
+  // be an emailed one-time link, which added a 48-hour deadline and a spam
+  // filter between a paying customer and the thing they had just bought.
+  if (authStatus === "signed-in" && billingChecked && subscriptionActive && setupIncomplete) {
+    return <SubscriberSignup account={currentUser} onComplete={completeOnboarding} />;
+  }
+  if (authStatus === "signed-in" && billingChecked && !subscriptionActive && checkoutState === "success") {
+    return <CheckoutConfirming email={currentUser.email} onRecheck={recheckBilling} onSignOut={signOut} />;
   }
   if (authStatus === "signed-in" && billingChecked && !subscriptionActive) {
     return <>
@@ -1000,6 +1077,12 @@ Mark my answer.`,
               <span>Content review</span>
             </button>
           )}
+          {currentUser?.isAdmin && (
+            <button className={view === "safeguarding" ? "active" : ""} onClick={() => chooseView("safeguarding")} title="Safeguarding" type="button">
+              <ShieldAlert size={18} />
+              <span>Safeguarding</span>
+            </button>
+          )}
           <button className={view === "account" ? "active" : ""} onClick={() => chooseView("account")} title="Account & privacy" type="button">
             <Settings size={18} />
             <span>Account & privacy</span>
@@ -1054,6 +1137,8 @@ Mark my answer.`,
 
       {view === "review" ? (
         <ContentReview request={appRequest} />
+      ) : view === "safeguarding" ? (
+        <SafeguardingReview request={appRequest} />
       ) : view === "account" ? (
         <AccountSettings currentUser={currentUser} onDeleted={finishAccountDeletion} request={appRequest} subscription={subscription} />
       ) : view === "progress" ? (

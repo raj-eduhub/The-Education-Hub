@@ -42,7 +42,9 @@ function toSubscription(entity) {
     cancelAtPeriodEnd: entity.cancelAtPeriodEnd ?? false,
     consentAcceptedAt: entity.consentAcceptedAt ?? null,
     onboardingComplete: entity.onboardingComplete ?? false,
-    signupInviteSentAt: entity.signupInviteSentAt ?? null,
+    // The welcome email is a receipt, so its delivery time is reported for
+    // support purposes only. Nothing in the app waits on it.
+    welcomeSentAt: entity.welcomeSentAt ?? null,
     updatedAt: entity.updatedAt,
   };
 }

@@ -4,6 +4,7 @@ import { getLearningAccess } from "../lib/learningAccess.js";
 import { checkAnswer, checkQuestion, guardInstructions, verdicts } from "../lib/tutorGuard.js";
 import { findStoredAnswer, loadStudyMaterial, materialText } from "../lib/tutorRetrieval.js";
 import { recordAttempt } from "../lib/progressStore.js";
+import { recordFlag } from "../lib/safeguardingStore.js";
 
 const modeInstructions = {
   learn: "Give a clear explanation first, then key ideas, a fully worked example, and one check question. Do not skip calculation or reasoning steps.",
@@ -56,6 +57,24 @@ export function readMark(answer) {
 
 export function stripMark(answer) {
   return String(answer ?? "").replace(markPattern, "").trimEnd();
+}
+
+// A refusal is now recorded as well as logged, so there is a per-learner history
+// and an administrator has something to act on. A storage or mail failure must
+// never become a failed tutor reply: the child is waiting, and the reply they are
+// waiting for is the part that matters to them.
+async function flagRefusal(context, access, details) {
+  try {
+    const profile = access.profile;
+    const result = await recordFlag(access.email, {
+      ...details,
+      studentName: [profile?.studentFirstName, profile?.studentLastName].filter(Boolean).join(" "),
+      year: profile?.year ?? details.year,
+    }, { log: (message) => context.warn(message) });
+    if (result?.alerted) context.warn(`Safeguarding alert sent for a ${details.reason} flag.`);
+  } catch (failure) {
+    context.error(`Safeguarding flag not recorded: ${failure.message}`);
+  }
 }
 
 app.http("tutor", {
@@ -111,6 +130,16 @@ app.http("tutor", {
       });
       if (guard.verdict !== verdicts.ALLOW) {
         context.warn(`Tutor guard ${guard.verdict} (${guard.reason}) for ${subject}/${topic?.id ?? "no topic"}`);
+        await flagRefusal(context, access, {
+          verdict: guard.verdict,
+          reason: guard.reason,
+          message: question,
+          year,
+          subject,
+          topicId: topic?.id,
+          topicTitle: topic?.title,
+          mode,
+        });
         return { jsonBody: { answer: guard.message, guard: { verdict: guard.verdict, reason: guard.reason }, source: "guard" } };
       }
 
@@ -183,6 +212,17 @@ app.http("tutor", {
       const answerCheck = checkAnswer(answer);
       if (answerCheck.verdict !== verdicts.ALLOW) {
         context.warn(`Tutor answer guard ${answerCheck.reason}`);
+        // The model leaked, not the learner, so the reply is what gets recorded.
+        await flagRefusal(context, access, {
+          verdict: answerCheck.verdict,
+          reason: answerCheck.reason,
+          message: answer,
+          year,
+          subject,
+          topicId: topic?.id,
+          topicTitle: topic?.title,
+          mode,
+        });
         return { jsonBody: { answer: answerCheck.message, guard: { verdict: answerCheck.verdict, reason: answerCheck.reason }, source: "guard" } };
       }
 

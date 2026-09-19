@@ -9,8 +9,8 @@ Education Hub contains a broad curriculum map for Years 7-11 across Maths, Scien
 | 7 | 34 | KS3 |
 | 8 | 34 | KS3 |
 | 9 | 34 | KS3 |
-| 10 | 51 | KS4 / GCSE |
-| 11 | 57 | KS4 / GCSE and revision |
+| 10 | 52 | KS4 / GCSE |
+| 11 | 56 | KS4 / GCSE and revision |
 
 The catalogue is a product curriculum map, not an awarding-body endorsement. It should be reviewed by qualified UK teachers before it is used for high-stakes assessment or claims of complete specification coverage.
 
@@ -92,11 +92,86 @@ The learning hub lists every topic for the learner's year in one dropdown groupe
 
 Topic explanations and worked examples are held in the `EducationHubContent` table, and a routing policy decides where each request is answered from. Explanations are authored curriculum text and are served from storage only, so the model is never asked to invent them. Worked examples are served from storage and reach the model only when nothing has been seeded, after which the result is persisted for every later learner. Maths examples are stored as LaTeX and typeset in the browser. Content quality is the open risk. Examples are not reviewed before a learner sees them, and pitch varies: a Year 10 microscopy example came back correctly pitched at GCSE, while a Year 10 sampling example used t-distributions, finite population correction, and confidence intervals, none of which is GCSE content. Seeding a year ahead of time and reviewing the stored rows is the current mitigation; a teacher review state on each row is the missing piece.
 
+## Validation against the published specifications
+
+The catalogue and its stored content were checked against the DfE subject content
+for GCSE mathematics, the DfE key stage 3 programmes of study, and the AQA
+specifications for maths (8300) and Combined Science: Trilogy (8464). The
+corrections that followed are listed here because each one was a factual error,
+not a preference.
+
+| Correction | Why |
+| --- | --- |
+| English GCSE topics no longer carry Foundation and Higher tiers | GCSE English Language and English Literature are untiered. Tiering them split their stored content in two for no reason. |
+| Space Physics removed from Year 11 Science | Space physics is in separate Physics (8463), not Combined Science: Trilogy (8464), which is the qualification this subject maps to. It was also marked Higher-only, which it is not. |
+| Year 11 "Bioenergetics and Homeostasis" became "Homeostasis and Response" | Year 10 already covered bioenergetics, so the topic duplicated it and reduced homeostasis to an afterthought. |
+| "Organisation and Digestion" added to Year 10 Science | Organisation is a whole topic in the specification. It was previously implied by the title of the cell biology topic and taught nowhere. |
+| Year 10 "Particle Model and Atomic Structure" became "Particle Model of Matter" | Radioactive decay is covered by Year 11 Atomic Physics; the two topics overlapped. |
+| Year 10 "Sampling and Distributions" became "Sampling and Comparing Data" | The subject content asks only that a learner can infer population properties from a sample and know the limitations of sampling. The old title and the outcome "Evaluate sampling" produced generated questions using standard error, confidence intervals and named sampling schemes, none of which is GCSE content. |
+| Year 10 geometry limited to right-angled trigonometry | The sine and cosine rules are a Year 11 Higher topic in this catalogue, but Year 10 questions were using them. |
+| Year 10 Computing "Algorithms and Complexity" became "Algorithms and Efficiency" | GCSE compares algorithm efficiency informally. Complexity analysis is A-level. |
+| Duplicate titles resolved in English and Computing | "Transactional Writing" appeared in Years 9, 10 and 11, and "The 19th-century Novel" in Years 9 and 10, so a learner could not tell the topics apart. |
+
+`npm run validate:curriculum` enforces these as rules rather than as a one-off
+clean-up: it fails on a duplicate title, on an untiered subject carrying tiers,
+on a topic with no authored content, and on authored content that uses
+vocabulary from above the specification. It runs as part of `npm test`.
+
+## Authored content
+
+Every topic has a written explanation, key ideas and, where they apply,
+formulae, in `src/data/topicContent/`. This is the reason the routing policy can
+keep explanations on the stored-only route: the model is never asked to invent
+the core teaching text, and a learner never waits on a model call to read it.
+
+Before this existed, `getTopicGuide` returned the topic's one-line goal as its
+explanation for all 210 topics. Every stored explanation was therefore a
+restatement of intent - a median of 61 characters - and Learn mode had no
+teaching content in it at all. The authored explanations run to a median of
+around 580 characters with four key ideas each, and 93 topics carry formulae.
+
+The model is still used, deliberately, for the question banks, because practice
+and exam questions need variety that authored content cannot provide. That is the
+only route that calls it.
+
+## Question bank rules
+
+The generated question bank produced material that was mathematically correct but
+unusable, so the prompt and the parser now enforce what the specification and the
+interface require:
+
+- Questions must be answerable from their own text. The learner is shown no
+  images, so a question referring to "the diagram" cannot be answered.
+- No question may ask for a drawing, a ruler-and-compass construction or a
+  measurement, because the answer is typed into a text box.
+- Content above the specification is named and excluded in the prompt: standard
+  error, confidence intervals, named sampling schemes, standard deviation, the
+  normal distribution, radians and calculus.
+- Quantities must be internally consistent. A length "to the nearest 0.5 cm"
+  must be a multiple of 0.5 cm; an approved question previously read 53.6 cm.
+- A practice question with fewer than two steps of working is refused, exactly as
+  an exam question with no mark scheme is. 94% of stored practice rows had no
+  working at all, so the worked-answer reveal opened on an empty list.
+- A response that echoes the prompt's own field description is refused. One
+  stored question read "the practice question".
+
+Topics that cannot be assessed by typed text - ruler-and-compass constructions,
+workshop prototypes - are excluded from the question bank by
+`supportsQuestionBank` and are taught through their explanation and worked
+examples instead.
+
+`npm run prune:content` removes stored rows that break any of these rules, or
+that were written against a topic or outcome the catalogue no longer contains,
+so a re-seed regenerates them.
+
 ## Next Curriculum Work
 
 1. Add exact specification statement references to every GCSE topic for each board.
-2. Have subject teachers review scope, sequencing, terminology, and outcomes.
+2. Have subject teachers review scope, sequencing, terminology, and outcomes. The
+   corrections above were made against published specifications, not by a teacher.
 3. Add prerequisite links between topics to form a curriculum graph.
 4. Add licensed lesson resources and original question-bank references.
 5. Introduce school-level sequence overrides without duplicating the canonical catalogue.
-6. Add a teacher review state to stored worked examples so only approved content reaches learners.
+6. Seed question banks beyond Year 10 Maths. The bank currently covers Year 10
+   Maths Higher for AQA and Edexcel; every other year, subject, tier and board
+   generates on demand and is stored on first use.

@@ -2,7 +2,7 @@ import { app } from "@azure/functions";
 import { callFoundry, deployment } from "../lib/foundry.js";
 import { getLearningAccess } from "../lib/learningAccess.js";
 import { contentKey, getContent, saveContent } from "../lib/contentStore.js";
-import { contentTypes, isQuestionBank, mayUseModel, routeFor, usesMathsNotation, variesByBoard } from "../lib/contentPolicy.js";
+import { contentTypes, isQuestionBank, mayUseModel, routeFor, supportsQuestionBank, usesMathsNotation, variesByBoard, variesByTier } from "../lib/contentPolicy.js";
 import { parseQuestion, questionPrompt } from "../lib/questionBank.js";
 import { exampleSystemPrompt, parseWorkedExample, workedExamplePrompt } from "../lib/workedExample.js";
 
@@ -46,7 +46,8 @@ app.http("content", {
         : contentKey(type, topic.id, {
         index: isQuestionBank(type) ? bankIndex : subtopic?.index,
         board: variesByBoard(type) && year >= 9 ? examBoard : null,
-        tier: year >= 10 ? tier : null,
+        // Only the tiered subjects split their content by tier.
+        tier: year >= 10 && variesByTier(subject) ? tier : null,
       });
       if (!key) return { status: 400, jsonBody: { error: "That topic or sub-topic reference is not valid." } };
       // A question asked for by key must already exist; generating a different
@@ -57,6 +58,15 @@ app.http("content", {
 
       const route = routeFor(type, subject);
       if (!route) return { status: 400, jsonBody: { error: "That content type is not supported." } };
+
+      // A ruler-and-compass construction or a workshop build cannot be set or
+      // marked through a text box, so no question bank is generated for it.
+      if (isQuestionBank(type) && !supportsQuestionBank(topic?.id)) {
+        return {
+          status: 404,
+          jsonBody: { error: "This topic is practical, so it is learned through its explanation and worked examples rather than typed questions.", route },
+        };
+      }
 
       // Regenerating replaces content every learner sees, so it stays with administrators.
       if (refresh === true && !access.admin) {
@@ -100,7 +110,7 @@ app.http("content", {
 
       const notation = usesMathsNotation(subject);
       const userPrompt = isQuestionBank(type)
-        ? questionPrompt(type, topic, subtopic, { board: year >= 9 ? examBoard : null, tier: year >= 10 ? tier : null, year, notation, index: bankIndex })
+        ? questionPrompt(type, topic, subtopic, { board: year >= 9 ? examBoard : null, tier: year >= 10 && variesByTier(subject) ? tier : null, year, notation, index: bankIndex })
         : workedExamplePrompt(topic, subtopic, { notation });
       const answer = await callFoundry({
         model: deployment,

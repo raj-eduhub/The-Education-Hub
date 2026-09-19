@@ -27,7 +27,9 @@ async function apiIsUp() {
 
 const running = await apiIsUp();
 const suites = [
+  { name: "curriculum", script: "validate-curriculum.mjs", needsApi: false },
   { name: "billing", script: "test-billing.mjs", needsApi: false },
+  { name: "safeguarding", script: "test-safeguarding.mjs", needsApi: false },
   { name: "billing routes", script: "test-billing-routes.mjs", needsApi: true },
   { name: "password login", script: "test-password-login.mjs", needsApi: true },
 ];

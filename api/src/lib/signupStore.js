@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from "node:crypto";
+import { createHash } from "node:crypto";
 import { TableClient } from "@azure/data-tables";
 import { DefaultAzureCredential } from "@azure/identity";
 import { accountKey } from "./subscriptionStore.js";
@@ -37,24 +37,9 @@ function tokenHash(token) {
   return createHash("sha256").update(token).digest("hex");
 }
 
-export async function createSignupInvite(email) {
-  const token = randomBytes(32).toString("base64url");
-  const current = await readyTable(inviteTableName);
-  const now = new Date();
-  const expires = new Date(now);
-  expires.setUTCHours(expires.getUTCHours() + 48);
-  await current.upsertEntity({
-    partitionKey: "invites",
-    rowKey: tokenHash(token),
-    accountKey: accountKey(email),
-    email: email.trim().toLowerCase(),
-    createdAt: now.toISOString(),
-    expiresAt: expires.toISOString(),
-    usedAt: "",
-  }, "Replace");
-  return token;
-}
-
+// Invitations are no longer issued: learner setup happens in the app straight
+// after payment. This reader stays so that a link already sent still works
+// until it expires, after which the invites table is only ever read.
 export async function getSignupInvite(token) {
   if (!token) return null;
   const current = await readyTable(inviteTableName);
@@ -66,11 +51,13 @@ export async function getSignupInvite(token) {
   return invite;
 }
 
-export async function completeSignup(token, input) {
-  const invite = await getSignupInvite(token);
-  if (!invite) return null;
+// The learner profile, written from whichever route collected it. Onboarding
+// now happens in the app straight after payment, so the profile is keyed on the
+// signed-in account; the emailed-link route still exists for any invitation
+// already in someone's inbox, and both end up here.
+async function writeProfile(key, email, input) {
   const profiles = await readyTable(profileTableName);
-  const existing = await profiles.getEntity("profiles", invite.accountKey).catch((error) => {
+  const existing = await profiles.getEntity("profiles", key).catch((error) => {
     if (error.statusCode === 404) return null;
     throw error;
   });
@@ -83,8 +70,8 @@ export async function completeSignup(token, input) {
   const now = new Date().toISOString();
   const profile = {
     partitionKey: "profiles",
-    rowKey: invite.accountKey,
-    email: invite.email,
+    rowKey: key,
+    email,
     guardianName: input.guardianName.trim(),
     guardianRelationship: input.guardianRelationship,
     guardianPhone: input.guardianPhone.trim(),
@@ -102,9 +89,23 @@ export async function completeSignup(token, input) {
     updatedAt: now,
   };
   await profiles.upsertEntity(profile, "Replace");
-  const invites = await readyTable(inviteTableName);
-  await invites.updateEntity({ ...invite, usedAt: now }, "Replace");
   return publicProfile(profile);
+}
+
+// The in-app route: the learner is already signed in and has just paid, so the
+// account itself identifies them and no one-time token is involved.
+export async function saveLearnerProfile(email, input) {
+  const normalised = String(email).trim().toLowerCase();
+  return writeProfile(accountKey(normalised), normalised, input);
+}
+
+export async function completeSignup(token, input) {
+  const invite = await getSignupInvite(token);
+  if (!invite) return null;
+  const profile = await writeProfile(invite.accountKey, invite.email, input);
+  const invites = await readyTable(inviteTableName);
+  await invites.updateEntity({ ...invite, usedAt: new Date().toISOString() }, "Replace");
+  return profile;
 }
 
 function parseBoards(value) {

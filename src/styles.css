@@ -4177,3 +4177,134 @@ button {
   color: #54657d;
   font-size: 0.85rem;
 }
+
+/* Safeguarding review. Shares the content-review shell, and adds the severity
+   colouring, the quoted message, and the contact details an adult needs to act. */
+.safeguarding-summary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.safeguarding-summary .high strong { color: #9f2d24; }
+.safeguarding-summary .medium strong { color: #9a6207; }
+.safeguarding-summary .low strong { color: #174d85; }
+
+.review-card.flag-high { border-left: 4px solid #9f2d24; }
+.review-card.flag-medium { border-left: 4px solid #d99a1c; }
+.review-card.flag-low { border-left: 4px solid #b5c4d6; }
+
+.flag-severity {
+  align-items: center;
+  background: #eef4fb;
+  border-radius: 4px;
+  color: #174d85;
+  display: inline-flex;
+  font-weight: 700;
+  gap: 5px;
+  padding: 3px 8px;
+}
+
+.flag-severity.high { background: #fdf0ef; color: #9f2d24; }
+.flag-severity.medium { background: #fdf6e8; color: #9a6207; }
+
+.flag-status {
+  background: #f1f5f9;
+  border-radius: 4px;
+  padding: 3px 8px;
+  text-transform: capitalize;
+}
+
+.flag-message {
+  background: #f8fafc;
+  border-left: 3px solid #b5c4d6;
+  color: #14213d;
+  font-size: 0.97rem;
+  line-height: 1.55;
+  margin: 0;
+  padding: 10px 14px;
+  white-space: pre-wrap;
+}
+
+.flag-contact {
+  align-items: center;
+  color: #54657d;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  gap: 14px;
+}
+
+.flag-contact span {
+  align-items: center;
+  display: inline-flex;
+  gap: 6px;
+}
+
+.flag-alerted { color: #1f6b3a; }
+.flag-not-alerted { color: #9a6207; }
+
+.link-button {
+  background: none;
+  border: none;
+  color: #174d85;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.flag-history {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 10px 14px;
+}
+
+.flag-history ul {
+  display: grid;
+  gap: 7px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.flag-history li {
+  align-items: center;
+  color: #54657d;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.83rem;
+  gap: 10px;
+}
+
+.flag-note {
+  color: #54657d;
+  display: grid;
+  font-size: 0.82rem;
+  gap: 6px;
+}
+
+.flag-note input {
+  border: 1px solid #b5c4d6;
+  border-radius: 6px;
+  font: inherit;
+  padding: 9px 11px;
+}
+
+.review-actions .escalate { background: #9a6207; }
+
+@media (max-width: 900px) {
+  .safeguarding-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* The post-checkout wait, while Stripe's webhook catches up. */
+@keyframes education-hub-spin {
+  to { transform: rotate(360deg); }
+}
+
+.signup-pending-page .spin {
+  animation: education-hub-spin 1.1s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signup-pending-page .spin { animation: none; }
+}

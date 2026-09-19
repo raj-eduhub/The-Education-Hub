@@ -109,12 +109,12 @@ const c = {
   ],
   9: [
     ["Programming", "Programming Project", "Plan, implement, test, and refine a substantial program.", ["Analyse requirements", "Use modular design", "Document testing and improvements"]],
-    ["Logic", "Boolean Logic and Circuits", "Connect Boolean expressions, truth tables, and logic gates.", ["Evaluate Boolean expressions", "Complete truth tables", "Design simple logic circuits"]],
+    ["Logic", "Logic Gates and Truth Tables", "Connect Boolean expressions, truth tables, and logic gates.", ["Evaluate Boolean expressions", "Complete truth tables", "Design simple logic circuits"]],
     ["Web and Data", "Web Technologies and Data", "Create data-driven web content and explain internet protocols.", ["Structure accessible pages", "Explain client-server requests", "Process data responsibly"]],
     ["Impacts", "Ethics, Law and the Environment", "Evaluate impacts of digital technology on people and society.", ["Apply legal principles", "Discuss algorithmic bias", "Evaluate environmental costs"]],
   ],
   10: [
-    ["Algorithms", "Algorithms and Complexity", "Design, trace, and compare algorithms for computational problems.", ["Use searching and sorting", "Trace pseudocode", "Compare algorithm efficiency"]],
+    ["Algorithms", "Algorithms and Efficiency", "Design, trace, and compare algorithms for computational problems.", ["Use searching and sorting", "Trace pseudocode", "Compare algorithm efficiency"]],
     ["Programming", "Programming Techniques", "Write robust programs using core constructs and data structures.", ["Use selection and iteration", "Manipulate arrays and strings", "Create reusable subprograms"]],
     ["Data", "Data Representation", "Calculate how numbers, text, images, and sound are represented.", ["Convert binary and hexadecimal", "Calculate file sizes", "Explain compression"]],
     ["Computer Systems", "Architecture and Storage", "Explain processor architecture, memory, storage, and embedded systems.", ["Describe CPU components", "Explain performance factors", "Compare storage technologies"]],

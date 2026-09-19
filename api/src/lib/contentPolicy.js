@@ -51,3 +51,27 @@ export function variesByBoard(type) {
 export function isQuestionBank(type) {
   return type === contentTypes.PRACTICE || type === contentTypes.EXAM;
 }
+
+// Only maths and the sciences are tiered at GCSE. English, history, geography,
+// computing and design technology are single-tier, so storing their content once
+// per tier would double the rows and split a learner's content in half for no
+// reason. Tiering is a property of the qualification, not of the learner.
+export function variesByTier(subject) {
+  return subject === "Maths" || subject === "Science";
+}
+
+// Some topics cannot be assessed by a typed question and a typed answer. A
+// ruler-and-compass construction cannot be drawn in a text box, and a workshop
+// prototype cannot be made in one. Generating questions for them produced
+// material no learner could answer and no marker could mark, so the question
+// bank leaves them to the explanation and worked-example routes.
+const practicalTopics = new Set([
+  "y10-maths-constructions",
+  "y8-maths-measures",
+  "y11-design-technology-prototype-manufacture",
+  "y7-design-technology-materials-tools-and-safety",
+]);
+
+export function supportsQuestionBank(topicId) {
+  return !practicalTopics.has(topicId);
+}

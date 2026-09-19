@@ -1,23 +1,20 @@
 import React, { useState } from "react";
 import { BadgeCheck, BookOpenCheck, Check, GraduationCap, LockKeyhole, LogOut, ShieldCheck } from "lucide-react";
 
-const prices = {
-  monthly: { amount: "GBP 7.99", suffix: "/month", note: "Billed monthly from today" },
-  annual: { amount: "GBP 79", suffix: "/year", note: "Two months less than monthly billing" },
-};
+// One plan, one price, billed monthly. There is no trial: the subscription
+// starts and is charged today, and it can be cancelled at any time.
+const price = { amount: "GBP 9.99", suffix: "/month", note: "Billed monthly from today. Cancel any time." };
 
 export function SubscriptionPage({ checkoutState, currentUser, onCheckout, onPrivacy, onSignOut }) {
-  const [billingPeriod, setBillingPeriod] = useState("annual");
   const [terms, setTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const price = prices[billingPeriod];
 
   async function subscribe() {
     setSubmitting(true);
     setError("");
     try {
-      await onCheckout({ billingPeriod });
+      await onCheckout();
     } catch (checkoutError) {
       setError(checkoutError.message);
       setSubmitting(false);
@@ -35,7 +32,7 @@ export function SubscriptionPage({ checkoutState, currentUser, onCheckout, onPri
         <div className="subscription-intro">
           <p className="eyebrow">Education Hub subscription</p>
           <h1>A focused learning plan for Years 7 to 11</h1>
-          <p>Choose a subscription covering the complete curriculum, diagnostics, AI tutoring, and progress tracking. Secure signup follows confirmed payment.</p>
+          <p>One subscription covering the complete curriculum, diagnostics, AI tutoring, and progress tracking. Learner setup takes a minute and happens right after payment.</p>
           <div className="subscription-benefits">
             <div><BookOpenCheck size={19} /><span><strong>Seven subjects</strong><small>Year-specific KS3 and GCSE pathways</small></span></div>
             <div><BadgeCheck size={19} /><span><strong>Adaptive support</strong><small>Learn, Practice, Exam, and Review modes</small></span></div>
@@ -44,10 +41,6 @@ export function SubscriptionPage({ checkoutState, currentUser, onCheckout, onPri
         </div>
 
         <section className="subscription-plan" aria-labelledby="plan-title">
-          <div className="billing-toggle" aria-label="Billing period">
-            <button className={billingPeriod === "monthly" ? "active" : ""} onClick={() => setBillingPeriod("monthly")} type="button">Monthly</button>
-            <button className={billingPeriod === "annual" ? "active" : ""} onClick={() => setBillingPeriod("annual")} type="button">Annual</button>
-          </div>
           <div className="plan-heading">
             <span>One learner account</span>
             <h2 id="plan-title">Learner plan</h2>
@@ -59,7 +52,7 @@ export function SubscriptionPage({ checkoutState, currentUser, onCheckout, onPri
             <li><Check size={17} />Initial diagnostic and personal learning path</li>
             <li><Check size={17} />Azure AI tutor across four learning modes</li>
             <li><Check size={17} />Student and parent progress dashboards</li>
-            <li><Check size={17} />Post-payment signup sent by secure email</li>
+            <li><Check size={17} />Cancel any time from Account and privacy</li>
           </ul>
 
           <div className="subscription-consent">
