@@ -1,6 +1,6 @@
 import { app } from "@azure/functions";
 import { getLearningAccess } from "../lib/learningAccess.js";
-import { getProgress, getReviewQueue, recordActivity, recordAttempt } from "../lib/progressStore.js";
+import { getHabit, getProgress, getReviewQueue, recordActivity, recordAttempt } from "../lib/progressStore.js";
 
 const modes = ["learn", "practice", "exam", "review", "diagnostic"];
 
@@ -17,6 +17,10 @@ app.http("progress", {
       if (request.method === "GET") {
         const yearValue = access.profile?.year ?? Number(request.query.get("year"));
         const year = Number.isInteger(yearValue) && yearValue >= 7 && yearValue <= 11 ? yearValue : undefined;
+        // The daily target and the run of days it has been met.
+        if (request.params.action === "habit") {
+          return { jsonBody: await getHabit(email) };
+        }
         if (request.params.action === "review") {
           return { jsonBody: await getReviewQueue(email, {
             year,

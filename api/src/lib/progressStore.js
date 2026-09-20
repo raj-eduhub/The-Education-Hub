@@ -281,3 +281,88 @@ export async function deleteProgress(email) {
     deletePartition(masteryClient, partitionKey),
   ]);
 }
+
+// --- Daily habit -------------------------------------------------------------
+// A small daily target, and the run of days it has been met.
+//
+// The goal is a length of time rather than a number of questions, converted
+// using the learner's own pace. A fast learner is set more questions and a
+// slower one fewer, for the same fifteen minutes: a fixed count punishes the
+// learner who needs longer to think, which is the one it should not punish.
+// This is also the only use made of the duration recorded on every attempt.
+export const targetMinutes = 15;
+const defaultSecondsPerQuestion = 90;
+// Enough to be worth doing, few enough to stay finishable on a school night.
+const goalFloor = 4;
+const goalCeiling = 25;
+// A fortnight is enough to draw a streak and show a pattern without reading
+// the learner's whole history on every page load.
+const habitDays = 14;
+
+// Day boundaries are the learner's, not UTC's: work done at 9pm on Sunday in
+// Britain is Sunday's work, and in UTC during summer it is already Monday.
+const londonDay = (iso) => new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Europe/London", year: "numeric", month: "2-digit", day: "2-digit",
+}).format(new Date(iso));
+
+function medianOf(values) {
+  if (!values.length) return null;
+  const sorted = [...values].sort((left, right) => left - right);
+  return sorted[Math.floor(sorted.length / 2)];
+}
+
+export async function getHabit(email, { now = new Date() } = {}) {
+  const attemptsClient = await readyTable(attemptsTableName);
+  const partitionKey = learnerPartition(email);
+
+  const counts = new Map();
+  const durations = [];
+  let answered = 0;
+  for await (const entity of attemptsClient.listEntities({
+    queryOptions: { filter: `PartitionKey eq '${partitionKey}'` },
+  })) {
+    // Only answered questions count towards a day. Time spent reading a lesson
+    // is recorded as activity, and a goal that could be met by opening pages
+    // would measure nothing.
+    if (entity.kind === "activity") continue;
+    answered += 1;
+    const day = londonDay(entity.completedAt);
+    counts.set(day, (counts.get(day) ?? 0) + 1);
+    if (Number.isFinite(entity.durationSeconds)) durations.push(entity.durationSeconds);
+  }
+
+  // Pace from the most recent answers, so a learner who has sped up is not held
+  // to how long they took in September.
+  const recent = durations.slice(-30);
+  const secondsPerQuestion = medianOf(recent) ?? defaultSecondsPerQuestion;
+  const goal = Math.max(goalFloor, Math.min(goalCeiling,
+    Math.round((targetMinutes * 60) / Math.max(20, secondsPerQuestion))));
+
+  const days = [];
+  for (let back = habitDays - 1; back >= 0; back -= 1) {
+    const date = londonDay(new Date(now.getTime() - back * 86400000));
+    days.push({ date, count: counts.get(date) ?? 0, met: (counts.get(date) ?? 0) >= goal });
+  }
+
+  const today = days[days.length - 1];
+  // A streak counts back from today where today is already done, and from
+  // yesterday where it is not: a learner should not watch their streak read
+  // zero all morning for work they have not had a chance to do yet.
+  let streak = 0;
+  for (let index = days.length - (today.met ? 1 : 2); index >= 0; index -= 1) {
+    if (!days[index].met) break;
+    streak += 1;
+  }
+
+  return {
+    goal,
+    targetMinutes,
+    secondsPerQuestion: Math.round(secondsPerQuestion),
+    today: today.count,
+    metToday: today.met,
+    remaining: Math.max(0, goal - today.count),
+    streak,
+    days,
+    answeredEver: answered,
+  };
+}

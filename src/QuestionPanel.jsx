@@ -1,30 +1,48 @@
 import React, { useState } from "react";
-import { CheckCircle2, ChevronRight, Lightbulb, ListChecks, Send, Timer } from "lucide-react";
+import { CheckCircle2, ChevronRight, Lightbulb, ListChecks, PenLine, Send, Timer } from "lucide-react";
 import { MathsText } from "./MathsText.jsx";
 
 // Practice and Exam are question-led rather than explanation-led, which is what
 // separates them from Learn. Practice offers a hint and shows the working after
 // an attempt; Exam states the marks, hides everything until the answer is in,
 // and then reveals the mark scheme.
+//
+// The working is asked for separately, and the mark scheme will not open until
+// something has been written in it. A learner who can reveal the method without
+// attempting it has been handed the answer, which is the complaint levelled at
+// every AI homework tool. Unlike a bookwork check this does not punish or
+// verify - it only insists the attempt comes first, then hands over the mark
+// scheme and asks the learner to mark their own method against it. Marking your
+// own working against a real mark scheme is the exam skill nobody practises.
 export function QuestionPanel({
   mode, topic, item, status, error, index, maths, marking, result,
   onNext, onSubmit, onRetry, examSeconds, examRunning,
 }) {
   const [answer, setAnswer] = useState("");
+  const [working, setWorking] = useState("");
   const [hintShown, setHintShown] = useState(false);
+  const [selfMarked, setSelfMarked] = useState([]);
   const isExam = mode === "exam";
+  const hasWorking = working.trim().length > 0;
 
   function submit(event) {
     event.preventDefault();
     if (!answer.trim() || marking) return;
-    onSubmit(answer.trim());
+    onSubmit(answer.trim(), working.trim());
   }
 
   function next() {
     setAnswer("");
+    setWorking("");
     setHintShown(false);
+    setSelfMarked([]);
     onNext();
   }
+
+  const scheme = isExam ? (item.markScheme ?? []) : (item.working ?? []);
+  const toggleMark = (position) => setSelfMarked((marked) => (
+    marked.includes(position) ? marked.filter((entry) => entry !== position) : [...marked, position]
+  ));
 
   return <article className="lesson-panel question-panel">
     <div className="panel-heading">
@@ -57,11 +75,20 @@ export function QuestionPanel({
 
       <form className="question-form" onSubmit={submit}>
         <label>
+          <span><PenLine size={14} /> Your working</span>
+          <textarea
+            onChange={(event) => setWorking(event.target.value)}
+            placeholder="Set out your method, a line at a time. This is what earns most of the marks."
+            rows={isExam ? 5 : 4}
+            value={working}
+          />
+        </label>
+        <label>
           <span>Your answer</span>
           <textarea
             onChange={(event) => setAnswer(event.target.value)}
-            placeholder={isExam ? "Set out your working and your final answer" : "Type your answer"}
-            rows={isExam ? 5 : 3}
+            placeholder="Your final answer"
+            rows={2}
             value={answer}
           />
         </label>
@@ -84,11 +111,28 @@ export function QuestionPanel({
         <p><MathsText enabled={maths}>{result.feedback}</MathsText></p>
       </div>}
 
-      {result && <details className="question-reveal">
+      {result && !hasWorking && <p className="reveal-locked">
+        <PenLine size={15} /> Write your working above to open the {isExam ? "mark scheme" : "worked answer"}.
+        It is still worth doing after a wrong answer - that is where the marks are.
+      </p>}
+
+      {result && hasWorking && <details className="question-reveal">
         <summary>{isExam ? "Mark scheme and answer" : "Worked answer"}</summary>
-        {isExam
-          ? <ol>{(item.markScheme ?? []).map((point, position) => <li key={position}><MathsText enabled={maths}>{point}</MathsText></li>)}</ol>
-          : <ol>{(item.working ?? []).map((step, position) => <li key={position}><MathsText enabled={maths}>{step}</MathsText></li>)}</ol>}
+        <p className="self-mark-prompt">Tick every line you had. Be honest - this is your own record.</p>
+        <ol className="self-mark">
+          {scheme.map((point, position) => (
+            <li key={position}>
+              <label>
+                <input checked={selfMarked.includes(position)} onChange={() => toggleMark(position)} type="checkbox" />
+                <MathsText enabled={maths}>{point}</MathsText>
+              </label>
+            </li>
+          ))}
+        </ol>
+        {scheme.length > 0 && <p className="self-mark-total">
+          You marked yourself <strong>{selfMarked.length} of {scheme.length}</strong>
+          {isExam ? " mark scheme points" : " steps"}.
+        </p>}
         <p className="worked-answer"><strong>Answer:</strong> <MathsText enabled={maths}>{item.answer}</MathsText></p>
       </details>}
     </>}

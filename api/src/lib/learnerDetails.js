@@ -4,10 +4,16 @@
 // payment, and the emailed-link one kept alive for invitations already sent.
 // The rules live here so the two cannot drift apart.
 const relationships = ["parent", "legal-guardian", "carer"];
-const boards = ["AQA", "Edexcel", "OCR"];
+// The boards offered, matching examBoards in the frontend catalogue. The API
+// cannot import from src/, because only api/ is deployed, so the list is
+// repeated here and the curriculum validator checks the two still agree.
+//
+// These were previously two different lists: the per-subject map accepted AQA
+// and Edexcel while the top-level board also accepted OCR, so a learner could
+// be stored against a board that had no content and no signup path.
 // Subjects are defined in the frontend catalogue, so the API validates the shape
 // of the per-subject board map rather than an exact subject list.
-const signupBoards = ["AQA", "Edexcel"];
+const boards = ["AQA", "Edexcel"];
 const tiers = ["Foundation", "Higher"];
 const years = [7, 8, 9, 10, 11];
 
@@ -16,7 +22,7 @@ function validBoards(value) {
   const entries = Object.entries(value);
   if (!entries.length || entries.length > 30) return false;
   return entries.every(([subject, board]) =>
-    typeof subject === "string" && subject.length > 0 && subject.length <= 60 && signupBoards.includes(board));
+    typeof subject === "string" && subject.length > 0 && subject.length <= 60 && boards.includes(board));
 }
 
 function validDate(value) {

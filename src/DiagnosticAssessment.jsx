@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, Brain, CheckCircle2, ClipboardCheck, LockKeyhole } from "lucide-react";
+import { ArrowLeft, ArrowRight, Brain, CheckCircle2, ClipboardCheck, LockKeyhole, X } from "lucide-react";
 import { topicsFor } from "./curriculum.js";
 import { diagnosticQuestions } from "./diagnostic.js";
 import { readJson } from "./auth.js";
 
-export function DiagnosticAssessment({ learner, request, onComplete }) {
+export function DiagnosticAssessment({ learner, request, onComplete, onCancel }) {
   const topics = useMemo(
     () => topicsFor({
       year: learner.year,
@@ -46,7 +46,7 @@ export function DiagnosticAssessment({ learner, request, onComplete }) {
         }),
       });
       const data = await readJson(response);
-      if (!response.ok) throw new Error(data.error ?? "The diagnostic could not be marked.");
+      if (!response.ok) throw new Error(data.error ?? "That check could not be marked. Please try again.");
       onComplete(data);
     } catch (submissionError) {
       setError(submissionError.message);
@@ -62,14 +62,22 @@ export function DiagnosticAssessment({ learner, request, onComplete }) {
 
   return (
     <main className="diagnostic-page">
+      {onCancel && <button
+        className="leave-check"
+        disabled={submitting}
+        onClick={onCancel}
+        title="Leave the check and go back"
+        type="button"
+      ><X size={16} /> Leave the check</button>}
+
       <header className="diagnostic-header">
         <div className="diagnostic-mark"><ClipboardCheck size={25} /></div>
         <div>
-          <p className="eyebrow">Initial diagnostic</p>
+          <p className="eyebrow">Before you start</p>
           <h1>Let's find the right place to begin</h1>
-          <p>This short {learner.subject} check helps order {learner.firstName}'s Year {learner.year} learning path.</p>
+          <p>A few questions, so we can put {learner.firstName}'s Year {learner.year} {learner.subject} topics in the right order. There are no wrong answers to worry about.</p>
         </div>
-        <div className="evidence-lock"><LockKeyhole size={17} /><span>No predicted grade is produced from this assessment.</span></div>
+        <div className="evidence-lock"><LockKeyhole size={17} /><span>This does not give you a grade. It only decides what to study first.</span></div>
       </header>
 
       <section className="diagnostic-panel">
@@ -88,7 +96,7 @@ export function DiagnosticAssessment({ learner, request, onComplete }) {
             id="diagnostic-answer"
             maxLength={2500}
             onChange={(event) => setAnswers({ ...answers, [question.topicId]: event.target.value })}
-            placeholder="Write what you know. It is fine to be unsure; this is here to help plan your learning."
+            placeholder="Write what you know. It is fine to be unsure - that is useful too."
             value={answers[question.topicId] ?? ""}
           />
         </div>
@@ -102,7 +110,7 @@ export function DiagnosticAssessment({ learner, request, onComplete }) {
             onClick={() => setQuestionIndex((current) => current - 1)}
             type="button"
           ><ArrowLeft size={17} /> Back</button>
-          <div className="question-dots" aria-label="Assessment progress">
+          <div className="question-dots" aria-label="Progress through the check">
             {questions.map((item, index) => (
               <span className={answers[item.topicId]?.trim() ? "answered" : index === questionIndex ? "current" : ""} key={item.topicId} />
             ))}
@@ -112,7 +120,7 @@ export function DiagnosticAssessment({ learner, request, onComplete }) {
             disabled={!answers[question.topicId]?.trim() || submitting}
             onClick={advance}
             type="button"
-          >{submitting ? "Analysing..." : isLast ? "Create my learning path" : "Next"} {isLast ? <Brain size={17} /> : <ArrowRight size={17} />}</button>
+          >{submitting ? "Working it out..." : isLast ? "Put my topics in order" : "Next"} {isLast ? <Brain size={17} /> : <ArrowRight size={17} />}</button>
         </div>
 
         <footer><CheckCircle2 size={16} /> Answers are used only to identify strengths and next steps.</footer>

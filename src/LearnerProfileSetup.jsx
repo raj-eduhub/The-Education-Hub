@@ -20,7 +20,10 @@ export function LearnerProfileSetup({ initialProfile, onSave, onCancel, yearLock
     firstName: initialProfile?.firstName ?? "",
     dateOfBirth: initialProfile?.dateOfBirth ?? "",
     year: initialProfile?.year ?? 7,
-    examBoard: initialProfile?.examBoard ?? "AQA",
+    // Per subject, because a learner can sit Maths with one board and Science
+    // with another, and paid signup already collects it that way.
+    examBoards: initialProfile?.examBoards
+      ?? Object.fromEntries(subjects.map((entry) => [entry, initialProfile?.examBoard ?? examBoards[0]])),
     tier: initialProfile?.tier ?? "Higher",
     subject: initialProfile?.subject ?? "Maths",
     topicId: initialProfile?.topicId ?? "",
@@ -35,10 +38,10 @@ export function LearnerProfileSetup({ initialProfile, onSave, onCancel, yearLock
     () => topicsFor({
       year: profile.year,
       subject: profile.subject,
-      examBoard: profile.examBoard,
+      examBoard: profile.examBoards?.[profile.subject],
       tier: profile.tier,
     }),
-    [profile.examBoard, profile.subject, profile.tier, profile.year]
+    [profile.examBoards, profile.subject, profile.tier, profile.year]
   );
 
   const selectedTopicId = availableTopics.some((item) => item.id === profile.topicId)
@@ -51,7 +54,14 @@ export function LearnerProfileSetup({ initialProfile, onSave, onCancel, yearLock
 
   function submit(event) {
     event.preventDefault();
-    onSave({ ...profile, topicId: selectedTopicId });
+    // The API validates a top-level examBoard as well as the per-subject map,
+    // and boardFor() falls back to it for a subject the map does not name.
+    // Maths is the one every learner takes, so it is the sensible default.
+    onSave({
+      ...profile,
+      topicId: selectedTopicId,
+      examBoard: profile.examBoards?.Maths ?? examBoards[0],
+    });
   }
 
   return (
@@ -109,20 +119,37 @@ export function LearnerProfileSetup({ initialProfile, onSave, onCancel, yearLock
           {yearLocked && <p className="year-locked-note">The school year was fixed during paid signup and cannot be changed.</p>}
         </fieldset>
 
-        {Number(profile.year) >= 10 && (
+        {Number(profile.year) >= 9 && (
           <div className="gcse-options">
-            <label>
-              Exam board
-              <select onChange={(event) => updateCurriculum({ examBoard: event.target.value })} value={profile.examBoard}>
-                {examBoards.map((board) => <option key={board}>{board}</option>)}
-              </select>
-            </label>
-            <label>
+            <fieldset className="board-fieldset">
+              <legend>Exam board for each subject</legend>
+              <p className="board-note">
+                Chosen from Year 9, when GCSE preparation starts. Questions are written to the board
+                you pick, so it is worth checking with the school.
+              </p>
+              <div className="board-grid">
+                {subjects.map((entry) => (
+                  <label key={entry}>
+                    {entry}
+                    <select
+                      onChange={(event) => updateCurriculum({
+                        examBoards: { ...profile.examBoards, [entry]: event.target.value },
+                      })}
+                      value={profile.examBoards?.[entry] ?? examBoards[0]}
+                    >
+                      {examBoards.map((board) => <option key={board}>{board}</option>)}
+                    </select>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+            {/* Tier entry is only decided for the exam years. */}
+            {Number(profile.year) >= 10 && <label>
               Maths and Science tier
               <select onChange={(event) => updateCurriculum({ tier: event.target.value })} value={profile.tier}>
                 {tiers.map((tier) => <option key={tier}>{tier}</option>)}
               </select>
-            </label>
+            </label>}
           </div>
         )}
 
