@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { GraduationCap, LogIn, UserPlus } from "lucide-react";
 import { apiFetch, readJson } from "./auth.js";
-import { ThemeToggle } from "./ThemeToggle.jsx";
 
 export function LoginScreen({ onAuthenticated, error, checking }) {
   const [view, setView] = useState("login");
@@ -27,7 +26,7 @@ export function LoginScreen({ onAuthenticated, error, checking }) {
     } catch (failure) { setMessage(failure.message); }
     finally { setBusy(false); }
   }
-  return <main className="password-login"><ThemeToggle className="floating" /><div className="login-box">
+  return <main className="password-login"><div className="login-box">
     <div className="password-brand"><GraduationCap size={30} /><strong>Education Hub</strong></div>
     <div className="password-tabs" role="group" aria-label="Account access">
       <button type="button" aria-pressed={view === "login"} onClick={() => show("login")}><LogIn size={18} /> Log in</button>
@@ -77,7 +76,7 @@ export function EmailVerification({ token }) {
       });
   }, [token]);
 
-  return <main className="password-login"><ThemeToggle className="floating" /><div className="login-box">
+  return <main className="password-login"><div className="login-box">
     <div className="password-brand"><GraduationCap size={30} /><strong>Education Hub</strong></div>
     <h1>{status === "done" ? "Email confirmed" : status === "error" ? "Link unavailable" : "Confirming your email"}</h1>
     {status === "working" && <p role="status">One moment.</p>}
@@ -110,7 +109,7 @@ export function PasswordReset({ token }) {
     } catch (failure) { setMessage(failure.message); }
     finally { setBusy(false); }
   }
-  return <main className="password-login"><ThemeToggle className="floating" /><div className="login-box">
+  return <main className="password-login"><div className="login-box">
     <div className="password-brand"><GraduationCap size={30} /><strong>Education Hub</strong></div>
     <h1>Choose a new password</h1>
     {done ? <div className="login-sent">

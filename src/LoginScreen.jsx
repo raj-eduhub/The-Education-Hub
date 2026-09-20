@@ -48,7 +48,7 @@ export function LoginScreen({ onCredential, error, checking }) {
         <div className="login-copy">
           <p className="eyebrow">KS3 to GCSE</p>
           <h1>Learn with focus.<br />Revise with confidence.</h1>
-          <p>Clear learning paths, curriculum goals, and an AI tutor that meets each student at the right level.</p>
+          <p>Clear learning paths, curriculum goals, and Sonia, an AI tutor that meets each student at the right level.</p>
         </div>
         <div className="login-benefits">
           <div><BookOpenCheck size={20} /><span>Curriculum-led topics</span></div>

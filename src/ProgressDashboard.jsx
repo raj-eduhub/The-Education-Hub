@@ -109,8 +109,8 @@ export function ProgressDashboard({ learner, request, audience = "student", onOp
       <header className="progress-header">
         <div>
           <p className="eyebrow">{audience === "parent" ? "Parent curriculum view" : "My curriculum"}</p>
-          <h2>{audience === "parent" ? `${learner.firstName}'s Year ${learner.year} tracker` : `Year ${learner.year} curriculum tracker`}</h2>
-          <p>{summary.started} started, {summary.pending} still to complete</p>
+          <h2>{audience === "parent" ? `${learner.firstName}'s Year ${learner.year} Curriculum Tracker` : `Year ${learner.year} Curriculum Tracker`}</h2>
+          <p>{summary.started} Started, {summary.pending} Still to complete</p>
         </div>
         <button className="icon-button" onClick={load} title="Refresh progress" type="button"><RefreshCw size={18} /></button>
       </header>
@@ -122,10 +122,10 @@ export function ProgressDashboard({ learner, request, audience = "student", onOp
           <div className="curriculum-overview-copy"><span>Overall completion</span><strong>{summary.percentage}%</strong><p>{summary.completed} of {summary.total} curriculum topics completed</p></div>
           <div className="curriculum-overview-progress"><span style={{ width: `${summary.percentage}%` }} /></div>
           <div className="curriculum-state-summary">
-            <span className="completed"><CheckCircle2 size={15} />{summary.completed} completed</span>
-            <span className="studied"><BookOpen size={15} />{summary.started} started</span>
-            <span className="review"><RotateCcw size={15} />{summary.review} review due</span>
-            <span className="pending"><CircleDashed size={15} />{summary.pending} pending</span>
+            <span className="completed"><CheckCircle2 size={15} />{summary.completed} Completed</span>
+            <span className="studied"><BookOpen size={15} />{summary.started} Started</span>
+            <span className="review"><RotateCcw size={15} />{summary.review} Review due</span>
+            <span className="pending"><CircleDashed size={15} />{summary.pending} Pending</span>
           </div>
         </section>
 

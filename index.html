@@ -7,6 +7,10 @@
     <!-- The stylesheet has always asked for Inter and nothing ever loaded it, so
          the application has been rendering in whatever the device defaults to.
          Weights 400-700 because the interface uses all of them. -->
+    <!-- Stripe.js is always loaded from Stripe, never bundled or self-hosted:
+         PCI DSS requires the payment form to come from Stripe's own origin.
+         The dahlia build is the one that carries initCheckoutFormSdk(). -->
+    <script src="https://js.stripe.com/dahlia/stripe.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!-- Two faces doing two jobs. Inter for the interface and body: the tallest

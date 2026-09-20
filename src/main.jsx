@@ -1,41 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import {
-  BookOpen,
-  BookMarked,
-  Brain,
-  Calculator,
-  CheckCircle2,
-  ChartNoAxesCombined,
-  ChevronRight,
-  ClipboardCheck,
-  CreditCard,
-  ClipboardList,
-  FlaskConical,
-  GraduationCap,
-  LayoutDashboard,
-  Landmark,
-  ListFilter,
-  LogOut,
-  Map as MapIcon,
-  MessageCircle,
-  MonitorPlay,
-  PenLine,
-  Play,
-  Repeat2,
-  Cpu,
-  DraftingCompass,
-  Send,
-  Settings,
-  ShieldAlert,
-  ShieldCheck,
-  Sparkles,
-  Target,
-  Timer,
-  UserRound,
-  X,
-  Users,
-} from "lucide-react";
+import { BookMarked, BookOpen, Brain, Calculator, ChartNoAxesCombined, CheckCircle2, ChevronRight, ClipboardCheck, ClipboardList, Cpu, CreditCard, DraftingCompass, FlaskConical, GraduationCap, Landmark, LayoutDashboard, LifeBuoy, ListFilter, LogOut, Map as MapIcon, MonitorPlay, PenLine, Play, Repeat2, Send, Settings, ShieldAlert, ShieldCheck, Sparkles, Target, Timer, UserRound, Users, X } from "lucide-react";
 import { curriculum, subjects, topicsFor } from "./curriculum.js";
 import { AdminDashboard } from "./AdminDashboard.jsx";
 import { AccountSettings } from "./AccountSettings.jsx";
@@ -64,6 +29,7 @@ import { ReviewPanel } from "./ReviewPanel.jsx";
 import { ContentReview } from "./ContentReview.jsx";
 import { SafeguardingReview } from "./SafeguardingReview.jsx";
 import { PaymentsDashboard } from "./PaymentsDashboard.jsx";
+import { SupportTickets } from "./SupportTickets.jsx";
 import "katex/dist/katex.min.css";
 import "./styles.css";
 
@@ -293,11 +259,12 @@ function App() {
   const [learnerProfile, setLearnerProfile] = useState(appPreview ? previewProfile : null);
   const [diagnostic, setDiagnostic] = useState(null);
   const [showDiagnostic, setShowDiagnostic] = useState(false);
-  const [requestedView, setView] = useState(adminPreview ? "admin" : ["admin", "review", "safeguarding", "payments", "progress", "parent", "account"].includes(window.location.hash.slice(1)) ? window.location.hash.slice(1) : "learning");
+  const [requestedView, setView] = useState(adminPreview ? "admin" : ["admin", "review", "safeguarding", "payments", "progress", "account", "support"].includes(window.location.hash.slice(1)) ? window.location.hash.slice(1) : "learning");
+  // An administrator-only view requested by somebody who is not one falls back
+  // to the learning hub rather than rendering an empty screen.
   const view = ["admin", "review", "safeguarding", "payments"].includes(requestedView) && !currentUser?.isAdmin
     ? "learning"
-    : requestedView === "parent" && !currentUser?.isAdmin && currentUser?.accessRole !== "parent"
-      ? "learning" : requestedView;
+    : requestedView;
   const [subject, setSubject] = useState("Maths");
   const [unitFilter, setUnitFilter] = useState("All");
   const [selectedTopicId, setSelectedTopicId] = useState(curriculum[0].id);
@@ -575,7 +542,6 @@ function App() {
 
   function chooseView(nextView) {
     if (["admin", "review", "safeguarding", "payments"].includes(nextView) && !currentUser?.isAdmin) return;
-    if (nextView === "parent" && !currentUser?.isAdmin && currentUser?.accessRole !== "parent") return;
     setView(nextView);
     window.location.hash = nextView === "learning" ? "" : nextView;
   }
@@ -898,7 +864,7 @@ Mark my answer.`,
         {
           role: "assistant",
           text:
-            "I could not reach the AI tutor yet. Check the backend environment variables and your sign-in, then try again.",
+            "Sonia could not be reached yet. Check the backend environment variables and your sign-in, then try again.",
         },
       ]);
     } finally {
@@ -969,7 +935,9 @@ Mark my answer.`,
     });
     const data = await readJson(response);
     if (!response.ok) throw new Error(data.error ?? "Secure checkout could not be opened.");
-    window.location.assign(data.url);
+    // The payment form is mounted in the page now, so the session's client
+    // secret is handed back rather than a URL to redirect to.
+    return data.client_secret;
   }
 
   function finishAccountDeletion() {
@@ -1087,6 +1055,16 @@ Mark my answer.`,
           </div>
         </div>
 
+        {view === "learning" && <div className="year-context">
+          <div>
+            <span className="label">Learning path</span>
+            <strong>Year {learnerYear}</strong>
+            <small>{stage === "KS3" ? (learnerProfile.examBoards?.[subject] ? `Key Stage 3 / ${boardFor(learnerProfile, subject)}` : "Key Stage 3") : `${subject}: ${boardFor(learnerProfile, subject)} / ${learnerProfile.tier}`}</small>
+          </div>
+        </div>}
+
+        
+
         <nav className="primary-nav" aria-label="Primary navigation">
           <button className={view === "learning" ? "active" : ""} onClick={() => chooseView("learning")} title="Learning hub" type="button">
             <LayoutDashboard size={18} />
@@ -1096,12 +1074,6 @@ Mark my answer.`,
             <ChartNoAxesCombined size={18} />
             <span>My progress</span>
           </button>
-          {(currentUser?.accessRole === "parent" || currentUser?.isAdmin) && (
-            <button className={view === "parent" ? "active" : ""} onClick={() => chooseView("parent")} title="Parent dashboard" type="button">
-              <UserRound size={18} />
-              <span>Parent dashboard</span>
-            </button>
-          )}
           {currentUser?.isAdmin && (
             <button className={view === "admin" ? "active" : ""} onClick={() => chooseView("admin")} title="User management" type="button">
               <Users size={18} />
@@ -1126,21 +1098,9 @@ Mark my answer.`,
               <span>Payments</span>
             </button>
           )}
-          <button className={view === "account" ? "active" : ""} onClick={() => chooseView("account")} title="Account & privacy" type="button">
-            <Settings size={18} />
-            <span>Account & privacy</span>
-          </button>
         </nav>
 
-        {view === "learning" && <div className="year-context">
-          <div>
-            <span className="label">Learning path</span>
-            <strong>Year {learnerYear}</strong>
-            <small>{stage === "KS3" ? (learnerProfile.examBoards?.[subject] ? `Key Stage 3 / ${boardFor(learnerProfile, subject)}` : "Key Stage 3") : `${subject}: ${boardFor(learnerProfile, subject)} / ${learnerProfile.tier}`}</small>
-          </div>
-        </div>}
-
-        {view === "learning" && <nav className="subject-list" aria-label="Subjects">
+{view === "learning" && <nav className="subject-list" aria-label="Subjects">
           {subjects.map((item) => {
             const Icon = subjectIcons[item] ?? BookOpen;
             return (
@@ -1162,6 +1122,17 @@ Mark my answer.`,
           })}
         </nav>}
 
+        <nav className="sidebar-utilities" aria-label="Account">
+          <button className={view === "support" ? "active" : ""} onClick={() => chooseView("support")} title="Help and support" type="button">
+            <LifeBuoy size={18} />
+            <span>Help and support</span>
+          </button>
+          <button className={view === "account" ? "active" : ""} onClick={() => chooseView("account")} title="Account & privacy" type="button">
+            <Settings size={18} />
+            <span>Account & privacy</span>
+          </button>
+        </nav>
+
         <ThemeToggle />
 
         <div className="account-panel">
@@ -1177,12 +1148,12 @@ Mark my answer.`,
         <SafeguardingReview request={appRequest} />
       ) : view === "payments" ? (
         <PaymentsDashboard request={appRequest} />
+      ) : view === "support" ? (
+        <SupportTickets />
       ) : view === "account" ? (
         <AccountSettings currentUser={currentUser} onDeleted={finishAccountDeletion} request={appRequest} subscription={subscription} />
       ) : view === "progress" ? (
         <ProgressDashboard learner={learnerProfile} onOpenTopic={openTrackedTopic} request={appRequest} />
-      ) : view === "parent" ? (
-        <ProgressDashboard audience="parent" learner={learnerProfile} onOpenTopic={openTrackedTopic} request={appRequest} />
       ) : <section className="workspace" data-subject={subject}>
         <header className="topbar">
           <div>
@@ -1202,20 +1173,25 @@ Mark my answer.`,
             </button>
             <div className="model-pill">
               <Sparkles size={16} />
-              <span>AI tutor</span>
+              <span>Sonia · Your AI Tutor</span>
             </div>
           </div>
         </header>
 
-        <section className="mode-toolbar" aria-label="Learning mode">
-          {Object.entries(learningModes).map(([mode, config]) => {
-            const ModeIcon = config.icon;
-            return <button className={learningMode === mode ? "active" : ""} key={mode} onClick={() => chooseMode(mode)} type="button">
-              <ModeIcon size={17} /><span>{config.label}</span>
-            </button>;
-          })}
+        {/* The timer sits beside the box rather than inside it. In the box it
+            was a fifth item, so the box was one width in Exam and another in
+            the other three modes. */}
+        <div className="mode-row">
+          <section className="mode-toolbar" aria-label="Learning mode">
+            {Object.entries(learningModes).map(([mode, config]) => {
+              const ModeIcon = config.icon;
+              return <button className={learningMode === mode ? "active" : ""} key={mode} onClick={() => chooseMode(mode)} type="button">
+                <ModeIcon size={17} /><span>{config.label}</span>
+              </button>;
+            })}
+          </section>
           {learningMode === "exam" && <div className={`exam-timer ${examRunning ? "running" : ""}`}><Timer size={16} /><strong>{String(Math.floor(examSeconds / 60)).padStart(2, "0")}:{String(examSeconds % 60).padStart(2, "0")}</strong></div>}
-        </section>
+        </div>
 
         <DailyGoal refreshKey={habitKey} request={appRequest} />
 
@@ -1392,7 +1368,7 @@ Mark my answer.`,
                 <Play size={15} /> {learningModes[learningMode].action}
               </button>}
               {!tutorOpen && <button className="ask-tutor" onClick={() => setTutorOpen(true)} type="button">
-                <MessageCircle size={16} /> Ask the tutor a question
+                <Sparkles size={16} /> Ask Sonia (Your AI Tutor)
               </button>}
             </div>
             <div className="attempt-actions">
@@ -1409,15 +1385,15 @@ Mark my answer.`,
             />}
           </article>}
 
-          {tutorOpen && <section className="tutor-panel" aria-label="AI tutor chat">
+          {tutorOpen && <section className="tutor-panel" aria-label="Chat with Sonia, your AI tutor">
             <div className="chat-header">
-              <MessageCircle size={20} />
+              <Sparkles size={20} />
               <div>
-                <h3>Tutor</h3>
-                <p>{learningModes[learningMode].label} / {selectedTopic.title}</p>
+                <h3>Sonia</h3>
+                <p>Your AI Tutor · {learningModes[learningMode].label} / {selectedTopic.title}</p>
               </div>
               {learningMode !== "learn" && <button className="start-activity" disabled={isThinking} onClick={startActivity} type="button"><Play size={15} /> {learningModes[learningMode].action}</button>}
-              <button aria-label="Close the tutor" className="close-tutor" onClick={() => setTutorOpen(false)} title="Close the tutor" type="button"><X size={18} /></button>
+              <button aria-label="Close the chat with Sonia" className="close-tutor" onClick={() => setTutorOpen(false)} title="Close the chat" type="button"><X size={18} /></button>
             </div>
 
             <div className="messages">
@@ -1434,7 +1410,7 @@ Mark my answer.`,
 
             <form className="composer" onSubmit={askTutor}>
               <input
-                aria-label="Ask the tutor"
+                aria-label="Ask Sonia"
                 onChange={(event) => setPrompt(event.target.value)}
                 placeholder={`${learningModes[learningMode].label}: ask or submit an answer...`}
                 value={prompt}

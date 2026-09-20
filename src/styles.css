@@ -12,21 +12,7 @@
   box-sizing: border-box;
 }
 
-.password-login { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: var(--surface); }
-.password-login .login-box { width: min(100%, 420px); }
-.password-brand { display: flex; align-items: center; gap: 12px; color: var(--ink); font-size: 24px; margin-bottom: 28px; }
-.password-tabs { display: flex; gap: 8px; }
-.password-tabs button { display: flex; gap: 8px; align-items: center; flex: 1; justify-content: center; padding: 12px; border: 1px solid #ccd8e6; border-radius: 6px; background: white; }
-.password-tabs button[aria-pressed="true"] { background: #174d85; color: white; }
-.password-login h1 { font-size: 26px; }
-.password-form { display: grid; gap: 18px; }
-.password-form label { display: grid; gap: 8px; }
-.password-form input { width: 100%; min-width: 0; padding: 12px; border: 1px solid #b5c4d6; border-radius: 6px; }
-.password-form button { padding: 13px; background: #174d85; color: white; border: 0; border-radius: 6px; }
-.password-form button:disabled { opacity: .6; }
-.password-form button.login-link, .login-sent button.login-link { background: none; border: 0; color: var(--ink); padding: 4px; text-decoration: underline; justify-self: center; }
-.login-sent { display: grid; gap: 18px; }
-.login-sent p { line-height: 1.55; }
+/* Sign-in is styled in one place, at the end of this file. */
 
 .admin-session-header { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; padding: 18px 24px; background: white; border-bottom: 1px solid #ccd8e6; }
 .admin-session-header strong { margin-right: auto; }
@@ -134,7 +120,8 @@ button {
   gap: 6px;
 }
 
-.primary-nav button {
+.primary-nav button,
+.sidebar-utilities button {
   align-items: center;
   background: transparent;
   border: 0;
@@ -147,7 +134,8 @@ button {
   text-align: left;
 }
 
-.primary-nav button.active {
+.primary-nav button.active,
+.sidebar-utilities button.active {
   background: rgba(255, 255, 255, 0.1);
   color: #ffffff;
 }
@@ -193,6 +181,11 @@ button {
   color: var(--ink-soft);
   display: flex;
   gap: 7px;
+  /* Equal widths, because the selected mode is set in bold and bold text is
+     wider than regular. Sized to content, the box resized and every button
+     shifted each time the mode changed. */
+  justify-content: center;
+  min-width: 122px;
   min-height: 38px;
   padding: 0 13px;
 }
@@ -204,14 +197,23 @@ button {
   font-weight: 700;
 }
 
+/* The toolbar and, in Exam, the timer beside it. */
+.mode-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .exam-timer {
   align-items: center;
-  border-left: 1px solid #c9d3df;
+  background: var(--recess-bg);
+  border-radius: 8px;
   color: var(--ink-soft);
   display: flex;
   gap: 7px;
-  margin-left: 6px;
-  padding: 0 10px;
+  min-height: 46px;
+  padding: 0 14px;
 }
 
 .exam-timer.running {
@@ -846,6 +848,9 @@ button {
 }
 
 .curriculum-overview-copy {
+  /* Centred against the bar and the counts beside it, so the two halves of the
+     panel sit level rather than the figure riding high against them. */
+  align-self: center;
   display: grid;
   gap: 3px;
   grid-row: 1 / 3;
@@ -887,7 +892,12 @@ button {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 18px;
+  /* Four counts in a row: they need enough space between them to read as four
+     separate facts rather than one run of numbers. */
+  gap: 12px 26px;
+  /* Centred under the progress bar rather than pinned to either edge. */
+  justify-content: center;
+  margin-top: 4px;
 }
 
 .curriculum-state-summary span {
@@ -895,7 +905,8 @@ button {
   color: #dce6f2;
   display: inline-flex;
   font-size: 0.78rem;
-  gap: 6px;
+  /* The mark and its count are one fact, so they sit close - but not touching. */
+  gap: 9px;
 }
 
 .curriculum-state-summary .completed svg {
@@ -3225,6 +3236,8 @@ button {
     grid-template-columns: 1fr;
   }
 
+  .curriculum-state-summary { justify-content: center; }
+
   .curriculum-overview-copy {
     grid-row: auto;
   }
@@ -3303,13 +3316,15 @@ button {
     grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
   }
 
-  .primary-nav button {
+  .primary-nav button,
+  .sidebar-utilities button {
     justify-content: center;
     min-width: 0;
     padding: 0;
   }
 
-  .primary-nav button span {
+  .primary-nav button span,
+  .sidebar-utilities button span {
     clip: rect(0 0 0 0);
     clip-path: inset(50%);
     height: 1px;
@@ -3459,11 +3474,11 @@ button {
 
   .mode-toolbar button {
     justify-content: center;
+    min-width: 0;
   }
 
   .exam-timer {
-    border-left: 0;
-    grid-column: 1 / -1;
+    grid-column: auto;
     justify-content: center;
     padding: 8px;
   }
@@ -3681,6 +3696,19 @@ button {
   text-transform: uppercase;
 }
 
+/* The panel was a plain block and none of its children carry a margin, so the
+   heading, the question, the hint button and the form stacked flush against one
+   another. A grid gives them their spacing in one place - and makes the hint
+   button's justify-self work, which in a block container did nothing, leaving
+   it stretched across the full width and into the form below.
+   align-content keeps the rows at the top: .lesson-panel sets a min-height, and
+   a stretched grid would otherwise spread the children out to fill it. */
+.question-panel {
+  align-content: start;
+  display: grid;
+  gap: 16px;
+}
+
 .question-panel .question-body {
   border-left: 3px solid #2364aa;
   display: grid;
@@ -3833,7 +3861,9 @@ button {
 .review-summary {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Sized by the tiles rather than by a count, so a page with three reads the
+     same as a page with six and neither needs its own rule. */
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
 }
 
 .review-summary article {
@@ -4098,10 +4128,6 @@ button {
 
 /* Safeguarding review. Shares the content-review shell, and adds the severity
    colouring, the quoted message, and the contact details an adult needs to act. */
-.safeguarding-summary {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
 .safeguarding-summary .high strong { color: #cf9692; }
 .safeguarding-summary .medium strong { color: #ccb083; }
 .safeguarding-summary .low strong { color: var(--ink); }
@@ -4211,7 +4237,6 @@ button {
 .review-actions .escalate { background: #9a6207; }
 
 @media (max-width: 900px) {
-  .safeguarding-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 /* The post-checkout wait, while Stripe's webhook catches up. */
@@ -4235,10 +4260,6 @@ button {
 }
 
 /* Payments: subscriptions as this application records them. */
-.payments-summary {
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-}
-
 .payments-note {
   align-items: center;
   border-left: 3px solid #9a6207;
@@ -4934,7 +4955,17 @@ ol.self-mark input:checked + * { color: var(--ink-bright); }
   z-index: 1;
 }
 
-.subject-list { display: grid; gap: 8px; }
+.subject-list { display: grid; gap: 8px; margin-top: 4px; }
+
+/* Help and Account, below the subjects. Same buttons as the primary nav, set
+   apart by a hairline so they read as the foot of the pane rather than as more
+   places to go and work. */
+.sidebar-utilities {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: grid;
+  gap: 4px;
+  padding-top: 14px;
+}
 
 /* An unopened bookmark shows its edge, not its face: colour on the spine,
    restraint everywhere else. */
@@ -4991,11 +5022,16 @@ ol.self-mark input:checked + * { color: var(--ink-bright); }
   color: #ffffff;
   font-weight: 600;
   margin-right: -14px;
-  padding-right: 28px;
+  padding-right: 14px;
   transform: none;
 }
 
 .subject.active svg { color: #ffffff; }
+
+/* The chevron on the open tab, drawn heavier. It is the last of the two icons
+   in the row - the subject's own mark leads, this one closes it - and the
+   weight comes from the stroke, because an outline icon has no font weight. */
+.subject.active > svg:last-child { stroke-width: 3; }
 
 /* The workspace carries a wash of the same hue at the top, fading out within a
    few hundred pixels. Present where the work happens, gone before it competes
@@ -5495,7 +5531,11 @@ input:not([type="checkbox"]):not([type="radio"]), select, textarea {
 }
 
 input::placeholder, textarea::placeholder { color: #7c8fab; }
-select option { background: #16264d; color: var(--ink-bright); }
+/* Literal colours, not tokens. A native dropdown list is drawn by the browser
+   and the OS rather than by the page, and an <option> there does not reliably
+   resolve a custom property - it falls back to the initial colour, which is
+   black, on this navy. The list then reads as empty rows. */
+select option { background: #16264d; color: #f2f7fd; }
 
 /* Tracks and toolbars. */
 .progress-track, .goal-track, .workspace .progress-track, .workspace .goal-track,
@@ -5586,13 +5626,13 @@ td, .payments-table td { border-bottom-color: var(--hairline); }
 .topic-picker > span, .unit-filter svg, .review-filters label { color: var(--ink-soft); }
 
 /* Segmented and tabbed controls. */
-.segmented, .password-tabs { background: var(--recess-bg); }
-.segmented button, .password-tabs button {
+.segmented { background: var(--recess-bg); }
+.segmented button {
   background: transparent;
   border-color: var(--hairline);
   color: var(--ink-soft);
 }
-.segmented button.active, .password-tabs button[aria-pressed="true"] {
+.segmented button.active {
   background: var(--surface-raised);
   box-shadow: var(--edge-top);
   color: var(--ink-bright);
@@ -5695,8 +5735,6 @@ td, .payments-table td { border-bottom-color: var(--hairline); }
 
    The sidebar is excluded: the bookmark's shape is part of the bookmark, and
    its nav buttons belong to it. */
-.password-tabs button,
-.password-form button,
 .segmented button,
 .mode-toolbar button,
 .example-status.error button,
@@ -5739,7 +5777,7 @@ button {
 /* The sidebar keeps its own shapes: the bookmark's silhouette is the point of
    it, and the nav buttons belong to that. */
 .subject { border-radius: 0 12px 12px 0; }
-.primary-nav button { border-radius: 10px; }
+.primary-nav button, .sidebar-utilities button { border-radius: 10px; }
 
 /* Text fields stay rectangular - a pill-shaped input is awkward to type into. */
 input:not([type="checkbox"]):not([type="radio"]), select, textarea {
@@ -5767,12 +5805,17 @@ input:not([type="checkbox"]):not([type="radio"]), select, textarea {
    different values, which is the whole reason the dark pass was done with
    tokens rather than literals. */
 [data-content-theme="light"] .workspace,
-[data-content-theme="light"] .password-login,
 [data-content-theme="light"] .profile-page,
 [data-content-theme="light"] .signup-page,
 [data-content-theme="light"] .admin-page,
 [data-content-theme="light"] .progress-dashboard,
-[data-content-theme="light"] .diagnostic-page {
+[data-content-theme="light"] .diagnostic-page,
+/* These render beside .workspace rather than inside it, so each has to name
+   itself here or it keeps the dark tokens while the shell goes light. */
+[data-content-theme="light"] .support-page,
+[data-content-theme="light"] .review-body,
+[data-content-theme="light"] .content-review,
+[data-content-theme="light"] .account-settings {
   --ink-bright: #10192c;
   --ink: #33425c;
   --ink-soft: #5b6d86;
@@ -5794,11 +5837,16 @@ input:not([type="checkbox"]):not([type="radio"]), select, textarea {
 
 /* Two places name a colour rather than a token, because they are about the
    ground itself rather than about a surface on it. */
+[data-content-theme="light"] .support-page,
+[data-content-theme="light"] .review-body,
+[data-content-theme="light"] .content-review,
+[data-content-theme="light"] .account-settings { background: transparent; }
+
 [data-content-theme="light"] .workspace .lesson-panel,
 [data-content-theme="light"] .workspace .question-panel,
-[data-content-theme="light"] .login-box,
 [data-content-theme="light"] .profile-page form,
 [data-content-theme="light"] .signup-form { background: rgba(255, 255, 255, 0.94); }
+
 
 [data-content-theme="light"] input::placeholder,
 [data-content-theme="light"] textarea::placeholder { color: #8193ab; }
@@ -5812,7 +5860,6 @@ input:not([type="checkbox"]):not([type="radio"]), select, textarea {
 [data-content-theme="light"] .workspace .daily-goal,
 [data-content-theme="light"] .workspace .subtopic-card,
 [data-content-theme="light"] .workspace .lesson-player,
-[data-content-theme="light"] .login-box,
 [data-content-theme="light"] .profile-page form,
 [data-content-theme="light"] .signup-form,
 [data-content-theme="light"] .review-card,
@@ -5861,7 +5908,6 @@ input:not([type="checkbox"]):not([type="radio"]), select, textarea {
 .start-activity,
 .diagnostic-start,
 .workspace .diagnostic-start,
-.password-form button:not(.login-link),
 .signup-form button[type="submit"],
 .profile-submit,
 .subscribe-button,
@@ -5901,7 +5947,6 @@ input:not([type="checkbox"]):not([type="radio"]), select, textarea {
 .start-activity,
 .diagnostic-start,
 .workspace .diagnostic-start,
-.password-form button:not(.login-link),
 .signup-form button[type="submit"],
 .profile-submit,
 .subscribe-button,
@@ -5920,7 +5965,6 @@ input:not([type="checkbox"]):not([type="radio"]), select, textarea {
 .hint-button:hover:not(:disabled),
 .start-activity:hover:not(:disabled),
 .diagnostic-start:hover:not(:disabled),
-.password-form button:not(.login-link):hover:not(:disabled),
 .signup-form button[type="submit"]:hover:not(:disabled),
 .profile-submit:hover:not(:disabled),
 .question-actions button:hover:not(:disabled),
@@ -6395,3 +6439,545 @@ button { font-weight: 600; letter-spacing: 0.002em; }
 /* Only the page behind the content follows the theme, not the tokens. */
 [data-content-theme="light"] body { background: #eef2f8; }
 [data-content-theme="dark"] body { background: #0e1730; }
+
+
+/* Sign-in ====================================================================
+
+   This screen is always dark, whatever the content theme is set to. It is the
+   first thing anyone sees and it carries the product's own identity rather
+   than a reading preference, so there is no toggle on it and no light variant
+   below. The setting still applies everywhere behind the sign-in.
+
+   One block for the whole screen. It had been styled in eight places across
+   this file - the original hard-coded rules, the glass pass, the dark pass,
+   the bookmark-button pass, the light theme - and the layers disagreed: the
+   tab strip ended up white-on-white, the fields took a recess grey with no
+   edge, and the primary button was tinted from var(--subject), which does not
+   exist on a screen with no subject, so it resolved to a fallback at partial
+   opacity.
+
+   Everything below reads tokens, so the light theme needs only to restate the
+   four values that cannot be derived. Nothing here is a subject colour: this
+   screen belongs to the product, not to a lesson. */
+
+.password-login {
+  --login-accent: #4c8dff;
+  --login-accent-deep: #2f6fd8;
+  --login-field: rgba(255, 255, 255, 0.05);
+  --login-field-edge: rgba(255, 255, 255, 0.2);
+
+  align-content: center;
+  background: linear-gradient(180deg, #16264d 0%, #111d3a 48%, #0c1529 100%);
+  color: var(--ink);
+  display: grid;
+  isolation: isolate;
+  justify-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+  padding: 72px 24px 48px;
+  position: relative;
+}
+
+/* Colour behind the glass. Three soft bodies of light, in the product's own
+   subject hues, placed so they pass under the card - which is the only reason
+   its blur reads as glass rather than as a flat tint. */
+.password-login::before,
+.password-login::after {
+  border-radius: 50%;
+  content: "";
+  filter: blur(70px);
+  pointer-events: none;
+  position: absolute;
+  z-index: -1;
+}
+
+.password-login::before {
+  background:
+    radial-gradient(circle at 30% 30%, rgba(76, 141, 255, 0.55), transparent 62%),
+    radial-gradient(circle at 70% 70%, rgba(20, 184, 196, 0.34), transparent 60%);
+  height: 46rem;
+  left: -12rem;
+  top: -16rem;
+  width: 46rem;
+}
+
+.password-login::after {
+  background:
+    radial-gradient(circle at 40% 40%, rgba(139, 124, 246, 0.46), transparent 62%),
+    radial-gradient(circle at 70% 60%, rgba(217, 95, 174, 0.26), transparent 58%);
+  bottom: -18rem;
+  height: 42rem;
+  right: -10rem;
+  width: 42rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .password-login::before { animation: login-drift-a 26s ease-in-out infinite alternate; }
+  .password-login::after { animation: login-drift-b 32s ease-in-out infinite alternate; }
+  @keyframes login-drift-a {
+    from { transform: translate3d(0, 0, 0) scale(1); }
+    to { transform: translate3d(5rem, 3rem, 0) scale(1.1); }
+  }
+  @keyframes login-drift-b {
+    from { transform: translate3d(0, 0, 0) scale(1.06); }
+    to { transform: translate3d(-4rem, -3rem, 0) scale(1); }
+  }
+}
+
+
+/* One card, not three stacked bands. */
+.password-login .login-box {
+  backdrop-filter: blur(30px) saturate(170%);
+  -webkit-backdrop-filter: blur(30px) saturate(170%);
+  /* Thin enough to see the light move behind it, opaque enough to read on. */
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 22px;
+  /* A lit top rim, a faint one below it, and the weight that puts the pane in
+     front of the light rather than level with it. */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 0 60px rgba(255, 255, 255, 0.045),
+    0 30px 70px -30px rgba(0, 0, 0, 0.8);
+  display: grid;
+  gap: 22px;
+  max-width: none;
+  padding: 34px 32px 30px;
+  position: relative;
+  width: min(100%, 430px);
+}
+
+/* The specular catch along the top edge, brightest at the corner the light
+   comes from. */
+.password-login .login-box::before {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5) 28%, transparent 72%);
+  content: "";
+  height: 1px;
+  left: 18px;
+  position: absolute;
+  right: 18px;
+  top: 0;
+}
+
+/* Without backdrop-filter the pane would be a clear sheet over the blobs, so
+   it falls back to a solid one. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .password-login .login-box { background: #16224080; background: rgba(22, 34, 64, 0.94); }
+}
+
+
+.password-login .password-brand {
+  align-items: center;
+  color: var(--ink-bright);
+  display: flex;
+  font-size: 21px;
+  gap: 11px;
+  margin: 0;
+}
+.password-login .password-brand svg {
+  color: var(--login-accent);
+  filter: drop-shadow(0 2px 10px rgba(76, 141, 255, 0.55));
+  flex: 0 0 auto;
+}
+.password-login .password-brand strong { font-family: var(--font-display); letter-spacing: -0.02em; }
+
+/* The tab strip: a track with one filled tab, so the current one is obvious
+   in both themes rather than white on white. */
+.password-login .password-tabs {
+  background: rgba(8, 15, 32, 0.34);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.35);
+  display: flex;
+  gap: 4px;
+  margin: 0;
+  padding: 4px;
+}
+.password-login .password-tabs button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  box-shadow: none;
+  color: var(--ink-soft);
+  display: flex;
+  flex: 1;
+  font-size: 14.5px;
+  font-weight: 600;
+  gap: 8px;
+  justify-content: center;
+  padding: 10px 12px;
+  transition: background-color 160ms var(--ease), color 160ms var(--ease);
+}
+.password-login .password-tabs button:hover { color: var(--ink-bright); }
+.password-login .password-tabs button[aria-pressed="true"] {
+  background: var(--login-accent);
+  border: 0;
+  box-shadow: 0 6px 16px -10px var(--login-accent-deep);
+  color: #ffffff;
+}
+
+.password-login h1 {
+  color: var(--ink-bright);
+  font-family: var(--font-display);
+  font-size: 27px;
+  letter-spacing: -0.026em;
+  margin: 0;
+}
+.password-login .login-box > p { color: var(--ink-soft); font-size: 14.5px; line-height: 1.55; margin: -8px 0 0; }
+
+.password-login .password-form { display: grid; gap: 17px; margin: 0; }
+.password-login .password-form label {
+  color: var(--ink);
+  display: grid;
+  font-size: 13.5px;
+  font-weight: 600;
+  gap: 7px;
+}
+
+.password-login .password-form input {
+  background: rgba(8, 15, 32, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 11px;
+  /* Cut into the pane rather than sat on it. */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.32), inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+  color: var(--ink-bright);
+  font: inherit;
+  font-size: 15.5px;
+  padding: 12px 13px;
+  transition: border-color 160ms var(--ease), box-shadow 160ms var(--ease);
+  width: 100%;
+}
+.password-login .password-form input::placeholder { color: var(--ink-faint); }
+
+.password-login .password-form input:focus {
+  background: rgba(8, 15, 32, 0.22);
+  border-color: var(--login-accent);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.26), 0 0 0 3px rgba(76, 141, 255, 0.26);
+  outline: none;
+}
+
+/* One solid action. No spine, no subject hue, no gradient wash. */
+.password-login .password-form button[type="submit"] {
+  background: linear-gradient(180deg, var(--login-accent), var(--login-accent-deep));
+  border: 1px solid var(--login-accent-deep);
+  border-radius: 999px;
+  box-shadow: 0 12px 26px -16px var(--login-accent-deep);
+  color: #ffffff;
+  font-size: 15.5px;
+  font-weight: 600;
+  margin-top: 4px;
+  padding: 13px;
+  transition: filter 160ms var(--ease), transform 160ms var(--ease);
+}
+.password-login .password-form button[type="submit"]:hover:not(:disabled) {
+  filter: brightness(1.07);
+  transform: translateY(-1px);
+}
+.password-login .password-form button[type="submit"]:disabled { opacity: 0.6; transform: none; }
+
+.password-login .login-link,
+.password-login .login-sent button.login-link {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  color: var(--ink-soft);
+  font-size: 14px;
+  justify-self: center;
+  padding: 4px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.password-login .login-link:hover { color: var(--ink-bright); }
+
+.password-login .login-error {
+  background: rgba(236, 79, 94, 0.13);
+  border: 1px solid rgba(236, 79, 94, 0.38);
+  border-radius: 10px;
+  color: #ffb3ba;
+  font-size: 14px;
+  line-height: 1.45;
+  margin: 0;
+  padding: 11px 13px;
+}
+
+.password-login .login-sent { display: grid; gap: 18px; margin: 0; }
+.password-login .login-sent p { color: var(--ink-soft); line-height: 1.55; margin: 0; }
+
+@media (max-width: 560px) {
+  .password-login { padding: 74px 16px 36px; }
+  .password-login .login-box { padding: 26px 22px 24px; }
+}
+
+/* The school year, shown rather than asked for ------------------------------- */
+.derived-year {
+  background: var(--recess-bg);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg, 12px);
+  padding: 16px 18px;
+}
+.derived-year p { align-items: baseline; display: flex; gap: 12px; margin: 0; }
+.derived-year strong { color: var(--ink-bright); font-family: var(--font-display); font-size: 20px; }
+.derived-year span { color: var(--ink-soft); font-size: 14px; }
+.derived-year .out-of-range { color: #fca5a5; display: block; font-size: 14.5px; }
+
+/* Tablet ---------------------------------------------------------------------
+   Below 980 the shell already stacks, so a portrait tablet gets the sidebar
+   above the content. Between there and a laptop it stays side by side, and a
+   fixed 300px spine takes a quarter of a 1024 screen away from the lesson.
+   The sidebar narrows instead: the bookmarks still read at 248px, and the
+   lesson gets the width back. */
+@media (min-width: 981px) and (max-width: 1200px) {
+  .app-shell { grid-template-columns: 248px minmax(0, 1fr); }
+  .sidebar { gap: 18px; padding: 22px 14px; }
+  .workspace, .support-page, .content-review { gap: 18px; padding: 22px; }
+  .brand-mark { height: 40px; width: 40px; }
+  .subject { padding-block: 10px; }
+}
+
+/* Portrait tablet: the sidebar is a band across the top once stacked, so its
+   subject list runs across rather than down and does not push the lesson off
+   the first screen. */
+@media (max-width: 980px) {
+  .sidebar { gap: 18px; padding: 20px 18px; }
+  .subject-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .subject-list .subject { flex: 1 1 150px; }
+  .workspace, .support-page, .content-review { gap: 18px; padding: 20px; }
+}
+
+@media (max-width: 760px) {
+  .workspace, .support-page, .content-review { padding: 16px; }
+  .sidebar { padding: 16px 14px; }
+}
+
+/* Help and support ----------------------------------------------------------
+   Built from the same surfaces as the rest of the workspace, so the place you
+   go when something is wrong does not look like a different application. */
+/* Padding to match .workspace. Without it these sit hard against the sidebar,
+   because they are siblings of the workspace rather than children of it. */
+.support-page,
+.content-review {
+  padding: 28px;
+}
+
+.support-page {
+  display: grid;
+  gap: 22px;
+  /* Long enough to work in, short enough that a line of a ticket is readable
+     on a wide screen. */
+  max-width: 1180px;
+}
+
+.support-header > div { align-items: center; display: flex; gap: 14px; }
+.support-header svg { color: var(--subject, #4c8dff); flex: 0 0 auto; }
+.support-header h2 { margin: 0; }
+.support-header p { color: var(--ink-soft); margin: 4px 0 0; }
+
+.support-layout {
+  align-items: start;
+  display: grid;
+  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.support-form { display: grid; gap: 14px; }
+.support-form h3, .support-list h3 { margin: 0; }
+.support-form label { color: var(--ink); display: grid; font-size: 13.5px; font-weight: 600; gap: 7px; }
+/* The shared control rules set a background and a border but no padding, so
+   these were rendering at the browser's default height - a single cramped
+   line. Sized here to match the rest of the workspace's controls. */
+.support-form input,
+.support-form select,
+.support-form textarea,
+.ticket-reply textarea {
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.45;
+  padding: 12px 14px;
+  width: 100%;
+}
+
+.support-form input,
+.support-form select { min-height: 48px; }
+
+/* Room to describe a problem without scrolling a three-line box. */
+.support-form textarea { min-height: 190px; resize: vertical; }
+.ticket-reply textarea { min-height: 96px; resize: vertical; }
+
+/* What will travel with the ticket, shown so nobody wonders. */
+.ticket-contact {
+  background: var(--recess-bg);
+  border: 1px solid var(--hairline);
+  border-left: 4px solid var(--subject, #4c8dff);
+  border-radius: var(--radius-lg, 12px);
+  display: grid;
+  gap: 10px;
+  padding: 16px 18px;
+}
+.ticket-contact > span {
+  color: var(--ink-faint);
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.contact-rows { display: grid; gap: 6px; }
+.contact-row {
+  align-items: baseline;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 74px minmax(0, 1fr);
+}
+.contact-row dt { color: var(--ink-faint); font-size: 12.5px; margin: 0; }
+.contact-row dd { color: var(--ink); font-size: 14.5px; margin: 0; overflow-wrap: anywhere; }
+.contact-row dd strong { color: var(--ink-bright); }
+
+.support-emergency {
+  align-items: start;
+  color: var(--ink-soft);
+  display: grid;
+  font-size: 13.5px;
+  gap: 10px;
+  grid-template-columns: 18px 1fr;
+  line-height: 1.5;
+  margin: 0;
+}
+.support-emergency svg { color: #fca5a5; margin-top: 2px; }
+
+.ticket-raised {
+  background: var(--recess-bg);
+  border: 1px solid var(--hairline-firm);
+  border-left: 4px solid #4ade80;
+  border-radius: var(--radius-lg, 12px);
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  padding: 16px 18px;
+}
+.ticket-raised strong { color: var(--ink-bright); font-size: 17px; }
+.ticket-raised p { color: var(--ink-soft); margin: 0; }
+
+.support-list { display: grid; gap: 12px; }
+
+.ticket-card {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg, 12px);
+  overflow: hidden;
+}
+.ticket-summary {
+  align-items: center;
+  background: none;
+  border: 0;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  padding: 14px 16px;
+  text-align: left;
+  width: 100%;
+}
+.ticket-ref { color: var(--ink-faint); font-family: var(--font-mono, ui-monospace), monospace; font-size: 12.5px; }
+.ticket-subject { color: var(--ink-bright); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ticket-state {
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  font-size: 12px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+.ticket-state.is-open { border-color: rgba(252, 211, 77, 0.5); color: #fcd34d; }
+.ticket-state.is-waiting-on-customer { border-color: rgba(76, 141, 255, 0.5); color: #93c5fd; }
+.ticket-state.is-resolved, .ticket-state.is-closed { color: #4ade80; border-color: rgba(74, 222, 128, 0.45); }
+
+.ticket-thread { border-top: 1px solid var(--hairline); display: grid; gap: 12px; padding: 14px 16px; }
+.ticket-message { display: grid; gap: 4px; }
+.ticket-message p { color: var(--ink); margin: 0; white-space: pre-wrap; }
+.ticket-who { color: var(--ink-faint); font-size: 12px; }
+.ticket-message.from-support {
+  background: var(--recess-bg);
+  border-radius: 10px;
+  border-left: 3px solid var(--subject, #4c8dff);
+  padding: 10px 12px;
+}
+.ticket-reply { display: grid; gap: 8px; justify-items: start; }
+
+@media (max-width: 1100px) {
+  .support-layout { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Help and support, on a light page ------------------------------------------
+   The ticket states and the emergency mark are pale on purpose: they were
+   picked to read on navy. On white they need their darker twins, exactly as
+   .state.ok and its siblings already do. */
+[data-content-theme="light"] .ticket-state.is-open {
+  border-color: rgba(138, 88, 7, 0.45);
+  color: #8a5807;
+}
+[data-content-theme="light"] .ticket-state.is-waiting-on-customer {
+  border-color: rgba(27, 79, 158, 0.45);
+  color: #1b4f9e;
+}
+[data-content-theme="light"] .ticket-state.is-resolved,
+[data-content-theme="light"] .ticket-state.is-closed {
+  border-color: rgba(22, 121, 63, 0.45);
+  color: #16793f;
+}
+[data-content-theme="light"] .support-emergency svg { color: #9f2d24; }
+[data-content-theme="light"] .ticket-raised { border-left-color: #16793f; }
+
+/* A reply needs to read as somebody else speaking on either ground. */
+[data-content-theme="light"] .ticket-message.from-support {
+  background: rgba(20, 33, 61, 0.04);
+}
+
+/* The curriculum tracker, on a light page --------------------------------------
+   The status pills are pale text on an 18% fill, which is how they read on
+   navy. On white the fill becomes a faint wash and the text all but disappears,
+   so both halves swap for their darker twins - the same trade .state.ok and the
+   ticket states already make. */
+[data-content-theme="light"] .tracker-state-icon.completed,
+[data-content-theme="light"] .tracker-status.completed {
+  background: rgba(22, 121, 63, 0.12);
+  color: #16793f;
+}
+
+[data-content-theme="light"] .tracker-state-icon.review,
+[data-content-theme="light"] .tracker-status.review {
+  background: rgba(138, 88, 7, 0.13);
+  color: #8a5807;
+}
+
+/* The three marks above the tracker, which are colour and nothing else, so they
+   have to carry on white what they carried on navy. */
+[data-content-theme="light"] .curriculum-state-summary .completed svg { color: #16793f; }
+[data-content-theme="light"] .curriculum-state-summary .studied svg { color: #1b4f9e; }
+[data-content-theme="light"] .curriculum-state-summary .review svg { color: #8a5807; }
+
+/* The progress dashboard, on a light page -------------------------------------
+   Found by sweeping every colour literal these classes set: thirteen pale
+   values, none with a light counterpart. */
+
+/* The state summary was near-white text with nothing dark behind it, so on a
+   light page it was text you could not see. This is the one that was reported. */
+[data-content-theme="light"] .curriculum-state-summary span { color: var(--ink); }
+[data-content-theme="light"] .progress-error { color: #9f2d24; }
+
+/* The completion panel is a hardcoded navy block. Readable, but a dark slab
+   dropped into a light page, so it takes a light face of its own. */
+[data-content-theme="light"] .curriculum-overview {
+  background: #ffffff;
+  border: 1px solid rgba(20, 33, 61, 0.12);
+  box-shadow: 0 1px 2px rgba(20, 33, 61, 0.05), 0 16px 34px -24px rgba(20, 33, 61, 0.45);
+  color: var(--ink);
+}
+[data-content-theme="light"] .curriculum-overview-copy > span { color: var(--ink-faint); }
+[data-content-theme="light"] .curriculum-overview-copy > strong { color: var(--ink-bright); }
+[data-content-theme="light"] .curriculum-overview-copy p { color: var(--ink-soft); }
+[data-content-theme="light"] .curriculum-overview-progress { background: rgba(20, 33, 61, 0.1); }
+[data-content-theme="light"] .curriculum-overview-progress span { background: #16793f; }
