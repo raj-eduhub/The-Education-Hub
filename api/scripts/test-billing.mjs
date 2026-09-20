@@ -105,8 +105,7 @@ try {
   // Learner setup happens in the app, against the account that just paid.
   await saveLearnerProfile(email, {
     guardianName: "Test Guardian", guardianRelationship: "parent", guardianPhone: "07700 900000",
-    studentFirstName: "Test", studentLastName: "Learner", dateOfBirth: "2012-04-01",
-    year: 7, schoolName: "Test School", examBoards: {}, tier: "Higher", parentalConsent: true,
+    studentFirstName: "Test", dateOfBirth: "2015-03-01", examBoards: {}, tier: "Higher", parentalConsent: true,
   });
   const profile = await getProfile(email);
   check("learner setup writes the profile against the paying account", () => {
@@ -172,11 +171,23 @@ try {
     assert.notEqual(cancelled.status, "active");
   });
 
-  // An event carrying no account reference must be refused, not guessed at.
-  const orphan = await handleStripeEvent(checkoutEvent("evt_orphan", { metadata: {} }), { appUrl, sendEmail });
-  check("an event with no account key is refused", () => {
+  // Metadata is no longer the only way back to an account. A Payment Link
+  // carries none, so the payer's address is used instead - accountKey() is a
+  // pure hash of it, which is why this is a lookup and not a guess.
+  const byEmail = await handleStripeEvent(checkoutEvent("evt_by_email", { metadata: {} }), { appUrl, sendEmail });
+  check("a payment with no metadata is matched by the payer's email", () => {
+    assert.equal(byEmail.handled, true);
+    assert.equal(byEmail.accountKey, key);
+  });
+
+  // With nothing to go on at all it is still refused rather than guessed at.
+  const orphan = await handleStripeEvent(
+    checkoutEvent("evt_orphan", { metadata: {}, customer_details: {}, customer: "cus_nobody" }),
+    { appUrl, sendEmail },
+  );
+  check("an event with no account reference at all is refused", () => {
     assert.equal(orphan.handled, false);
-    assert.equal(orphan.reason, "missing-account-key");
+    assert.equal(orphan.reason, "missing-email");
   });
 
   // Signature verification, using Stripe's own test helper.

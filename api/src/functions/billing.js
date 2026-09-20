@@ -28,12 +28,13 @@ function stripeClient() {
   if (base && process.env.AZURE_FUNCTIONS_ENVIRONMENT === "Development") {
     const url = new URL(base);
     return new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2026-03-25.dahlia; custom_checkout_payment_form_preview=v1",
       host: url.hostname,
       port: Number(url.port) || (url.protocol === "https:" ? 443 : 80),
       protocol: url.protocol === "https:" ? "https" : "http",
     });
   }
-  return new Stripe(process.env.STRIPE_SECRET_KEY);
+  return new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2026-03-25.dahlia; custom_checkout_payment_form_preview=v1" });
 }
 
 async function identity(request) {
@@ -135,22 +136,33 @@ app.http("billing", {
         if (!price) return { status: 503, jsonBody: { error: "This subscription price is not configured yet." } };
         const key = accountKey(email);
         const session = await stripe.checkout.sessions.create({
+          // Configured in Checkout Studio.
+          ui_mode: "form",
+          billing_address_collection: "auto",
+          phone_number_collection: { enabled: false },
+          automatic_tax: { enabled: false },
+          payment_method_collection: "always",
+          submit_type: "auto",
+          integration_identifier: "custom_embedded_web_0001",
+
           mode: "subscription",
-          customer_email: email,
-          billing_address_collection: "required",
-          phone_number_collection: { enabled: true },
-          client_reference_id: key,
           line_items: [{ price, quantity: 1 }],
-          allow_promotion_codes: true,
-          success_url: `${origin}/?checkout=success`,
-          cancel_url: `${origin}/?checkout=cancelled`,
+
+          // Not Checkout Studio options: this is how a payment is matched back
+          // to an account. handleStripeEvent() reads metadata.accountKey on
+          // checkout.session.completed, and subscription_data.metadata carries
+          // it onto every later customer.subscription.* event. Without them a
+          // card is charged and no subscription is ever activated, so they stay.
+          customer_email: email,
+          client_reference_id: key,
           metadata: { accountKey: key, plan: "learner", billingPeriod },
           subscription_data: {
             metadata: { accountKey: key, plan: "learner", billingPeriod },
           },
         });
         await savePendingSubscription(email, { plan: "learner", billingPeriod });
-        return { jsonBody: { url: session.url } };
+        // The embedded form mounts against the session rather than redirecting.
+        return { jsonBody: { client_secret: session.client_secret } };
       }
 
       if (action === "portal") {

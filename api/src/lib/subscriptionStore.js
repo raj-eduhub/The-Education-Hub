@@ -64,6 +64,11 @@ function toSubscription(entity) {
     // The welcome email is a receipt, so its delivery time is reported for
     // support purposes only. Nothing in the app waits on it.
     welcomeSentAt: entity.welcomeSentAt ?? null,
+    // A late payment is shown rather than hidden: access continues while Stripe
+    // retries, and the parent can only fix it if they are told.
+    paymentFailedAt: entity.paymentFailedAt || null,
+    paymentAttemptCount: entity.paymentAttemptCount ?? 0,
+    nextPaymentAttempt: entity.nextPaymentAttempt || null,
     updatedAt: entity.updatedAt,
   };
 }
@@ -91,6 +96,23 @@ export async function getSubscriptionEntityByAccountKey(key) {
     if (error.statusCode === 404) return null;
     throw error;
   });
+}
+
+// Find an account by the Stripe customer it belongs to.
+//
+// Needed because not every subscription starts at our own checkout. A Payment
+// Link carries no per-customer metadata, so its customer.subscription.* events
+// arrive with no accountKey - including the cancellation. Without this lookup
+// those events are dropped and a customer who stopped paying keeps access.
+//
+// One row per account, so this is the same small scan listSubscriptions() does.
+export async function findSubscriptionByCustomerId(customerId) {
+  if (!customerId) return null;
+  const current = await readyClient();
+  for await (const entity of current.listEntities()) {
+    if (entity.stripeCustomerId === customerId) return entity;
+  }
+  return null;
 }
 
 export async function savePendingSubscription(email, details) {

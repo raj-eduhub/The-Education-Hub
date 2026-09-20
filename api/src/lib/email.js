@@ -51,6 +51,72 @@ export async function sendVerificationEmail({ email, username, verifyUrl }) {
   });
 }
 
+// Sent when a renewal payment fails. Stripe retries on its own schedule, so
+// this is not a cancellation notice - it is the one chance to fix the card
+// before the retries run out. It carries no card details and no amount beyond
+// the plan, because the billing portal is where those belong.
+export async function sendPaymentFailedEmail({ email, appUrl, attemptCount = 1, nextAttempt = null }) {
+  const retry = nextAttempt
+    ? `We will try again on ${new Date(nextAttempt).toLocaleDateString("en-GB", { day: "numeric", month: "long" })}.`
+    : "We will try again shortly.";
+  await send({
+    email,
+    subject: "Your Education Hub payment did not go through",
+    plainText: `We could not take this month's Education Hub payment. ${retry}
+
+Your child still has full access for now. To keep it, update the card in Account and privacy: ${appUrl}
+
+If the card is not updated before the retries run out, the subscription will be cancelled.`,
+    html: `<h1>Your payment did not go through</h1><p>We could not take this month's Education Hub payment${attemptCount > 1 ? ` (attempt ${attemptCount})` : ""}. ${retry}</p><p><strong>Your child still has full access for now.</strong> To keep it, update the card from Account and privacy.</p><p><a href="${appUrl}">Update payment details</a></p><p>If the card is not updated before the retries run out, the subscription will be cancelled.</p>`,
+    undelivered: "The payment failure email could not be delivered.",
+  });
+}
+
+// Told to whoever is on the desk. It carries the reference, the category and
+// who raised it, so a ticket can be triaged from the notification - and stops
+// there. What the customer actually wrote stays behind an administrator
+// sign-in, the same rule the safeguarding alert follows.
+export async function sendSupportTicketEmail({ reference, subject, category, priority, name, email, dashboardUrl, recipients }) {
+  const to = (recipients ?? (process.env.SUPPORT_ALERT_EMAILS ?? process.env.ADMIN_EMAILS ?? "").split(","))
+    .map((address) => address.trim())
+    .filter(Boolean);
+  if (!to.length) throw new Error("No administrator address is configured for support alerts.");
+  const flag = priority === "high" ? "[priority] " : "";
+  await send({
+    to,
+    subject: `${flag}Support ticket ${reference}: ${subject}`,
+    plainText: `A support ticket was raised.
+
+Reference: ${reference}
+Subject:   ${subject}
+Category:  ${category}
+Priority:  ${priority}
+From:      ${name || "(no name on the account)"} <${email}>
+
+Open it here: ${dashboardUrl}`,
+    html: `<h1>Support ticket ${reference}</h1><p><strong>${subject}</strong></p><p>Category: ${category}<br>Priority: ${priority}<br>From: ${name || "(no name on the account)"} &lt;${email}&gt;</p><p><a href="${dashboardUrl}">Open it in the support desk</a></p>`,
+    undelivered: "The support alert could not be delivered.",
+  });
+}
+
+// The customer's acknowledgement. Its job is the reference: something to quote
+// so nobody has to describe the problem twice.
+export async function sendSupportReceiptEmail({ email, reference, subject, appUrl }) {
+  await send({
+    email,
+    subject: `We have your message - ticket ${reference}`,
+    plainText: `Thank you - we have your message and somebody will read it.
+
+Your reference is ${reference}, for "${subject}".
+
+You can follow it, and add anything you have forgotten, in Help and support inside your account: ${appUrl}
+
+If this is about a child's immediate safety, please do not wait for us. Contact the police on 999, or the NSPCC on 0808 800 5000.`,
+    html: `<h1>We have your message</h1><p>Thank you - somebody will read it.</p><p>Your reference is <strong>${reference}</strong>, for &ldquo;${subject}&rdquo;.</p><p><a href="${appUrl}">Follow it in Help and support</a>, where you can also add anything you have forgotten.</p><p>If this is about a child&rsquo;s immediate safety, please do not wait for us: contact the police on <strong>999</strong>, or the NSPCC on <strong>0808 800 5000</strong>.</p>`,
+    undelivered: "The support receipt could not be delivered.",
+  });
+}
+
 const alertSubjects = {
   unsafe: "Safeguarding alert: a learner message was blocked",
 };
