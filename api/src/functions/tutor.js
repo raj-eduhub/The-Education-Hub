@@ -69,7 +69,7 @@ async function flagRefusal(context, access, details) {
     const profile = access.profile;
     const result = await recordFlag(access.email, {
       ...details,
-      studentName: [profile?.studentFirstName, profile?.studentLastName].filter(Boolean).join(" "),
+      studentName: profile?.studentFirstName ?? "",
       year: profile?.year ?? details.year,
     }, { log: (message) => context.warn(message) });
     if (result?.alerted) context.warn(`Safeguarding alert sent for a ${details.reason} flag.`);

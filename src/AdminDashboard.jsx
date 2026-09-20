@@ -132,7 +132,7 @@ export function AdminDashboard({ request }) {
         <div>
           <p className="eyebrow">Access control</p>
           <h2>User management</h2>
-          <p>Control who can sign in and use the AI tutor.</p>
+          <p>Control who can sign in and use Sonia, the AI tutor.</p>
         </div>
         <button className="icon-button" onClick={loadUsers} title="Refresh users" type="button">
           <RefreshCw size={18} />

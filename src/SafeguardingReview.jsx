@@ -142,7 +142,7 @@ export function SafeguardingReview({ request }) {
       <ShieldAlert size={22} />
       <div>
         <h2>Safeguarding</h2>
-        <p>Messages the tutor refused. High-severity flags also email the administrators.</p>
+        <p>Messages Sonia refused. High-severity flags also email the administrators.</p>
       </div>
       <button className="secondary-button" onClick={load} type="button"><RefreshCw size={15} /> Refresh</button>
     </header>

@@ -55,7 +55,7 @@ export function AccountSettings({ currentUser, onDeleted, request, subscription 
 
     <section className="account-section">
       <div className="account-section-icon"><ShieldCheck size={20} /></div>
-      <div><h3>Privacy and terms</h3><p>Review the information used for sign-in, learning progress, AI tutoring, and payments.</p></div>
+      <div><h3>Privacy and terms</h3><p>Review the information used for sign-in, learning progress, Sonia the AI tutor, and payments.</p></div>
       <div className="account-links"><button onClick={() => setLegalSection("privacy")} type="button">Privacy notice</button><button onClick={() => setLegalSection("terms")} type="button">Subscription terms</button></div>
     </section>
 

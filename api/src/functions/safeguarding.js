@@ -20,7 +20,7 @@ async function withGuardianContact(rows) {
     const profile = profiles.get(row.email);
     return {
       ...row,
-      studentName: row.studentName || [profile?.studentFirstName, profile?.studentLastName].filter(Boolean).join(" "),
+      studentName: row.studentName || profile?.studentFirstName || "",
       year: row.year || profile?.year || 0,
       guardian: profile
         ? { name: profile.guardianName ?? "", relationship: profile.guardianRelationship ?? "", phone: profile.guardianPhone ?? "" }

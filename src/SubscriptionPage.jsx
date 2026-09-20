@@ -1,22 +1,67 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { BadgeCheck, BookOpenCheck, Check, GraduationCap, LockKeyhole, LogOut, ShieldCheck } from "lucide-react";
 
 // One plan, one price, billed monthly. There is no trial: the subscription
 // starts and is charged today, and it can be cancelled at any time.
 const price = { amount: "GBP 9.99", suffix: "/month", note: "Billed monthly from today. Cancel any time." };
 
+// Configured in Checkout Studio. Passed to the form SDK as-is.
+const appearance = {
+  theme: "stripe",
+  labels: "auto",
+  inputs: "spaced",
+  variables: {
+    borderRadius: "4px",
+    colorBackground: "#ffffff",
+    colorDanger: "#df1b41",
+    colorPrimary: "#0570de",
+    colorSuccess: "#00c853",
+    colorText: "#30313d",
+    fontFamily: "default",
+    fontSizeBase: "16px",
+    spacingUnit: "4px",
+  },
+};
+
 export function SubscriptionPage({ checkoutState, currentUser, onCheckout, onPrivacy, onSignOut }) {
   const [terms, setTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [paying, setPaying] = useState(false);
   const [error, setError] = useState("");
+  const formRef = useRef(null);
 
+  // The card form is rendered by Stripe inside its own iframe, so nothing here
+  // ever touches a card number. It is mounted on demand rather than at load,
+  // because creating a Checkout Session is a billable API call and most people
+  // opening this page are reading it, not paying yet.
   async function subscribe() {
     setSubmitting(true);
     setError("");
     try {
-      await onCheckout();
+      const clientSecret = await onCheckout();
+      const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+      if (!window.Stripe) throw new Error("The payment form could not be loaded. Check your connection and try again.");
+      if (!publishableKey) throw new Error("Payments are not configured yet.");
+
+      const stripe = window.Stripe(publishableKey, { betas: ["custom_checkout_payment_form_1"] });
+      const checkout = stripe.initCheckoutFormSdk({ clientSecret, appearance });
+      const form = checkout.createForm({ layout: "expanded" });
+      setPaying(true);
+      form.mount(formRef.current ?? "#checkout-form");
+
+      const loadActionsResult = await checkout.loadActions();
+      if (loadActionsResult.type === "success") {
+        form.on("confirm", async (event) => {
+          try {
+            await loadActionsResult.actions.confirm({ formConfirmEvent: event });
+          } catch (confirmError) {
+            setError(confirmError.message ?? "The payment could not be confirmed.");
+          }
+        });
+      }
     } catch (checkoutError) {
       setError(checkoutError.message);
+      setPaying(false);
       setSubmitting(false);
     }
   }
@@ -32,7 +77,7 @@ export function SubscriptionPage({ checkoutState, currentUser, onCheckout, onPri
         <div className="subscription-intro">
           <p className="eyebrow">Education Hub subscription</p>
           <h1>A focused learning plan for Years 7 to 11</h1>
-          <p>One subscription covering the complete curriculum, diagnostics, AI tutoring, and progress tracking. Learner setup takes a minute and happens right after payment.</p>
+          <p>One subscription covering the complete curriculum, diagnostics, Sonia the AI tutor, and progress tracking. Learner setup takes a minute and happens right after payment.</p>
           <div className="subscription-benefits">
             <div><BookOpenCheck size={19} /><span><strong>Seven subjects</strong><small>Year-specific KS3 and GCSE pathways</small></span></div>
             <div><BadgeCheck size={19} /><span><strong>Adaptive support</strong><small>Learn, Practice, Exam, and Review modes</small></span></div>
@@ -50,7 +95,7 @@ export function SubscriptionPage({ checkoutState, currentUser, onCheckout, onPri
           <ul>
             <li><Check size={17} />Complete Year 7-11 curriculum</li>
             <li><Check size={17} />Initial diagnostic and personal learning path</li>
-            <li><Check size={17} />AI tutor across four learning modes</li>
+            <li><Check size={17} />Sonia, your AI tutor, across four learning modes</li>
             <li><Check size={17} />Student and parent progress dashboards</li>
             <li><Check size={17} />Cancel any time from Account and privacy</li>
           </ul>
@@ -61,9 +106,15 @@ export function SubscriptionPage({ checkoutState, currentUser, onCheckout, onPri
 
           {checkoutState === "cancelled" && <p className="checkout-note">Checkout was cancelled. No charge was made.</p>}
           {error && <p className="subscription-error" role="alert">{error}</p>}
-          <button className="subscribe-button" disabled={!terms || submitting} onClick={subscribe} type="button">
-            <LockKeyhole size={17} /> {submitting ? "Opening secure checkout..." : "Continue to secure payment"}
-          </button>
+
+          {/* Stripe renders the card fields inside this element, in its own
+              iframe. It stays in the tree once paying, so the mount target
+              cannot disappear underneath the form. */}
+          <div className="checkout-form" hidden={!paying} id="checkout-form" ref={formRef}></div>
+
+          {!paying && <button className="subscribe-button" disabled={!terms || submitting} onClick={subscribe} type="button">
+            <LockKeyhole size={17} /> {submitting ? "Opening secure payment..." : "Continue to secure payment"}
+          </button>}
           <p className="payment-note">Payment details are collected and stored by Stripe, not Education Hub.</p>
         </section>
       </section>
