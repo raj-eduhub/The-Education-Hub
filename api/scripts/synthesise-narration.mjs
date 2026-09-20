@@ -168,7 +168,10 @@ for (const topic of topics) {
     counts.beats += 1;
     const key = narrationKey(topic.id, text, voice);
 
-    if (!force && !dryRun && await hasNarration(key)) {
+    // The cache is checked on a dry run too. Skipping it made every beat look
+    // new, so the estimate was of synthesising the curriculum from nothing
+    // rather than of the run you were about to make.
+    if (!force && await hasNarration(key)) {
       counts.skipped += 1;
       skipped += 1;
       return;
