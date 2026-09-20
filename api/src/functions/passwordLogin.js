@@ -1,6 +1,6 @@
 import { app } from "@azure/functions";
-import { authTable, findAuth, digest, hashPassword, checkPassword, createSession, sessionToken, createPasswordReset, completePasswordReset } from "../lib/passwordAuth.js";
-import { sendPasswordResetEmail } from "../lib/email.js";
+import { authTable, findAuth, digest, hashPassword, checkPassword, createSession, sessionToken, createPasswordReset, completePasswordReset, createEmailVerification, completeEmailVerification } from "../lib/passwordAuth.js";
+import { sendPasswordResetEmail, sendVerificationEmail } from "../lib/email.js";
 import { getUserByEmail, saveUser } from "../lib/userStore.js";
 
 app.http("passwordLogin", {
@@ -44,6 +44,15 @@ app.http("passwordLogin", {
         }
         return accepted;
       }
+      if (action === "verify") {
+        const verified = await completeEmailVerification(typeof body.token === "string" ? body.token : "");
+        if (!verified) return fail(410, "This confirmation link is invalid, expired, or already used.");
+        // The roster row is written here, not at registration: it is the flag
+        // every other route reads, and it must not exist for an unproven address.
+        await saveUser({ name: verified.name ?? verified.username, email: verified.email, role: "parent" });
+        const token = await createSession(verified.accountId);
+        return { status: 200, jsonBody: { ok: true }, headers: { "Set-Cookie": cookie(token, 28800), "Cache-Control": "no-store" } };
+      }
       if (action === "reset") {
         if (typeof body.password !== "string" || body.password.length < 15 || body.password.length > 128) return fail(400, "Set a password of 15-128 characters.");
         if (!await completePasswordReset(typeof body.token === "string" ? body.token : "", body.password)) return fail(410, "This reset link is invalid, expired, or already used.");
@@ -57,20 +66,34 @@ app.http("passwordLogin", {
       if (action === "register") {
         const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254 || body.password.length < 15) return fail(400, "Enter a valid email and a password of 15-128 characters.");
-        if (account || await getUserByEmail(email)) return fail(409, "Unable to create this account. Use another username or contact support for an existing account.");
-        account = { partitionKey: "auth", rowKey: accountId, username, email, name: username, ...await hashPassword(body.password) };
+        if (account || await findAuth(`email-${digest(email)}`) || await getUserByEmail(email)) return fail(409, "Unable to create this account. Use another username or contact support for an existing account.");
+        // Registration proves nothing yet, so it grants nothing: no roster row
+        // and no session until the address is confirmed.
+        account = { partitionKey: "auth", rowKey: accountId, username, email, name: username, emailVerified: false, ...await hashPassword(body.password) };
         await client.submitTransaction([
           ["create", account],
           ["create", { partitionKey: "auth", rowKey: `email-${digest(email)}`, accountId }],
         ]);
-        await saveUser({ name: username, email, role: "parent" });
-      } else if (action === "login") {
+        const verifyToken = await createEmailVerification(accountId);
+        const appUrl = process.env.APP_BASE_URL ?? new URL(request.url).origin;
+        try {
+          await sendVerificationEmail({ email, username, verifyUrl: `${appUrl}/?verify=${encodeURIComponent(verifyToken)}` });
+        } catch (error) {
+          // The account exists but is unusable until confirmed, so a delivery
+          // fault is reported rather than swallowed: there is no way in without it.
+          context.error("Confirmation email failure", error.code ?? error.name);
+          return fail(503, "The account was created but the confirmation email could not be sent. Use Forgot your password to request a new link.");
+        }
+        return { status: 202, jsonBody: { ok: true, verificationRequired: true }, headers: { "Cache-Control": "no-store" } };
+      }
+      if (action === "login") {
         if (!await checkPassword(body.password, account)) return fail(401, "Username or password is incorrect.");
+        if (account.emailVerified !== true) return fail(403, "Confirm your email address before signing in. Check your inbox for the confirmation link.");
         const user = await getUserByEmail(account.email);
         if (user?.status !== "active") return fail(403, "This account is inactive. Contact support.");
       } else return fail(404, "Unknown action.");
       const token = await createSession(accountId);
-      return { status: action === "register" ? 201 : 200, jsonBody: { ok: true }, headers: { "Set-Cookie": cookie(token, 28800), "Cache-Control": "no-store" } };
+      return { status: 200, jsonBody: { ok: true }, headers: { "Set-Cookie": cookie(token, 28800), "Cache-Control": "no-store" } };
     } catch (error) {
       context.error("Password authentication failure", error.code ?? error.name);
       return fail([409, 412].includes(error.statusCode) ? 409 : 503, "Unable to complete sign-in. Please try again.");

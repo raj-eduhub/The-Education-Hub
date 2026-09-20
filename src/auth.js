@@ -15,7 +15,14 @@ export function clearAuthToken() {
 async function validateApiResponse(response) {
   if (response.status === 204) return response;
   const contentType = response.headers.get("content-type") ?? "";
-  if (!contentType.includes("application/json")) {
+  // What this is really detecting is the API not being there at all, when the
+  // static host answers /api/... with the app's own HTML. Requiring JSON was a
+  // near-enough proxy for that until a route started returning audio: cached
+  // narration is audio/mpeg, and this threw on every successful response, so
+  // every beat looked missing and the lesson always fell back to the browser
+  // voice. Binary responses the API genuinely serves are allowed through.
+  const usable = contentType.includes("application/json") || contentType.startsWith("audio/");
+  if (!usable) {
     throw new Error(
       response.ok
         ? "The backend API is not connected. Use the preview links or start the app with the Static Web Apps API."

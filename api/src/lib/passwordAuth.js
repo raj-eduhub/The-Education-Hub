@@ -38,7 +38,11 @@ export async function passwordPrincipal(request) {
   if (!session || session.expiresAt <= Date.now()) return null;
   const account = await findAuth(session.accountId);
   if (!account) return null;
-  return { userDetails: account.email, name: account.name, userId: account.rowKey, userRoles: ["authenticated"], identityProvider: "password", emailVerified: account.emailVerified === true };
+  // A session is only issued after the address is proven, so this should never
+  // be false. It is checked anyway: the address is the identity every other
+  // store is keyed on, and nothing should resolve from an unproven one.
+  if (account.emailVerified !== true) return null;
+  return { userDetails: account.email, name: account.name, userId: account.rowKey, userRoles: ["authenticated"], identityProvider: "password", emailVerified: true };
 }
 export async function revokeAccountTokens(accountId, prefixes = ["session-", "reset-"]) {
   const client = await authTable();
@@ -48,6 +52,40 @@ export async function revokeAccountTokens(accountId, prefixes = ["session-", "re
     }
   }
 }
+// Email verification.
+//
+// Registration accepts any address, and the address is this application's whole
+// identity: it keys the access roster, the subscription, the learner profile,
+// the progress partition and the safeguarding partition. Until the address is
+// proven, registering it must grant nothing - otherwise whoever claims an
+// address first owns the account that its real owner later pays for.
+export async function createEmailVerification(accountId) {
+  const token = randomBytes(32).toString("base64url");
+  await revokeAccountTokens(accountId, ["verify-"]);
+  await (await authTable()).createEntity({
+    partitionKey: "auth",
+    rowKey: `verify-${digest(token)}`,
+    accountId,
+    expiresAt: Date.now() + 24 * 3600000,
+  });
+  return token;
+}
+
+export async function completeEmailVerification(token) {
+  if (!/^[\w-]{43}$/.test(token)) return null;
+  const client = await authTable();
+  const pending = await findAuth(`verify-${digest(token)}`);
+  if (!pending || pending.expiresAt <= Date.now()) return null;
+  // Claimed before the account is written, so a replayed link cannot verify twice.
+  const claimed = await client.deleteEntity("auth", pending.rowKey, { etag: pending.etag })
+    .then(() => true).catch(e => { if ([404, 412].includes(e.statusCode)) return false; throw e; });
+  if (!claimed) return null;
+  const account = await findAuth(pending.accountId);
+  if (!account) return null;
+  await client.updateEntity({ ...account, emailVerified: true }, "Replace", { etag: account.etag });
+  return { accountId: pending.accountId, email: account.email, username: account.username, name: account.name };
+}
+
 export async function createPasswordReset(email) {
   const index = await findAuth(`email-${digest(email)}`);
   if (!index) return null;

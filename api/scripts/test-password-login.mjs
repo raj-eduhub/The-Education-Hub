@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
-import { createPasswordReset, deleteCredentials } from "../src/lib/passwordAuth.js";
+import { createEmailVerification, createPasswordReset, deleteCredentials, digest } from "../src/lib/passwordAuth.js";
 import { deleteUserByEmail, saveUser } from "../src/lib/userStore.js";
 
 const base = process.env.TEST_BASE_URL ?? "http://127.0.0.1:5173/api";
@@ -10,10 +10,21 @@ const password = randomBytes(24).toString("base64url");
 const post = (action, body, cookie = "") => fetch(`${base}/auth/${action}`, { method: "POST", headers: { "Content-Type": "application/json", cookie }, body: JSON.stringify(body) });
 try {
   assert.equal((await fetch(`${base}/session`)).status, 401);
+  // Registration grants nothing until the address is confirmed: no session, and
+  // no roster row for an address nobody has proven they own.
   const registered = await post("register", { username, email, password });
-  assert.equal(registered.status, 201, await registered.text());
-  const cookie = registered.headers.get("set-cookie").split(";")[0];
-  assert.match(registered.headers.get("set-cookie"), /HttpOnly/);
+  assert.equal(registered.status, 202, await registered.text());
+  assert.equal(registered.headers.get("set-cookie"), null, "registration must not issue a session");
+  const unverified = await post("login", { username, password });
+  assert.equal(unverified.status, 403, "an unconfirmed account must not sign in");
+
+  // Standing in for the emailed link.
+  const verifyToken = await createEmailVerification(`user-${digest(username)}`);
+  const verified = await post("verify", { token: verifyToken });
+  assert.equal(verified.status, 200, await verified.text());
+  const cookie = verified.headers.get("set-cookie").split(";")[0];
+  assert.match(verified.headers.get("set-cookie"), /HttpOnly/);
+  assert.equal((await post("verify", { token: verifyToken })).status, 410, "a confirmation link is single use");
   const session = await (await fetch(`${base}/session`, { headers: { cookie } })).json();
   assert.equal(session.isAdmin, false);
   assert.equal(session.accessRole, "parent");

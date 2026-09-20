@@ -1,5 +1,29 @@
 # Username and password login
 
+## Email confirmation
+
+Registration grants nothing until the address is confirmed. `POST /api/auth/register`
+writes the credential and returns `202` with no session and no access-roster row;
+a one-time link is emailed, and `POST /api/auth/verify` is what creates the roster
+row and issues the first session. Signing in before confirmation is refused with
+`403`, and `passwordPrincipal` refuses to resolve an unconfirmed account at all.
+
+This is not politeness about typos. The email address is the whole identity in
+this application: it keys the access roster, the subscription, the learner
+profile, the progress partition and the safeguarding partition, and a Google
+sign-in with the same address resolves to the same account. Without confirmation,
+whoever registers an address first owns the account that its real owner later
+pays for - they keep a working password credential, and through it the child's
+name, date of birth, school and guardian phone number, plus the ability to delete
+the account. The roster row created at registration was the specific flaw: it is
+the flag every other route reads, and it was being written for an address nobody
+had proven they owned.
+
+Confirmation links expire after 24 hours and can be used once. A delivery failure
+returns `503`, because the account is unusable until the link arrives and
+silently swallowing the error would strand it.
+
+
 Open http://127.0.0.1:5173/ to use Log in or Sign up. The local development bypass is disabled. New registrations create parent accounts with no learning entitlement; subscription payment and the emailed learner-setup invitation remain required. Signup now creates credentials before checkout; student details and the permanent school year are collected after payment.
 
 Passwords require 15-128 characters at registration. The server stores salted scrypt hashes (N=32768, r=8, p=3) in EducationHubAuth. Random session tokens are stored as SHA-256 hashes and delivered in HttpOnly, SameSite=Strict cookies, with Secure enabled outside local Development. Sessions expire after eight hours and logout removes the server record. No password or session token is stored in browser local storage.

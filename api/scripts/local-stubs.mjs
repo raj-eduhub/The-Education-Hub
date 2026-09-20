@@ -99,6 +99,27 @@ const stripe = http.createServer(async (request, response) => {
     return;
   }
 
+  // The payments dashboard reads the plan price from Stripe so the revenue
+  // figure cannot drift from what customers are actually charged.
+  if (request.url.startsWith("/v1/prices/")) {
+    const id = request.url.split("/v1/prices/")[1].split("?")[0];
+    console.log(`[stripe] price ${id}`);
+    return json(200, {
+      id, object: "price", active: true, currency: "gbp",
+      unit_amount: 999, recurring: { interval: "month", interval_count: 1 },
+    });
+  }
+
+  if (request.url.startsWith("/v1/subscriptions/")) {
+    const id = request.url.split("/v1/subscriptions/")[1].split("?")[0];
+    console.log(`[stripe] subscription ${id}`);
+    return json(200, {
+      id, object: "subscription", status: "active", customer: "cus_stub_1",
+      cancel_at_period_end: false,
+      current_period_end: Math.floor(Date.now() / 1000) + 30 * 86400,
+    });
+  }
+
   if (request.url.startsWith("/v1/billing_portal/sessions")) {
     log.portalSessions.push({ at: new Date().toISOString(), customer: params.get("customer") });
     save();

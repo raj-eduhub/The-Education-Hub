@@ -38,6 +38,19 @@ You can cancel or change payment details at any time from Account and privacy.`,
   });
 }
 
+// Sent on registration, before the account can do anything. The address is the
+// identity everything else is keyed on, so it has to be proven before it grants
+// access to a roster, a subscription or a child's profile.
+export async function sendVerificationEmail({ email, username, verifyUrl }) {
+  await send({
+    email,
+    subject: "Confirm your Education Hub email address",
+    plainText: `An Education Hub account with the username "${username}" was created with this email address. Confirm the address to finish setting it up: ${verifyUrl}\n\nThis link expires in 24 hours and can be used once. If you did not create this account, ignore this email and nothing further will happen.`,
+    html: `<h1>Confirm your email address</h1><p>An Education Hub account with the username <strong>${username}</strong> was created with this email address.</p><p><a href="${verifyUrl}">Confirm this address</a></p><p>This link expires in 24 hours and can be used once. If you did not create this account, ignore this email and nothing further will happen.</p>`,
+    undelivered: "The confirmation email could not be delivered.",
+  });
+}
+
 const alertSubjects = {
   unsafe: "Safeguarding alert: a learner message was blocked",
 };
