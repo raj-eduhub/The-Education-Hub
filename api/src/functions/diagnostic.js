@@ -1,5 +1,6 @@
 import { app } from "@azure/functions";
 import { callFoundry, deployment } from "../lib/foundry.js";
+import { checkModelBudget } from "../lib/modelBudget.js";
 import { getLearningAccess } from "../lib/learningAccess.js";
 import { recordAttempt } from "../lib/progressStore.js";
 
@@ -43,6 +44,11 @@ app.http("diagnostic", {
       if (safeResponses.some((item) => !item.topicId || !item.topic || !item.outcome || !item.answer.trim())) {
         return { status: 400, jsonBody: { error: "Every diagnostic question needs an answer." } };
       }
+
+      // The check marks five answers in one call, so it is a single charge
+      // against the budget rather than one per question.
+      const overBudget = await checkModelBudget(access.email, { context });
+      if (overBudget) return overBudget;
 
       const text = await callFoundry({
         model: deployment,

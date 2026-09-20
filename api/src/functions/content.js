@@ -1,5 +1,6 @@
 import { app } from "@azure/functions";
 import { callFoundry, deployment } from "../lib/foundry.js";
+import { checkModelBudget } from "../lib/modelBudget.js";
 import { getLearningAccess } from "../lib/learningAccess.js";
 import { contentKey, getContent, saveContent } from "../lib/contentStore.js";
 import { contentTypes, isQuestionBank, mayUseModel, routeFor, supportsQuestionBank, usesMathsNotation, variesByBoard, variesByTier } from "../lib/contentPolicy.js";
@@ -39,8 +40,14 @@ app.http("content", {
       // Year 9, when GCSE preparation begins.
       const bankIndex = Math.max(0, Math.min(50, Number(body.index) || 0));
       // Review re-asks an exact stored question, so the key can be given directly
-      // rather than derived from an index.
-      const explicitRowKey = typeof body.rowKey === "string" && /^[a-zA-Z0-9-]{1,60}$/.test(body.rowKey) ? body.rowKey : "";
+      // rather than derived from an index. It is restricted to the shapes
+      // contentKey() can actually produce: the curriculum table is shared by
+      // every learner, so a client-chosen key is a write into other people's
+      // lessons unless it is both constrained and read-only.
+      const explicitRowKey = typeof body.rowKey === "string"
+        && /^(explanation|example-\d{1,2}-(Foundation|Higher|core)|(practice|exam)-\d{1,2}-(AQA|Edexcel|core)-(Foundation|Higher|core))$/.test(body.rowKey)
+        ? body.rowKey
+        : "";
       const key = explicitRowKey
         ? { partitionKey: topic.id, rowKey: explicitRowKey }
         : contentKey(type, topic.id, {
@@ -91,6 +98,14 @@ app.http("content", {
         }
       }
 
+      // Asking for a key directly is a lookup, never a commission. Falling
+      // through here would let a learner choose where the generated row lands,
+      // and the curriculum table is shared: the next learner to open that topic
+      // would be served whatever this request produced.
+      if (explicitRowKey) {
+        return { status: 404, jsonBody: { error: "That question is no longer stored.", route } };
+      }
+
       if (reviewedOnly) {
         return {
           status: 404,
@@ -107,6 +122,12 @@ app.http("content", {
           jsonBody: { error: "This part of the curriculum has not been published yet.", route },
         };
       }
+
+      // Only a call that genuinely reaches the model is counted. A learner
+      // reading stored content all evening costs nothing and should not be
+      // limited for it.
+      const overBudget = await checkModelBudget(access.email, { context });
+      if (overBudget) return overBudget;
 
       const notation = usesMathsNotation(subject);
       const userPrompt = isQuestionBank(type)

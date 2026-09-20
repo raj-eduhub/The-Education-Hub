@@ -1,5 +1,6 @@
 import { app } from "@azure/functions";
 import { callFoundry, deployment } from "../lib/foundry.js";
+import { checkModelBudget } from "../lib/modelBudget.js";
 import { getLearningAccess } from "../lib/learningAccess.js";
 import { checkAnswer, checkQuestion, guardInstructions, verdicts } from "../lib/tutorGuard.js";
 import { findStoredAnswer, loadStudyMaterial, materialText } from "../lib/tutorRetrieval.js";
@@ -150,6 +151,12 @@ app.http("tutor", {
           return { jsonBody: { answer: stored.answer, source: "stored", match: { type: stored.type, score: Number(stored.score.toFixed(2)) } } };
         }
       }
+
+      // Counted here rather than at the top of the handler: a guarded message
+      // and one answered from stored material never reach the model, so neither
+      // should spend a learner's budget.
+      const overBudget = await checkModelBudget(access.email, { context });
+      if (overBudget) return overBudget;
 
       const recentHistory = history
         .slice(-6)

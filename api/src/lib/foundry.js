@@ -17,7 +17,16 @@ function outputText(response) {
   return fragments.join("\n").trim();
 }
 
-export async function callFoundry(payload) {
+const wait = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
+
+// A deployment has a rate limit, and both callers here can reach it: a seeding
+// run makes thousands of calls, and a busy lesson makes many at once. Without a
+// retry a throttle was an error - a lost row during seeding, and a "could not
+// be prepared" message to the learner during a lesson - when the service had
+// only asked us to wait a moment.
+const maxAttempts = 4;
+
+export async function callFoundry(payload, attempt = 0) {
   const apiKey = process.env.AZURE_AI_API_KEY;
   const headers = { "Content-Type": "application/json" };
 
@@ -35,10 +44,17 @@ export async function callFoundry(payload) {
     body: JSON.stringify(payload),
   });
 
-  const data = await response.json();
   if (!response.ok) {
+    const retryable = response.status === 429 || response.status >= 500;
+    if (retryable && attempt < maxAttempts - 1) {
+      // Honour the wait the service asks for, and back off where it names none.
+      const suggested = Number(response.headers.get("retry-after")) * 1000;
+      await wait(Number.isFinite(suggested) && suggested > 0 ? suggested : 2 ** attempt * 1500);
+      return callFoundry(payload, attempt + 1);
+    }
+    const data = await response.json().catch(() => ({}));
     throw new Error(data.error?.message ?? `Azure AI request failed with ${response.status}`);
   }
 
-  return outputText(data);
+  return outputText(await response.json());
 }

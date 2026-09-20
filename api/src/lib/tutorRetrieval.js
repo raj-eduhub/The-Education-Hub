@@ -53,11 +53,25 @@ function renderExample(payload, title) {
   ].filter(Boolean).join("\n");
 }
 
+// The review gate applies wherever stored content reaches a learner, and this is
+// one of those places: a matched row is rendered to them verbatim. The content
+// endpoint already honours it; without this the tutor was a way round it, which
+// is the one thing the gate exists to prevent.
+//
+// It is applied here rather than in loadStudyMaterial because that material is
+// also used to widen the guard's sense of on-topic vocabulary, and that never
+// reaches the learner. Narrowing it there would only make the guard redirect
+// more legitimate questions as off-topic.
+function servableToLearner(row) {
+  if (process.env.REQUIRE_REVIEWED_CONTENT !== "true") return true;
+  return row.reviewed === true;
+}
+
 export function findStoredAnswer(question, material) {
   const tokens = tokenise(question);
   if (tokens.length < minimumTokens) return null;
   let best = null;
-  for (const row of material) {
+  for (const row of material.filter(servableToLearner)) {
     const payload = row.payload ?? {};
     const candidate = row.type === contentTypes.EXPLANATION
       ? [payload.explanation, ...(payload.keyIdeas ?? []), ...(payload.formulae ?? [])].join(" ")
