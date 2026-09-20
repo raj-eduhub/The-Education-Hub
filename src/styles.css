@@ -1,8 +1,9 @@
 :root {
-  color: #172033;
-  background: #f5f7fb;
-  font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--ink-bright);
+  background: var(--surface);
+  font-family: var(--font-ui, Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif);
+  /* Both faces ship every weight used here, so nothing needs faking - and a
+     synthesised bold on a variable face looks smeared. */
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -11,9 +12,9 @@
   box-sizing: border-box;
 }
 
-.password-login { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: #f5f7fb; }
+.password-login { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: var(--surface); }
 .password-login .login-box { width: min(100%, 420px); }
-.password-brand { display: flex; align-items: center; gap: 12px; color: #174d85; font-size: 24px; margin-bottom: 28px; }
+.password-brand { display: flex; align-items: center; gap: 12px; color: var(--ink); font-size: 24px; margin-bottom: 28px; }
 .password-tabs { display: flex; gap: 8px; }
 .password-tabs button { display: flex; gap: 8px; align-items: center; flex: 1; justify-content: center; padding: 12px; border: 1px solid #ccd8e6; border-radius: 6px; background: white; }
 .password-tabs button[aria-pressed="true"] { background: #174d85; color: white; }
@@ -23,7 +24,7 @@
 .password-form input { width: 100%; min-width: 0; padding: 12px; border: 1px solid #b5c4d6; border-radius: 6px; }
 .password-form button { padding: 13px; background: #174d85; color: white; border: 0; border-radius: 6px; }
 .password-form button:disabled { opacity: .6; }
-.password-form button.login-link, .login-sent button.login-link { background: none; border: 0; color: #174d85; padding: 4px; text-decoration: underline; justify-self: center; }
+.password-form button.login-link, .login-sent button.login-link { background: none; border: 0; color: var(--ink); padding: 4px; text-decoration: underline; justify-self: center; }
 .login-sent { display: grid; gap: 18px; }
 .login-sent p { line-height: 1.55; }
 
@@ -72,7 +73,7 @@ button {
   align-items: center;
   background: #fca311;
   border-radius: 8px;
-  color: #14213d;
+  color: var(--ink-bright);
   display: grid;
   height: 48px;
   place-items: center;
@@ -124,13 +125,8 @@ button {
 }
 
 .segmented button.active {
-  background: #ffffff;
-  color: #14213d;
-}
-
-.subject-list {
-  display: grid;
-  gap: 8px;
+  background: var(--surface);
+  color: var(--ink-bright);
 }
 
 .primary-nav {
@@ -156,29 +152,9 @@ button {
   color: #ffffff;
 }
 
-.subject {
-  align-items: center;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  color: #dce8f7;
-  display: grid;
-  gap: 10px;
-  grid-template-columns: 18px 1fr 16px;
-  min-height: 48px;
-  padding: 0 12px;
-  text-align: left;
-}
-
-.subject.active {
-  background: #2364aa;
-  border-color: #4f9bea;
-  color: #ffffff;
-}
-
 .lesson-panel,
 .tutor-panel {
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #dae2ef;
   border-radius: 8px;
   box-shadow: 0 12px 36px rgba(33, 45, 75, 0.08);
@@ -201,7 +177,7 @@ button {
 
 .mode-toolbar {
   align-items: center;
-  background: #e9eef5;
+  background: var(--recess-bg);
   border-radius: 8px;
   display: flex;
   gap: 4px;
@@ -214,7 +190,7 @@ button {
   background: transparent;
   border: 0;
   border-radius: 6px;
-  color: #53637a;
+  color: var(--ink-soft);
   display: flex;
   gap: 7px;
   min-height: 38px;
@@ -222,16 +198,16 @@ button {
 }
 
 .mode-toolbar button.active {
-  background: #ffffff;
+  background: var(--surface);
   box-shadow: 0 1px 3px rgba(33, 45, 75, 0.12);
-  color: #174d85;
+  color: var(--ink);
   font-weight: 700;
 }
 
 .exam-timer {
   align-items: center;
   border-left: 1px solid #c9d3df;
-  color: #53637a;
+  color: var(--ink-soft);
   display: flex;
   gap: 7px;
   margin-left: 6px;
@@ -239,7 +215,7 @@ button {
 }
 
 .exam-timer.running {
-  color: #a1332a;
+  color: #d09994;
 }
 
 .topbar {
@@ -260,10 +236,10 @@ button {
 }
 
 .unit-filter {
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #ccd8e6;
   border-radius: 8px;
-  color: #53637a;
+  color: var(--ink-soft);
   gap: 6px;
   min-height: 40px;
   padding: 0 8px 0 11px;
@@ -272,28 +248,28 @@ button {
 .unit-filter select {
   background: transparent;
   border: 0;
-  color: #334155;
+  color: var(--ink);
   max-width: 190px;
   min-height: 36px;
   outline: 0;
 }
 
 .topbar h2 {
-  color: #14213d;
+  color: var(--ink-bright);
   font-size: clamp(1.8rem, 3vw, 3rem);
 }
 
 .eyebrow {
-  color: #54657d;
+  color: var(--ink-soft);
   font-weight: 700;
   text-transform: uppercase;
 }
 
 .model-pill {
-  background: #e8f4ff;
+  background: var(--recess-bg);
   border: 1px solid #b9dcff;
   border-radius: 999px;
-  color: #0f4c81;
+  color: var(--ink);
   gap: 8px;
   min-height: 40px;
   padding: 0 14px;
@@ -306,10 +282,10 @@ button {
 }
 
 .topic-card {
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #d8e1ec;
   border-radius: 8px;
-  color: #172033;
+  color: var(--ink-bright);
   display: grid;
   gap: 8px;
   min-height: 138px;
@@ -318,7 +294,7 @@ button {
 }
 
 .topic-card span {
-  color: #2364aa;
+  color: var(--ink-soft);
   font-size: 0.78rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -329,7 +305,7 @@ button {
 }
 
 .topic-card small {
-  color: #54657d;
+  color: var(--ink-soft);
   line-height: 1.45;
 }
 
@@ -350,7 +326,7 @@ button {
 }
 
 .topic-picker > span {
-  color: #2364aa;
+  color: var(--ink-soft);
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -358,10 +334,10 @@ button {
 }
 
 .topic-picker select {
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #b5c4d6;
   border-radius: 8px;
-  color: #172033;
+  color: var(--ink-bright);
   flex: 1;
   font-size: 1rem;
   font-weight: 600;
@@ -376,10 +352,10 @@ button {
 }
 
 .subtopic-card {
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #d8e1ec;
   border-radius: 8px;
-  color: #172033;
+  color: var(--ink-bright);
   display: grid;
   gap: 8px;
   min-height: 118px;
@@ -388,7 +364,7 @@ button {
 }
 
 .subtopic-card .subtopic-index {
-  color: #2364aa;
+  color: var(--ink-soft);
   font-size: 0.78rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -401,7 +377,7 @@ button {
 
 .subtopic-card small {
   align-self: end;
-  color: #54657d;
+  color: var(--ink-soft);
 }
 
 .subtopic-card.active {
@@ -427,22 +403,22 @@ button {
   background: none;
   border: 1px solid #ccd8e6;
   border-radius: 6px;
-  color: #174d85;
+  color: var(--ink);
   display: flex;
   gap: 6px;
   padding: 6px 10px;
 }
 
 .example-status {
-  color: #54657d;
+  color: var(--ink-soft);
   line-height: 1.5;
 }
 
 .example-status.error {
-  background: #fff1f0;
+  background: rgba(159, 45, 36, 0.18);
   border: 1px solid #ffd1cc;
   border-radius: 6px;
-  color: #9f2d24;
+  color: #d4a09c;
   display: grid;
   gap: 10px;
   justify-items: start;
@@ -511,10 +487,10 @@ button {
 
 .ask-tutor {
   align-items: center;
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #b5c4d6;
   border-radius: 6px;
-  color: #174d85;
+  color: var(--ink);
   cursor: pointer;
   display: inline-flex;
   font: inherit;
@@ -529,13 +505,13 @@ button {
   background: none;
   border: none;
   border-radius: 6px;
-  color: #54657d;
+  color: var(--ink-soft);
   cursor: pointer;
   display: inline-flex;
   padding: 6px;
 }
 
-.close-tutor:hover { background: #eef3f8; color: #14213d; }
+.close-tutor:hover { background: var(--recess-bg); color: var(--ink-bright); }
 
 .panel-heading,
 .chat-header {
@@ -544,10 +520,10 @@ button {
 
 .start-activity {
   align-items: center;
-  background: #edf4fb;
+  background: var(--recess-bg);
   border: 1px solid #c9dced;
   border-radius: 6px;
-  color: #174d85;
+  color: var(--ink);
   display: flex;
   gap: 6px;
   margin-left: auto;
@@ -564,10 +540,10 @@ button {
 
 .attempt-actions button {
   align-items: center;
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #b9cce0;
   border-radius: 6px;
-  color: #174d85;
+  color: var(--ink);
   display: flex;
   gap: 7px;
   min-height: 38px;
@@ -575,7 +551,7 @@ button {
 }
 
 .attempt-actions span {
-  color: #2f7d32;
+  color: #97be98;
   font-size: 0.78rem;
 }
 
@@ -606,7 +582,7 @@ button {
 
 .attempt-recorder-heading span {
   align-items: center;
-  color: #64748b;
+  color: var(--ink-soft);
   display: flex;
   font-size: 0.75rem;
   gap: 5px;
@@ -615,7 +591,7 @@ button {
 .attempt-recorder-heading button {
   background: transparent;
   border: 0;
-  color: #53637a;
+  color: var(--ink-soft);
 }
 
 .attempt-recorder fieldset {
@@ -627,7 +603,7 @@ button {
 .attempt-recorder legend,
 .confidence-control > span,
 .mark-inputs label {
-  color: #46566d;
+  color: var(--ink);
   font-size: 0.78rem;
   font-weight: 700;
 }
@@ -640,18 +616,18 @@ button {
 }
 
 .attempt-outcomes button {
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #cbd6e3;
   border-radius: 6px;
-  color: #53637a;
+  color: var(--ink-soft);
   min-height: 38px;
   padding: 4px;
 }
 
 .attempt-outcomes button.active {
-  background: #e8f4ff;
+  background: var(--recess-bg);
   border-color: #2364aa;
-  color: #174d85;
+  color: var(--ink);
 }
 
 .confidence-control {
@@ -701,7 +677,7 @@ button {
 }
 
 .progress-dashboard {
-  background: #f5f7fb;
+  background: var(--surface);
   display: grid;
   gap: 24px;
   min-width: 0;
@@ -723,13 +699,13 @@ button {
 }
 
 .progress-header h2 {
-  color: #14213d;
+  color: var(--ink-bright);
   font-size: 2rem;
 }
 
 .progress-header > div > p:last-child,
 .progress-section-heading span {
-  color: #64748b;
+  color: var(--ink-soft);
   margin-top: 5px;
 }
 
@@ -741,10 +717,10 @@ button {
 
 .progress-metrics article {
   align-items: center;
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #dae2ef;
   border-radius: 8px;
-  color: #2364aa;
+  color: var(--ink-soft);
   display: grid;
   gap: 3px 8px;
   grid-template-columns: 20px 1fr;
@@ -753,12 +729,12 @@ button {
 }
 
 .progress-metrics article span {
-  color: #64748b;
+  color: var(--ink-soft);
   font-size: 0.78rem;
 }
 
 .progress-metrics article strong {
-  color: #14213d;
+  color: var(--ink-bright);
   font-size: 1.35rem;
   grid-column: 2;
 }
@@ -776,7 +752,7 @@ button {
 
 .subject-mastery-row {
   align-items: center;
-  background: #ffffff;
+  background: var(--surface);
   border-bottom: 1px solid #e2e8f0;
   display: grid;
   gap: 18px;
@@ -790,12 +766,12 @@ button {
 }
 
 .subject-mastery-row span {
-  color: #64748b;
+  color: var(--ink-soft);
   font-size: 0.76rem;
 }
 
 .mastery-bar {
-  background: #e5ebf2;
+  background: var(--recess-bg);
   border-radius: 999px;
   height: 8px;
   overflow: hidden;
@@ -808,7 +784,7 @@ button {
 }
 
 .priority-table-wrap {
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #dae2ef;
   border-radius: 8px;
   overflow-x: auto;
@@ -828,7 +804,7 @@ button {
 }
 
 .priority-table th {
-  color: #64748b;
+  color: var(--ink-soft);
   font-size: 0.7rem;
   text-transform: uppercase;
 }
@@ -839,13 +815,13 @@ button {
 }
 
 .priority-table td:first-child span {
-  color: #64748b;
+  color: var(--ink-soft);
   font-size: 0.75rem;
 }
 
 .progress-empty,
 .progress-error {
-  color: #53637a;
+  color: var(--ink-soft);
   padding: 30px 0;
   text-align: center;
 }
@@ -856,7 +832,7 @@ button {
 }
 
 .progress-error {
-  color: #9f2d24;
+  color: #cf9692;
 }
 
 .curriculum-overview {
@@ -955,7 +931,7 @@ button {
 }
 
 .subject-mastery-row.selected {
-  background: #edf5ff;
+  background: var(--surface);
   box-shadow: inset 3px 0 #2364aa;
 }
 
@@ -981,7 +957,7 @@ button {
 
 .tracker-toolbar {
   align-items: end;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid #dae2ef;
   border-radius: 8px;
   display: grid;
@@ -991,7 +967,7 @@ button {
 }
 
 .tracker-toolbar label {
-  color: #5a687a;
+  color: var(--ink-soft);
   display: grid;
   font-size: 0.72rem;
   font-weight: 700;
@@ -1000,10 +976,10 @@ button {
 
 .tracker-toolbar select,
 .tracker-toolbar input {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid #cbd6e3;
   border-radius: 6px;
-  color: #24364b;
+  color: var(--ink-bright);
   font: inherit;
   min-height: 40px;
   padding: 0 10px;
@@ -1017,7 +993,7 @@ button {
 }
 
 .tracker-search svg {
-  color: #718096;
+  color: var(--ink-soft);
   left: 11px;
   position: absolute;
 }
@@ -1032,7 +1008,7 @@ button {
 }
 
 .tracker-group {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid #dae2ef;
   border-radius: 8px;
   overflow: hidden;
@@ -1040,20 +1016,20 @@ button {
 
 .tracker-group > header {
   align-items: center;
-  background: #edf1f6;
+  background: var(--recess-bg);
   display: flex;
   gap: 10px;
   padding: 10px 14px;
 }
 
 .tracker-group > header strong {
-  color: #18314e;
+  color: var(--ink-bright);
   font-size: 0.78rem;
 }
 
 .tracker-group > header span {
   border-left: 1px solid #bdc8d5;
-  color: #627287;
+  color: var(--ink-soft);
   font-size: 0.75rem;
   padding-left: 10px;
 }
@@ -1073,9 +1049,9 @@ button {
 
 .tracker-state-icon {
   align-items: center;
-  background: #edf1f5;
+  background: var(--recess-bg);
   border-radius: 6px;
-  color: #718096;
+  color: var(--ink-soft);
   display: flex;
   height: 34px;
   justify-content: center;
@@ -1083,18 +1059,18 @@ button {
 }
 
 .tracker-state-icon.completed {
-  background: #e9f6ec;
-  color: #2f7d32;
+  background: rgba(47, 125, 50, 0.18);
+  color: #a1c4a3;
 }
 
 .tracker-state-icon.review {
-  background: #fff3dd;
-  color: #a35b00;
+  background: rgba(163, 91, 0, 0.18);
+  color: #d6b58c;
 }
 
 .tracker-state-icon.in-progress {
-  background: #e8f2ff;
-  color: #2364aa;
+  background: var(--recess-bg);
+  color: var(--ink-soft);
 }
 
 .tracker-topic-copy {
@@ -1102,13 +1078,13 @@ button {
 }
 
 .tracker-topic-copy > strong {
-  color: #172b45;
+  color: var(--ink-bright);
   display: block;
   font-size: 0.9rem;
 }
 
 .tracker-topic-copy p {
-  color: #67778b;
+  color: var(--ink-soft);
   font-size: 0.76rem;
   line-height: 1.45;
   margin: 4px 0 8px;
@@ -1123,23 +1099,23 @@ button {
 }
 
 .tracker-status.completed {
-  background: #e8f5eb;
-  color: #276b2b;
+  background: rgba(39, 107, 43, 0.18);
+  color: #9ebca0;
 }
 
 .tracker-status.review {
-  background: #fff0d3;
-  color: #8a4d00;
+  background: rgba(138, 77, 0, 0.18);
+  color: #caaf8c;
 }
 
 .tracker-status.in-progress {
-  background: #e6f1ff;
-  color: #17548f;
+  background: var(--recess-bg);
+  color: var(--ink);
 }
 
 .tracker-status.not-started {
-  background: #eef1f4;
-  color: #5c6877;
+  background: var(--recess-bg);
+  color: var(--ink-soft);
 }
 
 .tracker-evidence {
@@ -1149,22 +1125,22 @@ button {
 }
 
 .tracker-evidence strong {
-  color: #263b54;
+  color: var(--ink-bright);
   font-size: 0.78rem;
 }
 
 .tracker-evidence span,
 .tracker-evidence small {
-  color: #748195;
+  color: var(--ink-soft);
   font-size: 0.7rem;
 }
 
 .tracker-topic > button {
   align-items: center;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid #ccd6e1;
   border-radius: 6px;
-  color: #2364aa;
+  color: var(--ink-soft);
   cursor: pointer;
   display: flex;
   height: 34px;
@@ -1173,13 +1149,13 @@ button {
 }
 
 .tracker-empty {
-  color: #637287;
+  color: var(--ink-soft);
   padding: 42px;
   text-align: center;
 }
 
 .lesson-goal {
-  color: #334155;
+  color: var(--ink);
   font-size: 1.08rem;
   line-height: 1.6;
 }
@@ -1201,14 +1177,14 @@ button {
 }
 
 .guide-section h4 {
-  color: #172033;
+  color: var(--ink-bright);
   font-size: 0.92rem;
   margin: 0 0 10px;
 }
 
 .guide-section p,
 .guide-section li {
-  color: #42526a;
+  color: var(--ink);
   line-height: 1.55;
 }
 
@@ -1225,15 +1201,15 @@ button {
 }
 
 .formula-guide {
-  background: #f5f8fc;
+  background: var(--surface);
   margin: 0 -20px;
   padding: 18px 20px;
 }
 
 .formula-guide code {
-  background: #ffffff;
+  background: var(--surface);
   border-left: 3px solid #2364aa;
-  color: #123f6c;
+  color: var(--ink-bright);
   display: block;
   font-family: "Cascadia Code", Consolas, monospace;
   font-size: 0.9rem;
@@ -1249,9 +1225,9 @@ button {
 }
 
 .worked-answer {
-  background: #edf7e8;
+  background: rgba(35, 69, 30, 0.18);
   border-left: 3px solid #4f8a3d;
-  color: #23451e !important;
+  color: #9cab9a !important;
   padding: 9px 11px;
 }
 
@@ -1262,10 +1238,10 @@ button {
 }
 
 .outcome {
-  background: #f2f7ee;
+  background: rgba(35, 69, 30, 0.18);
   border: 1px solid #cfe7c3;
   border-radius: 8px;
-  color: #23451e;
+  color: #9cab9a;
   gap: 10px;
   min-height: 46px;
   padding: 10px 12px;
@@ -1295,8 +1271,8 @@ button {
 }
 
 .message.assistant {
-  background: #edf4fb;
-  color: #172033;
+  background: var(--recess-bg);
+  color: var(--ink-bright);
 }
 
 .message.user {
@@ -1327,7 +1303,7 @@ button {
   background: #fca311;
   border: 0;
   border-radius: 6px;
-  color: #172033;
+  color: var(--ink-bright);
   display: grid;
   height: 42px;
   place-items: center;
@@ -1339,7 +1315,7 @@ button {
 }
 
 .admin-page {
-  background: #f5f7fb;
+  background: var(--surface);
   display: grid;
   gap: 22px;
   grid-template-rows: auto auto 1fr;
@@ -1370,23 +1346,23 @@ button {
 }
 
 .admin-header h2 {
-  color: #14213d;
+  color: var(--ink-bright);
   font-size: 2rem;
 }
 
 .admin-header > div > p:last-child,
 .user-list-toolbar p {
-  color: #64748b;
+  color: var(--ink-soft);
   margin-top: 5px;
 }
 
 .icon-button,
 .row-actions button {
   align-items: center;
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #d7e0eb;
   border-radius: 6px;
-  color: #334155;
+  color: var(--ink);
   display: inline-flex;
   height: 40px;
   justify-content: center;
@@ -1402,10 +1378,10 @@ button {
 
 .admin-stats > div {
   align-items: center;
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #dae2ef;
   border-radius: 8px;
-  color: #2364aa;
+  color: var(--ink-soft);
   display: grid;
   gap: 4px 10px;
   grid-template-columns: 22px 1fr auto;
@@ -1414,11 +1390,11 @@ button {
 }
 
 .admin-stats span {
-  color: #53637a;
+  color: var(--ink-soft);
 }
 
 .admin-stats strong {
-  color: #14213d;
+  color: var(--ink-bright);
   font-size: 1.5rem;
 }
 
@@ -1432,7 +1408,7 @@ button {
 .add-user-panel,
 .user-list-panel,
 .access-state {
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #dae2ef;
   border-radius: 8px;
   box-shadow: 0 12px 36px rgba(33, 45, 75, 0.06);
@@ -1445,12 +1421,12 @@ button {
 }
 
 .section-title {
-  color: #14213d;
+  color: var(--ink-bright);
   gap: 10px;
 }
 
 .add-user-panel label {
-  color: #46566d;
+  color: var(--ink);
   display: grid;
   font-size: 0.84rem;
   font-weight: 700;
@@ -1460,10 +1436,10 @@ button {
 .add-user-panel input,
 .add-user-panel select,
 .search-box {
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #cfd9e6;
   border-radius: 6px;
-  color: #172033;
+  color: var(--ink-bright);
   min-height: 42px;
 }
 
@@ -1535,7 +1511,7 @@ button {
 }
 
 .user-table th {
-  color: #64748b;
+  color: var(--ink-soft);
   font-size: 0.75rem;
   text-transform: uppercase;
 }
@@ -1546,7 +1522,7 @@ button {
 }
 
 .user-table td:first-child span {
-  color: #64748b;
+  color: var(--ink-soft);
   font-size: 0.84rem;
 }
 
@@ -1561,18 +1537,18 @@ button {
 }
 
 .role-label {
-  background: #edf3fb;
-  color: #274d75;
+  background: var(--recess-bg);
+  color: var(--ink);
 }
 
 .status-label.active {
-  background: #e8f6e6;
-  color: #276221;
+  background: rgba(39, 98, 33, 0.18);
+  color: #9eb89b;
 }
 
 .status-label.inactive {
-  background: #f1f3f6;
-  color: #606b78;
+  background: var(--recess-bg);
+  color: var(--ink-soft);
 }
 
 .row-actions {
@@ -1587,20 +1563,20 @@ button {
 }
 
 .row-actions button.danger {
-  color: #b42318;
+  color: #da918c;
 }
 
 .admin-message,
 .empty-users {
-  color: #53637a;
+  color: var(--ink-soft);
   margin: 0;
   padding: 16px 20px;
 }
 
 .admin-message {
-  background: #f2f7ee;
+  background: rgba(35, 69, 30, 0.18);
   border-bottom: 1px solid #cfe7c3;
-  color: #23451e;
+  color: #9cab9a;
 }
 
 .access-state {
@@ -1612,12 +1588,12 @@ button {
 }
 
 .access-state svg {
-  color: #2364aa;
+  color: var(--ink-soft);
   margin-bottom: 12px;
 }
 
 .access-state p {
-  color: #64748b;
+  color: var(--ink-soft);
   line-height: 1.55;
   margin-top: 8px;
 }
@@ -1642,20 +1618,20 @@ button {
 }
 
 .login-page {
-  background: #ffffff;
+  background: var(--surface);
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(420px, 0.85fr);
   min-height: 100vh;
 }
 
 .subscription-page {
-  background: #f5f7fb;
+  background: var(--surface);
   min-height: 100vh;
 }
 
 .subscription-nav {
   align-items: center;
-  background: #ffffff;
+  background: var(--surface);
   border-bottom: 1px solid #dce3ed;
   display: flex;
   justify-content: space-between;
@@ -1677,20 +1653,20 @@ button {
 .subscription-nav > div:first-child span {
   background: #fca311;
   border-radius: 8px;
-  color: #14213d;
+  color: var(--ink-bright);
   height: 42px;
   justify-content: center;
   width: 42px;
 }
 
 .subscription-nav small {
-  color: #64748b;
+  color: var(--ink-soft);
 }
 
 .subscription-nav button {
   background: transparent;
   border: 0;
-  color: #46566d;
+  color: var(--ink);
   gap: 7px;
 }
 
@@ -1706,7 +1682,7 @@ button {
 }
 
 .subscription-intro h1 {
-  color: #14213d;
+  color: var(--ink-bright);
   font-size: 3rem;
   letter-spacing: 0;
   line-height: 1.05;
@@ -1714,7 +1690,7 @@ button {
 }
 
 .subscription-intro > p:last-of-type {
-  color: #53637a;
+  color: var(--ink-soft);
   font-size: 1.04rem;
   line-height: 1.7;
   max-width: 590px;
@@ -1733,7 +1709,7 @@ button {
 }
 
 .subscription-benefits svg {
-  color: #2364aa;
+  color: var(--ink-soft);
   flex: 0 0 auto;
   margin-top: 2px;
 }
@@ -1744,11 +1720,11 @@ button {
 }
 
 .subscription-benefits small {
-  color: #64748b;
+  color: var(--ink-soft);
 }
 
 .subscription-plan {
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #d7e0eb;
   border-radius: 8px;
   box-shadow: 0 20px 60px rgba(33, 45, 75, 0.1);
@@ -1756,7 +1732,7 @@ button {
 }
 
 .billing-toggle {
-  background: #e9eef5;
+  background: var(--recess-bg);
   border-radius: 8px;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1767,14 +1743,14 @@ button {
   background: transparent;
   border: 0;
   border-radius: 6px;
-  color: #53637a;
+  color: var(--ink-soft);
   min-height: 38px;
 }
 
 .billing-toggle button.active {
-  background: #ffffff;
+  background: var(--surface);
   box-shadow: 0 1px 3px rgba(33, 45, 75, 0.12);
-  color: #174d85;
+  color: var(--ink);
   font-weight: 700;
 }
 
@@ -1784,9 +1760,9 @@ button {
 }
 
 .plan-heading > span {
-  background: #eaf6e7;
+  background: rgba(39, 98, 33, 0.18);
   border-radius: 999px;
-  color: #276221;
+  color: #9eb89b;
   display: inline-block;
   font-size: 0.72rem;
   font-weight: 800;
@@ -1795,7 +1771,7 @@ button {
 }
 
 .plan-heading h2 {
-  color: #14213d;
+  color: var(--ink-bright);
   margin: 15px 0 8px;
 }
 
@@ -1807,13 +1783,13 @@ button {
 }
 
 .plan-heading p strong {
-  color: #14213d;
+  color: var(--ink-bright);
   font-size: 2.3rem;
 }
 
 .plan-heading p span,
 .plan-heading small {
-  color: #64748b;
+  color: var(--ink-soft);
 }
 
 .subscription-plan ul {
@@ -1826,14 +1802,14 @@ button {
 
 .subscription-plan li {
   align-items: center;
-  color: #334155;
+  color: var(--ink);
   display: flex;
   font-size: 0.88rem;
   gap: 9px;
 }
 
 .subscription-plan li svg {
-  color: #2f7d32;
+  color: #97be98;
   flex: 0 0 auto;
 }
 
@@ -1846,7 +1822,7 @@ button {
 
 .subscription-consent label {
   align-items: flex-start;
-  color: #53637a;
+  color: var(--ink-soft);
   display: flex;
   font-size: 0.76rem;
   font-weight: 500;
@@ -1863,7 +1839,7 @@ button {
 .subscription-consent button {
   background: transparent;
   border: 0;
-  color: #174d85;
+  color: var(--ink);
   font-weight: 700;
   padding: 0;
   text-decoration: underline;
@@ -1898,11 +1874,11 @@ button {
 }
 
 .payment-note {
-  color: #64748b;
+  color: var(--ink-soft);
 }
 
 .account-settings {
-  background: #f5f7fa;
+  background: var(--surface);
   min-height: 100vh;
   padding: 48px;
 }
@@ -1913,21 +1889,21 @@ button {
 }
 
 .account-settings-header h2 {
-  color: #10243e;
+  color: var(--ink-bright);
   font-size: 2rem;
   margin: 6px 0 10px;
 }
 
 .account-settings-header > p:last-child,
 .account-section p {
-  color: #637287;
+  color: var(--ink-soft);
   line-height: 1.6;
   margin: 0;
 }
 
 .account-section {
   align-items: flex-start;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid #dce3eb;
   border-radius: 8px;
   display: grid;
@@ -1940,9 +1916,9 @@ button {
 
 .account-section-icon {
   align-items: center;
-  background: #eaf1fb;
+  background: var(--recess-bg);
   border-radius: 6px;
-  color: #1557a0;
+  color: var(--ink);
   display: flex;
   height: 42px;
   justify-content: center;
@@ -1950,17 +1926,17 @@ button {
 }
 
 .account-section h3 {
-  color: #10243e;
+  color: var(--ink-bright);
   margin: 0 0 6px;
 }
 
 .account-section > button,
 .account-links button {
   align-items: center;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid #c7d2df;
   border-radius: 6px;
-  color: #164f8f;
+  color: var(--ink);
   cursor: pointer;
   display: inline-flex;
   font: inherit;
@@ -1980,12 +1956,12 @@ button {
 }
 
 .danger-zone .account-section-icon {
-  background: #fff0ee;
-  color: #a42b20;
+  background: rgba(164, 43, 32, 0.18);
+  color: #d6a09b;
 }
 
 .danger-zone label {
-  color: #5e6876;
+  color: var(--ink-soft);
   display: grid;
   font-size: 0.82rem;
   font-weight: 700;
@@ -2003,7 +1979,7 @@ button {
 
 .danger-zone > button {
   border-color: #d49690;
-  color: #9b241a;
+  color: #cd928c;
 }
 
 .account-section button:disabled {
@@ -2013,26 +1989,26 @@ button {
 
 .account-note,
 .account-error {
-  color: #7a4c14;
+  color: #bca68a;
   font-size: 0.88rem;
   max-width: 920px;
 }
 
 .account-error {
-  color: #9b241a;
+  color: #cd928c;
 }
 
 .subscriber-signup-page,
 .signup-pending-page,
 .signup-status-page {
-  background: #f4f7fb;
+  background: var(--surface);
   min-height: 100vh;
 }
 
 .signup-header,
 .signup-pending-page > header {
   align-items: center;
-  background: #fff;
+  background: var(--surface);
   border-bottom: 1px solid #dfe6ee;
   display: flex;
   gap: 12px;
@@ -2045,7 +2021,7 @@ button {
   align-items: center;
   background: #fca311;
   border-radius: 7px;
-  color: #14213d;
+  color: var(--ink-bright);
   display: flex;
   height: 42px;
   justify-content: center;
@@ -2054,11 +2030,11 @@ button {
 
 .signup-header strong,
 .signup-pending-page > header strong {
-  color: #14213d;
+  color: var(--ink-bright);
 }
 
 .signup-header small {
-  color: #3d6b4a;
+  color: var(--ink-soft);
   margin-left: auto;
 }
 
@@ -2079,21 +2055,21 @@ button {
 }
 
 .signup-intro h1 {
-  color: #10243e;
+  color: var(--ink-bright);
   font-size: 2.6rem;
   line-height: 1.08;
   margin: 8px 0 18px;
 }
 
 .signup-intro > p:not(.eyebrow) {
-  color: #5a6b80;
+  color: var(--ink-soft);
   line-height: 1.7;
 }
 
 .signup-intro > div {
   align-items: flex-start;
   border-top: 1px solid #d9e2eb;
-  color: #2364aa;
+  color: var(--ink-soft);
   display: flex;
   gap: 10px;
   margin-top: 28px;
@@ -2106,16 +2082,16 @@ button {
 }
 
 .signup-intro > div strong {
-  color: #17314f;
+  color: var(--ink-bright);
 }
 
 .signup-intro > div small {
-  color: #637287;
+  color: var(--ink-soft);
   line-height: 1.5;
 }
 
 .signup-form {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid #d9e2eb;
   border-radius: 8px;
   box-shadow: 0 18px 54px rgba(31, 50, 75, 0.08);
@@ -2130,7 +2106,7 @@ button {
 
 .signup-section-heading {
   align-items: flex-start;
-  color: #2364aa;
+  color: var(--ink-soft);
   display: flex;
   gap: 11px;
   margin-bottom: 20px;
@@ -2142,12 +2118,12 @@ button {
 }
 
 .signup-section-heading h2 {
-  color: #14213d;
+  color: var(--ink-bright);
   font-size: 1.05rem;
 }
 
 .signup-section-heading p {
-  color: #718096;
+  color: var(--ink-soft);
   font-size: 0.8rem;
   margin-top: 3px;
 }
@@ -2162,7 +2138,7 @@ button {
 }
 
 .signup-fields label {
-  color: #435268;
+  color: var(--ink);
   display: grid;
   font-size: 0.82rem;
   font-weight: 700;
@@ -2170,16 +2146,16 @@ button {
 }
 
 .signup-fields label small {
-  color: #7c8999;
+  color: var(--ink-faint);
   font-weight: 500;
 }
 
 .signup-fields input,
 .signup-fields select {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid #c7d2df;
   border-radius: 6px;
-  color: #18283c;
+  color: var(--ink-bright);
   font: inherit;
   min-height: 44px;
   padding: 0 12px;
@@ -2187,8 +2163,8 @@ button {
 }
 
 .signup-fields input[readonly] {
-  background: #eef2f6;
-  color: #637287;
+  background: var(--recess-bg);
+  color: var(--ink-soft);
 }
 
 .input-with-icon {
@@ -2198,7 +2174,7 @@ button {
 }
 
 .input-with-icon svg {
-  color: #65778d;
+  color: var(--ink-soft);
   left: 12px;
   pointer-events: none;
   position: absolute;
@@ -2215,10 +2191,10 @@ button {
 }
 
 .signup-year-options button {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid #c7d2df;
   border-radius: 6px;
-  color: #37475c;
+  color: var(--ink);
   cursor: pointer;
   display: grid;
   gap: 3px;
@@ -2226,15 +2202,15 @@ button {
 }
 
 .signup-year-options button span {
-  color: #748195;
+  color: var(--ink-soft);
   font-size: 0.7rem;
 }
 
 .signup-year-options button.active {
-  background: #eaf4ff;
+  background: var(--recess-bg);
   border-color: #2364aa;
   box-shadow: inset 0 0 0 1px #2364aa;
-  color: #174d85;
+  color: var(--ink);
 }
 
 .gcse-signup-fields {
@@ -2243,7 +2219,7 @@ button {
 
 .signup-consent {
   align-items: flex-start;
-  color: #53637a;
+  color: var(--ink-soft);
   display: flex;
   font-size: 0.84rem;
   gap: 10px;
@@ -2276,7 +2252,7 @@ button {
 }
 
 .signup-error {
-  color: #9b241a;
+  color: #cd928c;
   font-size: 0.85rem;
 }
 
@@ -2290,24 +2266,24 @@ button {
 
 .signup-pending-page > section > svg,
 .signup-status-page > div > svg {
-  color: #2364aa;
+  color: var(--ink-soft);
 }
 
 .signup-pending-page h1,
 .signup-status-page h1 {
-  color: #14213d;
+  color: var(--ink-bright);
   font-size: 2.4rem;
   margin: 10px 0 16px;
 }
 
 .signup-pending-page section > p:not(.eyebrow),
 .signup-status-page div > p:not(.eyebrow) {
-  color: #5c6d82;
+  color: var(--ink-soft);
   line-height: 1.7;
 }
 
 .signup-pending-page section > small {
-  color: #748195;
+  color: var(--ink-soft);
   display: block;
 }
 
@@ -2332,17 +2308,17 @@ button {
 }
 
 .year-locked-note {
-  color: #637287;
+  color: var(--ink-soft);
   font-size: 0.8rem;
   margin: 9px 0 0;
 }
 
 .checkout-note {
-  color: #76550a;
+  color: #baaa84;
 }
 
 .subscription-error {
-  color: #9f2d24;
+  color: #cf9692;
 }
 
 .legal-backdrop {
@@ -2357,7 +2333,7 @@ button {
 }
 
 .legal-dialog {
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 8px;
   box-shadow: 0 24px 80px rgba(20, 33, 61, 0.25);
   max-height: min(760px, 88vh);
@@ -2381,10 +2357,10 @@ button {
 }
 
 .legal-dialog header button {
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #d7e0eb;
   border-radius: 6px;
-  color: #46566d;
+  color: var(--ink);
   display: grid;
   height: 36px;
   place-items: center;
@@ -2392,13 +2368,13 @@ button {
 }
 
 .legal-copy {
-  color: #53637a;
+  color: var(--ink-soft);
   line-height: 1.65;
   padding-top: 8px;
 }
 
 .legal-copy h3 {
-  color: #14213d;
+  color: var(--ink-bright);
   font-size: 1rem;
   margin: 20px 0 5px;
 }
@@ -2438,7 +2414,7 @@ button {
 }
 
 .diagnostic-page {
-  background: #f5f7fb;
+  background: var(--surface);
   display: grid;
   gap: 44px;
   grid-template-columns: minmax(280px, 0.72fr) minmax(520px, 1.28fr);
@@ -2455,7 +2431,7 @@ button {
   align-items: center;
   background: #fca311;
   border-radius: 8px;
-  color: #14213d;
+  color: var(--ink-bright);
   display: flex;
   height: 52px;
   justify-content: center;
@@ -2464,7 +2440,7 @@ button {
 }
 
 .diagnostic-header h1 {
-  color: #14213d;
+  color: var(--ink-bright);
   font-size: 2.5rem;
   letter-spacing: 0;
   line-height: 1.08;
@@ -2472,14 +2448,14 @@ button {
 }
 
 .diagnostic-header > div > p:last-child {
-  color: #53637a;
+  color: var(--ink-soft);
   line-height: 1.7;
 }
 
 .evidence-lock {
   align-items: flex-start;
   border-top: 1px solid #dce3ed;
-  color: #496078;
+  color: var(--ink);
   display: flex;
   gap: 10px;
   line-height: 1.5;
@@ -2488,14 +2464,14 @@ button {
 }
 
 .evidence-lock svg {
-  color: #2364aa;
+  color: var(--ink-soft);
   flex: 0 0 auto;
   margin-top: 2px;
 }
 
 .diagnostic-panel {
   align-self: center;
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #dae2ef;
   border-radius: 8px;
   box-shadow: 0 20px 60px rgba(33, 45, 75, 0.08);
@@ -2512,7 +2488,7 @@ button {
 }
 
 .diagnostic-progress > div {
-  color: #53637a;
+  color: var(--ink-soft);
   font-size: 0.82rem;
   justify-content: space-between;
   margin-bottom: 9px;
@@ -2525,26 +2501,26 @@ button {
 }
 
 .diagnostic-question > span {
-  color: #2364aa;
+  color: var(--ink-soft);
   font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
 }
 
 .diagnostic-question h2 {
-  color: #14213d;
+  color: var(--ink-bright);
   font-size: 1.55rem;
   margin: 8px 0 10px;
 }
 
 .diagnostic-question p {
-  color: #53637a;
+  color: var(--ink-soft);
   line-height: 1.6;
   margin: 0 0 22px;
 }
 
 .diagnostic-question label {
-  color: #334155;
+  color: var(--ink);
   display: block;
   font-size: 0.82rem;
   font-weight: 700;
@@ -2554,7 +2530,7 @@ button {
 .diagnostic-question textarea {
   border: 1px solid #cbd6e3;
   border-radius: 6px;
-  color: #172033;
+  color: var(--ink-bright);
   font: inherit;
   line-height: 1.5;
   min-height: 190px;
@@ -2614,85 +2590,32 @@ button {
 }
 
 .diagnostic-error {
-  background: #fff1f0;
+  background: rgba(159, 45, 36, 0.18);
   border: 1px solid #ffd1cc;
   border-radius: 6px;
-  color: #9f2d24;
+  color: #d4a09c;
   margin: 0;
   padding: 10px 12px;
 }
 
 .diagnostic-panel footer {
   border-top: 1px solid #e3e9f1;
-  color: #64748b;
+  color: var(--ink-soft);
   font-size: 0.78rem;
   gap: 8px;
   padding-top: 18px;
 }
 
-.diagnostic-summary {
-  align-items: center;
-  background: #ffffff;
-  border-bottom: 1px solid #dae2ef;
-  display: grid;
-  gap: 20px;
-  grid-template-columns: minmax(230px, 1fr) auto auto minmax(190px, auto) auto;
-  padding: 16px 28px;
-}
 
-.diagnostic-summary-title,
-.grade-lock {
-  align-items: center;
-  display: flex;
-  gap: 10px;
-}
 
-.diagnostic-summary-title svg {
-  color: #2364aa;
-  flex: 0 0 auto;
-}
 
-.diagnostic-summary-title div,
-.grade-lock div {
-  display: grid;
-  gap: 2px;
-}
 
-.diagnostic-summary-title span,
-.diagnostic-stat span,
-.grade-lock span {
-  color: #64748b;
-  font-size: 0.74rem;
-}
 
-.diagnostic-stat {
-  border-left: 1px solid #e2e8f0;
-  display: grid;
-  gap: 2px;
-  padding-left: 18px;
-}
 
-.diagnostic-stat.priority strong {
-  color: #b42318;
-}
 
-.diagnostic-stat.strength strong {
-  color: #2f7d32;
-}
 
-.grade-lock {
-  background: #f3f6fa;
-  border-radius: 6px;
-  padding: 9px 11px;
-}
 
-.grade-lock svg {
-  color: #53637a;
-}
 
-.grade-lock strong {
-  font-size: 0.78rem;
-}
 
 .diagnostic-start {
   min-height: 38px;
@@ -2712,18 +2635,18 @@ button {
 }
 
 .evidence-label.priority {
-  background: #fff0ee;
-  color: #a1332a;
+  background: rgba(161, 51, 42, 0.18);
+  color: #d5a39f;
 }
 
 .evidence-label.developing {
-  background: #fff7df;
-  color: #76550a;
+  background: rgba(118, 85, 10, 0.18);
+  color: #c1b291;
 }
 
 .evidence-label.strength {
-  background: #eaf6e7;
-  color: #276221;
+  background: rgba(39, 98, 33, 0.18);
+  color: #9eb89b;
 }
 
 .topic-evidence {
@@ -2749,7 +2672,7 @@ button {
 
 .topic-evidence p,
 .topic-evidence span {
-  color: #53637a;
+  color: var(--ink-soft);
   font-size: 0.82rem;
   line-height: 1.45;
   margin: 0;
@@ -2764,7 +2687,7 @@ button {
   align-items: center;
   background: #fca311;
   border-radius: 8px;
-  color: #14213d;
+  color: var(--ink-bright);
   display: flex;
   height: 48px;
   justify-content: center;
@@ -2822,7 +2745,7 @@ button {
 }
 
 .login-box h2 {
-  color: #14213d;
+  color: var(--ink-bright);
   font-size: 2rem;
   margin: 8px 0 10px;
 }
@@ -2830,7 +2753,7 @@ button {
 .login-intro,
 .privacy-note,
 .login-status {
-  color: #64748b;
+  color: var(--ink-soft);
   line-height: 1.55;
 }
 
@@ -2840,10 +2763,10 @@ button {
 }
 
 .login-error {
-  background: #fff1f0;
+  background: rgba(159, 45, 36, 0.18);
   border: 1px solid #ffd1cc;
   border-radius: 6px;
-  color: #9f2d24;
+  color: #d4a09c;
   line-height: 1.45;
   padding: 10px 12px;
 }
@@ -2881,7 +2804,7 @@ button {
 .account-panel > span {
   align-items: center;
   background: #fca311;
-  color: #14213d;
+  color: var(--ink-bright);
   display: flex;
   font-weight: 800;
   justify-content: center;
@@ -2916,7 +2839,7 @@ button {
 
 .pending-page {
   align-items: center;
-  background: #f5f7fb;
+  background: var(--surface);
   display: flex;
   justify-content: center;
   min-height: 100vh;
@@ -2924,7 +2847,7 @@ button {
 }
 
 .pending-panel {
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #dae2ef;
   border-radius: 8px;
   box-shadow: 0 18px 60px rgba(33, 45, 75, 0.1);
@@ -2935,9 +2858,9 @@ button {
 
 .pending-icon {
   align-items: center;
-  background: #e8f4ff;
+  background: var(--recess-bg);
   border-radius: 8px;
-  color: #2364aa;
+  color: var(--ink-soft);
   display: inline-flex;
   height: 52px;
   justify-content: center;
@@ -2946,13 +2869,13 @@ button {
 }
 
 .pending-panel h1 {
-  color: #14213d;
+  color: var(--ink-bright);
   font-size: 2rem;
   margin: 8px 0 14px;
 }
 
 .pending-panel > p:last-of-type {
-  color: #64748b;
+  color: var(--ink-soft);
   line-height: 1.65;
 }
 
@@ -2969,7 +2892,7 @@ button {
 }
 
 .profile-page {
-  background: #f5f7fb;
+  background: var(--surface);
   display: grid;
   gap: 64px;
   grid-template-columns: minmax(300px, 0.8fr) minmax(520px, 1.2fr);
@@ -2986,7 +2909,7 @@ button {
   align-items: center;
   background: #fca311;
   border-radius: 8px;
-  color: #14213d;
+  color: var(--ink-bright);
   display: flex;
   height: 54px;
   justify-content: center;
@@ -2995,7 +2918,7 @@ button {
 }
 
 .profile-intro h1 {
-  color: #14213d;
+  color: var(--ink-bright);
   font-size: 2.6rem;
   letter-spacing: 0;
   line-height: 1.08;
@@ -3003,14 +2926,14 @@ button {
 }
 
 .profile-intro > p:not(.eyebrow) {
-  color: #53637a;
+  color: var(--ink-soft);
   line-height: 1.7;
 }
 
 .profile-privacy {
   align-items: flex-start;
   border-top: 1px solid #dce3ed;
-  color: #496078;
+  color: var(--ink);
   display: flex;
   gap: 10px;
   line-height: 1.5;
@@ -3019,14 +2942,14 @@ button {
 }
 
 .profile-privacy svg {
-  color: #2364aa;
+  color: var(--ink-soft);
   flex: 0 0 auto;
   margin-top: 2px;
 }
 
 .profile-form {
   align-self: center;
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #dae2ef;
   border-radius: 8px;
   box-shadow: 0 20px 60px rgba(33, 45, 75, 0.08);
@@ -3036,7 +2959,7 @@ button {
 }
 
 .profile-form label {
-  color: #334155;
+  color: var(--ink);
   display: grid;
   font-size: 0.86rem;
   font-weight: 700;
@@ -3052,17 +2975,17 @@ button {
 .profile-form input {
   border: 1px solid #cbd6e3;
   border-radius: 6px;
-  color: #172033;
+  color: var(--ink-bright);
   min-height: 46px;
   padding: 0 12px;
   width: 100%;
 }
 
 .profile-form select {
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #cbd6e3;
   border-radius: 6px;
-  color: #172033;
+  color: var(--ink-bright);
   min-height: 46px;
   padding: 0 12px;
   width: 100%;
@@ -3083,7 +3006,7 @@ button {
 
 .choice-heading {
   align-items: flex-start;
-  color: #2364aa;
+  color: var(--ink-soft);
   display: flex;
   gap: 10px;
 }
@@ -3099,12 +3022,12 @@ button {
 }
 
 .choice-heading h2 {
-  color: #14213d;
+  color: var(--ink-bright);
   font-size: 1rem;
 }
 
 .choice-heading p {
-  color: #64748b;
+  color: var(--ink-soft);
   font-size: 0.82rem;
   margin-top: 3px;
 }
@@ -3120,10 +3043,10 @@ button {
 
 .topic-choice {
   align-items: flex-start;
-  background: #ffffff;
+  background: var(--surface);
   border: 0;
   border-bottom: 1px solid #e8edf3;
-  color: #334155;
+  color: var(--ink);
   display: grid;
   gap: 10px;
   grid-template-columns: 22px 1fr;
@@ -3141,19 +3064,19 @@ button {
 }
 
 .topic-choice small {
-  color: #2364aa;
+  color: var(--ink-soft);
   font-size: 0.68rem;
   font-weight: 800;
   text-transform: uppercase;
 }
 
 .topic-choice strong {
-  color: #172033;
+  color: var(--ink-bright);
   font-size: 0.9rem;
 }
 
 .topic-choice > span > span:last-child {
-  color: #64748b;
+  color: var(--ink-soft);
   font-size: 0.78rem;
   line-height: 1.4;
 }
@@ -3171,7 +3094,7 @@ button {
 }
 
 .topic-choice.active {
-  background: #edf6ff;
+  background: var(--surface);
 }
 
 .topic-choice.active .topic-choice-check {
@@ -3181,7 +3104,7 @@ button {
 }
 
 .profile-form label small {
-  color: #64748b;
+  color: var(--ink-soft);
   font-weight: 500;
 }
 
@@ -3192,7 +3115,7 @@ button {
 }
 
 .profile-form legend {
-  color: #334155;
+  color: var(--ink);
   font-size: 0.86rem;
   font-weight: 700;
   margin-bottom: 10px;
@@ -3205,10 +3128,10 @@ button {
 }
 
 .year-options button {
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #cbd6e3;
   border-radius: 6px;
-  color: #334155;
+  color: var(--ink);
   display: grid;
   gap: 3px;
   min-height: 66px;
@@ -3216,15 +3139,15 @@ button {
 }
 
 .year-options button span {
-  color: #64748b;
+  color: var(--ink-soft);
   font-size: 0.72rem;
 }
 
 .year-options button.active {
-  background: #e8f4ff;
+  background: var(--recess-bg);
   border-color: #2364aa;
   box-shadow: inset 0 0 0 1px #2364aa;
-  color: #174d85;
+  color: var(--ink);
 }
 
 .profile-actions {
@@ -3251,9 +3174,9 @@ button {
 }
 
 .secondary-button {
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #cbd6e3;
-  color: #334155;
+  color: var(--ink);
 }
 
 .year-context {
@@ -3290,13 +3213,7 @@ button {
 }
 
 @media (max-width: 1200px) {
-  .diagnostic-summary {
-    grid-template-columns: minmax(220px, 1fr) auto auto;
-  }
 
-  .grade-lock {
-    grid-column: 1 / 3;
-  }
 
   .progress-metrics {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3608,7 +3525,7 @@ button {
   }
 
   .mobile-login-brand {
-    color: #14213d;
+    color: var(--ink-bright);
     display: flex;
     gap: 10px;
     margin-bottom: 56px;
@@ -3642,21 +3559,11 @@ button {
     justify-content: center;
   }
 
-  .diagnostic-summary {
-    align-items: stretch;
-    grid-template-columns: 1fr 1fr;
-    padding: 16px;
-  }
 
-  .diagnostic-summary-title,
-  .grade-lock,
   .diagnostic-start {
     grid-column: 1 / -1;
   }
 
-  .diagnostic-stat {
-    padding-left: 12px;
-  }
 
   .profile-intro h1 {
     font-size: 2rem;
@@ -3693,13 +3600,13 @@ button {
 }
 
 .board-picker legend {
-  color: #14213d;
+  color: var(--ink-bright);
   font-weight: 700;
   padding: 0 6px;
 }
 
 .board-picker-hint {
-  color: #54657d;
+  color: var(--ink-soft);
   font-size: 0.85rem;
   line-height: 1.5;
   margin: 0 0 4px;
@@ -3721,7 +3628,7 @@ button {
 }
 
 .board-subject {
-  color: #172033;
+  color: var(--ink-bright);
   font-weight: 600;
 }
 
@@ -3741,9 +3648,9 @@ button {
 }
 
 .board-option.active {
-  background: #eef4fb;
+  background: var(--recess-bg);
   border-color: #2364aa;
-  color: #174d85;
+  color: var(--ink);
   font-weight: 600;
 }
 
@@ -3759,13 +3666,13 @@ button {
 }
 
 .message.guarded {
-  background: #fff8e8;
+  background: rgba(107, 75, 22, 0.18);
   border: 1px solid #f0d9a8;
-  color: #6b4b16;
+  color: #bcae96;
 }
 
 .message-source {
-  color: #6b7c93;
+  color: var(--ink-soft);
   display: block;
   font-size: 0.72rem;
   font-weight: 700;
@@ -3782,7 +3689,7 @@ button {
 }
 
 .question-marks {
-  color: #2364aa;
+  color: var(--ink-soft);
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -3797,10 +3704,10 @@ button {
 .question-hint,
 .hint-button {
   align-items: center;
-  background: #fff8e8;
+  background: rgba(107, 75, 22, 0.18);
   border: 1px solid #f0d9a8;
   border-radius: 6px;
-  color: #6b4b16;
+  color: #bcae96;
   display: flex;
   gap: 8px;
   justify-self: start;
@@ -3849,13 +3756,13 @@ button {
 }
 
 .question-actions .secondary-button {
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #ccd8e6;
-  color: #174d85;
+  color: var(--ink);
 }
 
 .question-result {
-  background: #f1f7f2;
+  background: var(--surface);
   border: 1px solid #cfe3d4;
   border-radius: 8px;
   display: grid;
@@ -3866,7 +3773,7 @@ button {
 
 .question-result-heading {
   align-items: center;
-  color: #1f6b3a;
+  color: #8fb59c;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -3882,7 +3789,7 @@ button {
 }
 
 .question-reveal summary {
-  color: #174d85;
+  color: var(--ink);
   cursor: pointer;
   font-weight: 600;
 }
@@ -3906,12 +3813,12 @@ button {
 }
 
 .review-heading h2 {
-  color: #14213d;
+  color: var(--ink-bright);
   margin: 0;
 }
 
 .review-heading p {
-  color: #54657d;
+  color: var(--ink-soft);
   margin: 4px 0 0;
 }
 
@@ -3930,7 +3837,7 @@ button {
 }
 
 .review-summary article {
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #d8e1ec;
   border-radius: 8px;
   display: grid;
@@ -3939,18 +3846,18 @@ button {
 }
 
 .review-summary span {
-  color: #54657d;
+  color: var(--ink-soft);
   font-size: 0.82rem;
 }
 
 .review-summary strong {
-  color: #14213d;
+  color: var(--ink-bright);
   font-size: 1.6rem;
 }
 
-.review-summary .pending strong { color: #9a6207; }
-.review-summary .approved strong { color: #1f6b3a; }
-.review-summary .rejected strong { color: #9f2d24; }
+.review-summary .pending strong { color: #ccb083; }
+.review-summary .approved strong { color: #8fb59c; }
+.review-summary .rejected strong { color: #cf9692; }
 
 .review-filters {
   display: flex;
@@ -3965,7 +3872,7 @@ button {
 }
 
 .review-filters select {
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #b5c4d6;
   border-radius: 6px;
   min-width: 160px;
@@ -3978,7 +3885,7 @@ button {
 }
 
 .review-card {
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #d8e1ec;
   border-radius: 8px;
   display: grid;
@@ -3988,7 +3895,7 @@ button {
 
 .review-card-meta {
   align-items: center;
-  color: #54657d;
+  color: var(--ink-soft);
   display: flex;
   flex-wrap: wrap;
   font-size: 0.82rem;
@@ -3996,22 +3903,22 @@ button {
 }
 
 .review-card-meta code {
-  background: #f1f5f9;
+  background: var(--surface);
   border-radius: 4px;
   padding: 2px 6px;
 }
 
 .review-type {
-  background: #eef4fb;
+  background: var(--recess-bg);
   border-radius: 4px;
-  color: #174d85;
+  color: var(--ink);
   font-weight: 700;
   padding: 3px 8px;
   text-transform: uppercase;
 }
 
-.review-type.exam { background: #fdf0ef; color: #9f2d24; }
-.review-type.practice { background: #f1f7f2; color: #1f6b3a; }
+.review-type.exam { background: rgba(159, 45, 36, 0.18); color: #d4a09c; }
+.review-type.practice { background: rgba(31, 107, 58, 0.18); color: #9abca6; }
 
 .review-body {
   display: grid;
@@ -4028,7 +3935,7 @@ button {
 }
 
 .review-marks {
-  color: #9f2d24;
+  color: #cf9692;
   font-weight: 700;
 }
 
@@ -4061,13 +3968,13 @@ button {
 .review-actions button:disabled { opacity: 0.55; }
 
 .review-by {
-  color: #7a8aa0;
+  color: var(--ink-faint);
   font-size: 0.78rem;
   margin-left: auto;
 }
 
 .review-empty {
-  color: #54657d;
+  color: var(--ink-soft);
   padding: 18px 0;
 }
 
@@ -4077,7 +3984,7 @@ button {
 
 .review-bulk {
   align-items: center;
-  background: #f8fafc;
+  background: var(--surface);
   border: 1px solid #d8e1ec;
   border-radius: 8px;
   display: flex;
@@ -4088,7 +3995,7 @@ button {
 }
 
 .review-bulk > span:first-child {
-  color: #54657d;
+  color: var(--ink-soft);
 }
 
 .review-bulk-actions,
@@ -4100,7 +4007,7 @@ button {
 }
 
 .review-bulk-confirm strong {
-  color: #9a6207;
+  color: #ccb083;
 }
 
 .review-bulk button {
@@ -4115,15 +4022,15 @@ button {
 
 .review-bulk .approve { background: #1f6b3a; }
 .review-bulk .reject { background: #9f2d24; }
-.review-bulk .secondary-button { background: #ffffff; border: 1px solid #ccd8e6; color: #174d85; }
+.review-bulk .secondary-button { background: var(--surface); border: 1px solid #ccd8e6; color: var(--ink); }
 .review-bulk button:disabled { opacity: 0.55; }
 
 .review-more {
   align-items: center;
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid #ccd8e6;
   border-radius: 6px;
-  color: #174d85;
+  color: var(--ink);
   display: flex;
   gap: 7px;
   justify-self: center;
@@ -4132,10 +4039,10 @@ button {
 
 .review-queue-bar {
   align-items: center;
-  background: #eef4fb;
+  background: var(--recess-bg);
   border: 1px solid #cfe0f2;
   border-radius: 8px;
-  color: #174d85;
+  color: var(--ink);
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -4151,18 +4058,18 @@ button {
 }
 
 .review-queue-meta {
-  color: #54657d;
+  color: var(--ink-soft);
   font-size: 0.88rem;
 }
 
 .review-queue-meta .overdue {
-  color: #9f2d24;
+  color: #cf9692;
   font-style: normal;
   font-weight: 700;
 }
 
 .review-due-list {
-  background: #f8fafc;
+  background: var(--surface);
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   display: grid;
@@ -4172,7 +4079,7 @@ button {
 
 .review-due-list strong {
   align-items: center;
-  color: #14213d;
+  color: var(--ink-bright);
   display: flex;
   gap: 8px;
 }
@@ -4185,7 +4092,7 @@ button {
 }
 
 .review-due-list span {
-  color: #54657d;
+  color: var(--ink-soft);
   font-size: 0.85rem;
 }
 
@@ -4195,9 +4102,9 @@ button {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
-.safeguarding-summary .high strong { color: #9f2d24; }
-.safeguarding-summary .medium strong { color: #9a6207; }
-.safeguarding-summary .low strong { color: #174d85; }
+.safeguarding-summary .high strong { color: #cf9692; }
+.safeguarding-summary .medium strong { color: #ccb083; }
+.safeguarding-summary .low strong { color: var(--ink); }
 
 .review-card.flag-high { border-left: 4px solid #9f2d24; }
 .review-card.flag-medium { border-left: 4px solid #d99a1c; }
@@ -4205,29 +4112,29 @@ button {
 
 .flag-severity {
   align-items: center;
-  background: #eef4fb;
+  background: var(--recess-bg);
   border-radius: 4px;
-  color: #174d85;
+  color: var(--ink);
   display: inline-flex;
   font-weight: 700;
   gap: 5px;
   padding: 3px 8px;
 }
 
-.flag-severity.high { background: #fdf0ef; color: #9f2d24; }
-.flag-severity.medium { background: #fdf6e8; color: #9a6207; }
+.flag-severity.high { background: rgba(159, 45, 36, 0.18); color: #d4a09c; }
+.flag-severity.medium { background: rgba(154, 98, 7, 0.18); color: #d2b88f; }
 
 .flag-status {
-  background: #f1f5f9;
+  background: var(--surface);
   border-radius: 4px;
   padding: 3px 8px;
   text-transform: capitalize;
 }
 
 .flag-message {
-  background: #f8fafc;
+  background: var(--surface);
   border-left: 3px solid #b5c4d6;
-  color: #14213d;
+  color: var(--ink-bright);
   font-size: 0.97rem;
   line-height: 1.55;
   margin: 0;
@@ -4237,7 +4144,7 @@ button {
 
 .flag-contact {
   align-items: center;
-  color: #54657d;
+  color: var(--ink-soft);
   display: flex;
   flex-wrap: wrap;
   font-size: 0.85rem;
@@ -4250,13 +4157,13 @@ button {
   gap: 6px;
 }
 
-.flag-alerted { color: #1f6b3a; }
-.flag-not-alerted { color: #9a6207; }
+.flag-alerted { color: #8fb59c; }
+.flag-not-alerted { color: #ccb083; }
 
 .link-button {
   background: none;
   border: none;
-  color: #174d85;
+  color: var(--ink);
   cursor: pointer;
   font: inherit;
   padding: 0;
@@ -4264,7 +4171,7 @@ button {
 }
 
 .flag-history {
-  background: #f8fafc;
+  background: var(--surface);
   border: 1px solid #e2e8f0;
   border-radius: 6px;
   padding: 10px 14px;
@@ -4280,7 +4187,7 @@ button {
 
 .flag-history li {
   align-items: center;
-  color: #54657d;
+  color: var(--ink-soft);
   display: flex;
   flex-wrap: wrap;
   font-size: 0.83rem;
@@ -4288,7 +4195,7 @@ button {
 }
 
 .flag-note {
-  color: #54657d;
+  color: var(--ink-soft);
   display: grid;
   font-size: 0.82rem;
   gap: 6px;
@@ -4322,7 +4229,2169 @@ button {
 
 /* Reading the lesson aloud. */
 .ask-tutor.listening {
-  background: #eef4fb;
-  border-color: #174d85;
-  color: #174d85;
+  background: var(--recess-bg);
+  border-color: var(--ink);
+  color: var(--ink);
 }
+
+/* Payments: subscriptions as this application records them. */
+.payments-summary {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.payments-note {
+  align-items: center;
+  border-left: 3px solid #9a6207;
+  color: var(--ink-soft);
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 12px;
+}
+
+.payments-scroll {
+  overflow-x: auto;
+}
+
+.payments-table {
+  background: var(--surface);
+  border: 1px solid #d8e1ec;
+  border-collapse: collapse;
+  border-radius: 8px;
+  min-width: 760px;
+  width: 100%;
+}
+
+.payments-table thead th {
+  background: var(--surface);
+  border-bottom: 1px solid #d8e1ec;
+  color: var(--ink-soft);
+  font-size: 0.74rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  padding: 10px 12px;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.payments-table td {
+  border-bottom: 1px solid #eef2f7;
+  padding: 10px 12px;
+  vertical-align: middle;
+}
+
+.payments-table tbody tr:last-child td { border-bottom: none; }
+.payments-table tbody tr:hover { background: var(--surface); }
+
+.payments-account { display: grid; gap: 1px; }
+.payments-account strong { color: var(--ink-bright); }
+.payments-account small { color: var(--ink-soft); font-size: 0.76rem; }
+.payments-date { color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.payments-table .state {
+  border-radius: 4px;
+  display: inline-block;
+  font-size: 0.78rem;
+  padding: 3px 8px;
+  white-space: nowrap;
+}
+
+.payments-table .state.ok { background: rgba(31, 107, 58, 0.18); color: #9abca6; }
+.payments-table .state.warn { background: rgba(138, 88, 7, 0.18); color: #cab48f; }
+.payments-table .state.off { background: rgba(159, 45, 36, 0.18); color: #d4a09c; }
+.payments-table .state.muted { background: var(--surface); color: var(--ink-soft); }
+
+.payments-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.payments-actions button,
+.payments-actions a {
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid #b5c4d6;
+  border-radius: 6px;
+  color: var(--ink);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: 0.8rem;
+  gap: 6px;
+  padding: 6px 10px;
+  text-decoration: none;
+}
+
+.payments-actions button:hover,
+.payments-actions a:hover { border-color: #174d85; }
+.payments-actions button:disabled { cursor: default; opacity: 0.5; }
+
+/* Narrated lesson player -----------------------------------------------------
+   Built from the authored content, not a video file: the stage shows one beat
+   at a time while the narration moves through them. */
+.lesson-player {
+  background: var(--surface);
+  border: 1px solid #dde6f0;
+  border-radius: 8px;
+  display: grid;
+  gap: 14px;
+  margin-top: 8px;
+  padding: 16px 18px 14px;
+}
+
+.player-heading {
+  align-items: flex-start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.player-heading h4 { color: var(--ink-bright); font-size: 1rem; margin: 2px 0 0; }
+
+.player-count {
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.player-progress {
+  background: var(--recess-bg);
+  border-radius: 999px;
+  height: 4px;
+  overflow: hidden;
+}
+
+.player-progress span {
+  background: #2364aa;
+  border-radius: 999px;
+  display: block;
+  height: 100%;
+  transition: width 260ms ease;
+}
+
+/* A fixed floor stops the panel jumping as beats change length. */
+.player-stage {
+  align-content: center;
+  display: grid;
+  gap: 10px;
+  min-height: 160px;
+}
+
+.stage-title h3 { color: var(--ink-bright); font-size: 1.24rem; margin: 0 0 6px; }
+.stage-title p { color: var(--ink); line-height: 1.55; margin: 0; }
+
+.stage-prose {
+  color: var(--ink-bright);
+  font-size: 1.08rem;
+  line-height: 1.68;
+  margin: 0;
+}
+
+.stage-label {
+  color: var(--ink-soft);
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  margin: 0 0 4px;
+  text-transform: uppercase;
+}
+
+.stage-ideas ul { display: grid; gap: 8px; list-style: none; margin: 0; padding: 0; }
+
+.stage-ideas li {
+  border-left: 3px solid #dde6f0;
+  color: var(--ink);
+  line-height: 1.55;
+  padding-left: 12px;
+  transition: opacity 200ms ease, border-color 200ms ease;
+}
+
+/* Ideas already spoken stay readable; ones still to come are held back so the
+   learner's eye lands on the one being said. */
+.stage-ideas li[data-shown="false"] { opacity: 0; }
+.stage-ideas li.active { border-left-color: #2364aa; color: var(--ink-bright); }
+
+.stage-formulae { display: grid; gap: 8px; }
+
+.stage-formulae code {
+  background: var(--surface);
+  border: 1px solid #e3eaf3;
+  border-left: 3px solid #dde6f0;
+  border-radius: 4px;
+  color: var(--ink-bright);
+  display: block;
+  font-size: 1rem;
+  padding: 10px 12px;
+  transition: opacity 200ms ease, border-color 200ms ease;
+}
+
+.stage-formulae code[data-shown="false"] { opacity: 0; }
+.stage-formulae code.active { border-left-color: #2364aa; }
+.stage-formulae code.typeset { font-family: inherit; }
+
+.stage-end p { color: var(--ink-bright); font-size: 1.05rem; margin: 0 0 6px; }
+.stage-end .stage-label { text-transform: none; letter-spacing: 0; font-size: 0.86rem; }
+
+.player-controls {
+  align-items: center;
+  border-top: 1px solid #e6ecf5;
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+}
+
+.player-controls button {
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid #b5c4d6;
+  border-radius: 6px;
+  color: var(--ink);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: 0.88rem;
+  gap: 6px;
+  justify-content: center;
+  min-height: 34px;
+  min-width: 34px;
+  padding: 0 9px;
+}
+
+.player-controls button:hover:not(:disabled) { border-color: #174d85; }
+.player-controls button:disabled { cursor: default; opacity: 0.45; }
+
+.player-controls .player-play {
+  background: #174d85;
+  border-color: #174d85;
+  color: #ffffff;
+  padding: 0 14px;
+}
+
+.player-controls .muted { color: #c4ac83; }
+
+/* The mute control sits apart from the transport, which it does not belong to. */
+.player-controls button[aria-label="Start again"] { margin-left: auto; }
+
+.player-note { color: var(--ink-soft); font-size: 0.82rem; margin: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .player-progress span,
+  .stage-ideas li,
+  .stage-formulae code { transition: none; }
+}
+
+/* Authored lesson visuals ----------------------------------------------------
+   The part of a video that narration cannot replace. Each visual animates on
+   mount, which is exactly when its beat becomes active. */
+.stage-visual { display: grid; gap: 8px; }
+
+.lesson-visual { margin: 0; display: grid; gap: 10px; }
+
+.lesson-visual svg { display: block; max-width: 100%; height: auto; }
+
+.lesson-visual figcaption {
+  border-left: 3px solid #2364aa;
+  color: var(--ink);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  padding-left: 10px;
+}
+
+/* The interval is the idea, so it draws itself across rather than appearing. */
+.visual-band {
+  fill: #dce9f6;
+  transform-origin: left center;
+  animation: visual-expand 900ms 200ms cubic-bezier(.2,.7,.3,1) both;
+}
+
+@keyframes visual-expand { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+.visual-measured { animation: visual-fade 500ms both; }
+
+/* The endpoints land after the band, because the whole point is which one the
+   value can reach and which it cannot. */
+.visual-endpoint { animation: visual-pop 400ms 1000ms both; }
+.visual-endpoint-open { animation-delay: 1250ms; }
+.visual-endpoint-label { animation: visual-fade 400ms 1450ms both; }
+
+@keyframes visual-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes visual-pop {
+  from { opacity: 0; transform: scale(.4); transform-origin: center; transform-box: fill-box; }
+  to   { opacity: 1; transform: scale(1);  transform-origin: center; transform-box: fill-box; }
+}
+
+/* Standard form: each hop of the decimal point arrives in turn. */
+.visual-hops { display: grid; gap: 6px; }
+
+.visual-hop {
+  align-items: baseline;
+  animation: visual-slide 420ms both;
+  background: var(--surface);
+  border: 1px solid #e3eaf3;
+  border-left: 3px solid #2364aa;
+  border-radius: 4px;
+  display: flex;
+  gap: 14px;
+  padding: 9px 12px;
+}
+
+.visual-hop-number {
+  color: var(--ink-bright);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 1.14rem;
+  letter-spacing: 0.06em;
+  min-width: 6.5ch;
+}
+
+.visual-hop-power { color: var(--ink-soft); font-size: 0.86rem; }
+
+@keyframes visual-slide {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.visual-result {
+  background: var(--surface);
+  border-radius: 4px;
+  color: var(--ink);
+  font-size: 1.08rem;
+  margin: 2px 0 0;
+  padding: 10px 12px;
+  text-align: center;
+  animation: visual-fade 400ms 2900ms both;
+}
+
+/* Motion carries meaning here, so reduced motion shows the finished state
+   rather than nothing: every animation resolves instantly instead of running. */
+@media (prefers-reduced-motion: reduce) {
+  .visual-band, .visual-measured, .visual-endpoint, .visual-endpoint-label,
+  .visual-hop, .visual-result { animation-duration: 1ms !important; animation-delay: 0ms !important; }
+}
+
+.player-voice {
+  align-items: center;
+  color: var(--ink-soft);
+  display: flex;
+  font-size: 0.82rem;
+  gap: 8px;
+}
+
+.player-voice select {
+  background: var(--surface);
+  border: 1px solid #b5c4d6;
+  border-radius: 6px;
+  color: var(--ink-bright);
+  flex: 1;
+  font: inherit;
+  font-size: 0.82rem;
+  min-width: 0;
+  padding: 6px 8px;
+}
+
+/* Curriculum coverage ---------------------------------------------------------
+   Drawn to the whole subject, so an empty bar is the honest starting picture. */
+.curriculum-progress {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.progress-heading {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  justify-content: space-between;
+}
+
+.progress-title { color: var(--ink); font-size: 0.9rem; }
+.progress-title strong { color: var(--ink-bright); font-size: 1.05rem; }
+.progress-aside { color: var(--ink-soft); font-size: 0.8rem; }
+
+/* One definition of each state's colour, read by both the bar and the key.
+   Saturated rather than muted, to sit alongside the subject hues without
+   looking like a different application. */
+.curriculum-progress {
+  --state-secure: #16a34a;
+  --state-secure-lift: #4ade80;
+  --state-review: #f59e0b;
+  --state-review-lift: #fcd34d;
+  --state-progress: #2563eb;
+  --state-progress-lift: #60a5fa;
+  --state-none: #dbe3ee;
+}
+
+.progress-track {
+  background: linear-gradient(180deg, #dfe6f0, #e9eef6);
+  border-radius: 999px;
+  box-shadow: inset 0 1px 2px rgba(20, 33, 61, 0.09);
+  display: flex;
+  height: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  display: block;
+  height: 100%;
+  transition: width 320ms ease;
+}
+
+/* A gradient across each segment, lighter at the top, so the bar reads as a
+   filled object rather than a coloured rectangle. */
+.progress-fill.completed {
+  background: linear-gradient(180deg, var(--state-secure-lift), var(--state-secure));
+}
+.progress-fill.review {
+  background: linear-gradient(180deg, var(--state-review-lift), var(--state-review));
+}
+.progress-fill.in-progress {
+  background: linear-gradient(180deg, var(--state-progress-lift), var(--state-progress));
+}
+
+.progress-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.progress-key li {
+  align-items: center;
+  color: var(--ink-soft);
+  display: flex;
+  font-size: 0.78rem;
+  gap: 6px;
+}
+
+.progress-key strong { color: var(--ink-bright); font-variant-numeric: tabular-nums; }
+
+.progress-dot {
+  border-radius: 50%;
+  display: inline-block;
+  height: 10px;
+  width: 10px;
+}
+
+/* The key takes the same gradients, so a swatch always matches the segment it
+   is explaining. */
+.progress-key .completed .progress-dot {
+  background: linear-gradient(180deg, var(--state-secure-lift), var(--state-secure));
+  box-shadow: 0 1px 3px -1px var(--state-secure);
+}
+.progress-key .review .progress-dot {
+  background: linear-gradient(180deg, var(--state-review-lift), var(--state-review));
+  box-shadow: 0 1px 3px -1px var(--state-review);
+}
+.progress-key .in-progress .progress-dot {
+  background: linear-gradient(180deg, var(--state-progress-lift), var(--state-progress));
+  box-shadow: 0 1px 3px -1px var(--state-progress);
+}
+
+/* Not started has to be the colour the bar actually leaves behind, or the key
+   shows a swatch that appears nowhere on the bar it is explaining. The border
+   keeps it visible against the white panel. */
+.progress-key .not-started .progress-dot {
+  background: var(--state-none);
+  box-shadow: inset 0 0 0 1px #c3cede;
+}
+
+/* Muted, not hidden: the state exists, the learner is simply not in it. */
+.progress-key li[data-empty="true"] { opacity: 0.45; }
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-fill { transition: none; }
+}
+
+/* Shown in place of the priority and strength counts until enough evidence
+   exists to stand behind them. */
+
+/* Daily goal ------------------------------------------------------------------
+   A target in minutes, converted to questions by the learner's own pace. */
+.visually-hidden {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.daily-goal {
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid #dde6f0;
+  border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 22px;
+  margin-bottom: 16px;
+  padding: 14px 18px;
+}
+
+.goal-main { flex: 0 0 auto; }
+
+.goal-count { align-items: baseline; display: flex; gap: 7px; }
+.goal-count strong { color: var(--ink-bright); font-size: 1.5rem; line-height: 1; }
+.goal-count span { color: var(--ink); font-size: 0.9rem; }
+.goal-note { color: var(--ink-soft); font-size: 0.8rem; margin: 3px 0 0; }
+
+.goal-track {
+  background: var(--recess-bg);
+  border-radius: 999px;
+  flex: 1 1 180px;
+  height: 8px;
+  min-width: 120px;
+  overflow: hidden;
+}
+
+.goal-track span {
+  background: #2364aa;
+  border-radius: 999px;
+  display: block;
+  height: 100%;
+  transition: width 320ms ease;
+}
+
+.goal-track span.met { background: #1f6b3a; }
+
+.goal-streak { align-items: center; display: flex; flex: 0 0 auto; gap: 14px; }
+
+.streak-count {
+  align-items: center;
+  color: #c4ac83;
+  display: inline-flex;
+  font-size: 0.84rem;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.goal-days { display: flex; gap: 4px; list-style: none; margin: 0; padding: 0; }
+
+.goal-days li {
+  align-items: center;
+  background: var(--recess-bg);
+  border-radius: 4px;
+  color: #93a3b8;
+  display: flex;
+  font-size: 0.64rem;
+  height: 20px;
+  justify-content: center;
+  width: 16px;
+}
+
+.goal-days li.partial { background: var(--recess-bg); color: var(--ink-soft); }
+.goal-days li.met { background: #1f6b3a; color: #ffffff; }
+
+@media (prefers-reduced-motion: reduce) { .goal-track span { transition: none; } }
+
+/* Working-out check -----------------------------------------------------------
+   The method is asked for before the mark scheme will open, and then the
+   learner marks their own working against it. */
+.question-form label span {
+  align-items: center;
+  display: inline-flex;
+  gap: 6px;
+}
+
+.reveal-locked {
+  align-items: flex-start;
+  background: rgba(138, 88, 7, 0.18);
+  border-radius: 6px;
+  color: #cab48f;
+  display: flex;
+  font-size: 0.86rem;
+  gap: 8px;
+  line-height: 1.5;
+  margin: 12px 0 0;
+  padding: 11px 13px;
+}
+
+.reveal-locked svg { flex: 0 0 auto; margin-top: 2px; }
+
+.self-mark-prompt {
+  color: var(--ink-soft);
+  font-size: 0.84rem;
+  margin: 0 0 10px;
+}
+
+ol.self-mark {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+}
+
+ol.self-mark li { line-height: 1.5; }
+
+ol.self-mark label {
+  align-items: flex-start;
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+}
+
+ol.self-mark input {
+  accent-color: #1f6b3a;
+  flex: 0 0 auto;
+  height: 16px;
+  margin-top: 3px;
+  width: 16px;
+}
+
+ol.self-mark input:checked + * { color: var(--ink-bright); }
+
+.self-mark-total {
+  border-top: 1px solid #e6ecf5;
+  color: var(--ink);
+  font-size: 0.88rem;
+  margin: 0 0 10px;
+  padding-top: 10px;
+}
+
+.self-mark-total strong { color: var(--ink-bright); }
+
+/* Shapes used by the authored visuals ----------------------------------------- */
+.hop { animation: visual-fade 500ms both; }
+.bar { animation: visual-expand 600ms both; transform-origin: left center; }
+.square-grid { animation: visual-fade 500ms both; }
+.particle-box { animation: visual-fade 500ms both; }
+
+.visual-notes { display: grid; gap: 6px; margin: 0; }
+.visual-notes div { display: flex; gap: 8px; }
+.visual-notes dt { color: var(--ink-bright); flex: 0 0 62px; font-size: 0.86rem; font-weight: 600; }
+.visual-notes dd { color: var(--ink); font-size: 0.86rem; line-height: 1.5; margin: 0; }
+
+.visual-hop-power strong { color: var(--ink-bright); }
+
+@media (prefers-reduced-motion: reduce) {
+  .hop, .bar, .square-grid, .particle-box {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+  }
+}
+
+/* Exam board selection, one per subject, shown from Year 9 --------------------- */
+.board-fieldset { border: 1px solid #ccd8e6; border-radius: 8px; margin: 0; padding: 14px 16px; }
+.board-fieldset legend { color: var(--ink-bright); font-size: 0.92rem; font-weight: 600; padding: 0 6px; }
+.board-note { color: var(--ink-soft); font-size: 0.82rem; line-height: 1.5; margin: 0 0 12px; }
+
+.board-grid {
+  display: grid;
+  gap: 10px 16px;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.board-grid label { color: var(--ink); display: grid; font-size: 0.86rem; gap: 5px; }
+
+.board-grid select {
+  background: var(--surface);
+  border: 1px solid #b5c4d6;
+  border-radius: 6px;
+  color: var(--ink-bright);
+  font: inherit;
+  padding: 8px 9px;
+}
+
+/* Subject colours ------------------------------------------------------------
+   Each subject carries one hue, used as a bookmark tab in the sidebar and as an
+   accent across the workspace it opens, so it is always obvious which subject
+   you are in.
+
+   Pitched at eleven to sixteen, which means vivid and confident rather than
+   pastel: this age group reads soft and rounded as babyish. Seven saturated
+   hues, all legible on the navy sidebar and on white, and all differing in
+   lightness as well as hue so they stay distinguishable without colour vision -
+   the icons differ too. */
+/* One hue each, no two within 30 degrees. Two pairs used to collide: Science
+   and Geography were both blue-greens, and English sat inside Design
+   Technology's orange. Science moves to a true leaf green, Geography keeps the
+   teal, English takes the plum nobody else was using, and History moves off
+   coral to a clear crimson so it parts from the orange.
+   Hues: 140 green, 185 teal, 218 blue, 249 violet, 321 plum, 354 crimson, 26 orange. */
+[data-subject="Maths"]             { --subject: #4c8dff; --subject-deep: #2563d6; --subject-ink: #1b4f9e; }
+[data-subject="Science"]           { --subject: #3ec46a; --subject-deep: #1f9b4c; --subject-ink: #0f6431; }
+[data-subject="English"]           { --subject: #d95fae; --subject-deep: #b33a87; --subject-ink: #7c245c; }
+[data-subject="History"]           { --subject: #ec4f5e; --subject-deep: #c72d3e; --subject-ink: #8d1d2a; }
+[data-subject="Geography"]         { --subject: #14b8c4; --subject-deep: #0d8f99; --subject-ink: #0a6167; }
+[data-subject="Computing"]         { --subject: #8b7cf6; --subject-deep: #6247e0; --subject-ink: #452fa8; }
+[data-subject="Design Technology"] { --subject: #ff8a3d; --subject-deep: #dd6212; --subject-ink: #93400a; }
+
+/* The sidebar reads as a bound spine rather than a flat panel, so the tabs in
+   it have something to sit against. */
+.sidebar {
+  background:
+    radial-gradient(130% 55% at 0% 0%, rgba(76, 141, 255, 0.2), transparent 62%),
+    linear-gradient(180deg, #1a2d5c 0%, #14213d 44%, #0e1730 100%);
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.07);
+  position: relative;
+  z-index: 1;
+}
+
+.subject-list { display: grid; gap: 8px; }
+
+/* An unopened bookmark shows its edge, not its face: colour on the spine,
+   restraint everywhere else. */
+.subject {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 0;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 18px 1fr 16px;
+  padding: 0 14px;
+  min-width: 0;
+  text-align: left;
+  border-left: 5px solid var(--subject, #4c8dff);
+  border-radius: 0 12px 12px 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  color: #cddcef;
+  cursor: pointer;
+  font-size: 0.95rem;
+  margin-right: 10px;
+  min-height: 52px;
+  position: relative;
+  transition: background-color 180ms ease, margin-right 200ms cubic-bezier(.2,.8,.3,1),
+    box-shadow 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.subject svg { color: var(--subject, #4c8dff); transition: color 180ms ease, transform 180ms ease; }
+
+/* "Design Technology" is the longest name and the active tab gives up width to
+   its overhang, so the label shortens rather than spilling over the chevron. */
+.subject span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.subject:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: #f4f8fd;
+  transform: translateX(2px);
+}
+
+.subject:hover svg { transform: scale(1.08); }
+
+/* Pulled out: the active tab reaches toward the content it opened, the way a
+   bookmark sits proud of the pages. The glow is the subject's own colour, so it
+   reads as the tab being lit rather than as a border. */
+.subject.active {
+  background:
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--subject) 46%, transparent),
+      color-mix(in srgb, var(--subject) 14%, transparent));
+  border-left-color: var(--subject);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 0 0 1px color-mix(in srgb, var(--subject) 34%, transparent),
+    0 12px 28px -14px var(--subject);
+  color: #ffffff;
+  font-weight: 600;
+  margin-right: -14px;
+  padding-right: 28px;
+  transform: none;
+}
+
+.subject.active svg { color: #ffffff; }
+
+/* The workspace carries a wash of the same hue at the top, fading out within a
+   few hundred pixels. Present where the work happens, gone before it competes
+   with the content. */
+.workspace {
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--subject, #174d85) 13%, transparent) 0,
+      transparent 300px),
+    #f5f7fb;
+}
+
+.workspace .topbar { border-bottom: 0; padding-bottom: 18px; position: relative; }
+
+/* A short, solid rule of the subject's colour under the heading - the way a
+   section divider is marked in a printed book, at a weight a teenager reads as
+   deliberate rather than decorative. */
+.workspace .topbar::after {
+  background: linear-gradient(90deg, var(--subject-deep, #174d85), var(--subject, #4c8dff));
+  border-radius: 3px;
+  bottom: 0;
+  content: "";
+  height: 4px;
+  left: 0;
+  position: absolute;
+  width: 64px;
+}
+
+.workspace .topbar .eyebrow { color: var(--subject-ink, #5b6d86); letter-spacing: 0.09em; }
+
+.workspace .topbar h2 {
+  color: var(--subject-ink, #172033);
+  font-size: 1.7rem;
+  letter-spacing: -0.02em;
+}
+
+/* Progress and the daily goal take the subject's colour, so the page reads as
+   one thing rather than a blue app with a coloured menu. */
+.workspace .curriculum-progress {
+  --state-progress: var(--subject-deep, #2563eb);
+  --state-progress-lift: var(--subject, #60a5fa);
+}
+.workspace .goal-track span { background: var(--subject-deep, #2364aa); }
+.workspace .start-activity {
+  background: color-mix(in srgb, var(--subject) 15%, #ffffff);
+  border-color: color-mix(in srgb, var(--subject) 45%, #ffffff);
+  color: var(--subject-ink, #174d85);
+}
+
+/* Panels gain depth from two shadows - a tight one for the edge and a wide,
+   soft one for the lift - rather than from a heavier border. */
+.workspace .lesson-panel,
+.workspace .question-panel,
+.workspace .tutor-panel,
+.workspace .daily-goal {
+  border-radius: 12px;
+  box-shadow:
+    0 1px 2px rgba(20, 33, 61, 0.05),
+    0 16px 34px -24px rgba(20, 33, 61, 0.5);
+}
+
+/* Sub-topic cards pick up the hue on hover and when chosen, which is where a
+   learner spends most of their clicks. */
+.workspace .subtopic-card { border-radius: 10px; transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease; }
+.workspace .subtopic-card:hover { border-color: var(--subject, #b5c4d6); transform: translateY(-1px); }
+.workspace .subtopic-card.active {
+  border-color: var(--subject, #174d85);
+  box-shadow: 0 0 0 1px var(--subject, #174d85), 0 10px 22px -16px var(--subject, #174d85);
+}
+
+/* Without color-mix the tints would resolve to nothing and the active tab would
+   be unmarked, so each one falls back to a flat equivalent. */
+@supports not (background: color-mix(in srgb, red 50%, transparent)) {
+  .subject.active { background: rgba(255, 255, 255, 0.18); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22); }
+  .workspace { background: var(--surface); }
+  .workspace .start-activity { background: var(--recess-bg); border-color: #c9dced; color: var(--ink); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .subject, .workspace .subtopic-card { transition: none; }
+  .subject:hover, .workspace .subtopic-card:hover { transform: none; }
+  .subject:hover svg { transform: none; }
+}
+
+/* Material and type ----------------------------------------------------------
+   A deliberate refresh layer, placed last so it settles the surface treatment
+   for controls that were each styled separately as the application grew. It
+   gives buttons the same material as the sidebar tabs - a gradient, a highlight
+   along the top edge, and a shadow tinted with the button's own colour - rather
+   than a flat fill and a one-pixel border. */
+:root {
+  --lift-1: 0 1px 2px rgba(20, 33, 61, 0.06);
+  --lift-2: 0 2px 4px rgba(20, 33, 61, 0.07), 0 8px 18px -10px rgba(20, 33, 61, 0.34);
+  --edge-light: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  --edge-light-strong: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  --ease: cubic-bezier(.2, .8, .3, 1);
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings tighten as they grow, which is what stops a large size reading as
+   merely big. Figures line up in columns wherever they are compared. */
+h1, h2, h3, h4 { letter-spacing: -0.018em; }
+h1 { letter-spacing: -0.024em; }
+.goal-count strong, .price-row .amount, .progress-key strong,
+
+button { transition: transform 140ms var(--ease), box-shadow 160ms var(--ease), background-color 160ms var(--ease); }
+button:disabled { cursor: default; }
+
+/* A visible keyboard ring everywhere, in the subject's colour where there is
+   one. Focus was previously left to the browser default. */
+button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visible {
+  outline: 2px solid var(--subject-deep, #2563eb);
+  outline-offset: 2px;
+}
+
+/* Filled actions: the ones that commit to something. */
+.password-form button:not(.login-link),
+.start-activity,
+.diagnostic-start,
+.player-controls .player-play,
+.question-form .question-actions button[type="submit"],
+.signup-form button[type="submit"] {
+  background: linear-gradient(180deg, #2f72c4, #174d85);
+  border: 1px solid #14406f;
+  border-radius: 8px;
+  box-shadow: var(--edge-light-strong), 0 1px 2px rgba(20, 33, 61, 0.18),
+    0 10px 20px -12px rgba(23, 77, 133, 0.9);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* In the workspace a filled action takes the subject's own hue, so the button
+   belongs to the page it sits on. */
+.workspace .start-activity,
+.workspace .question-form .question-actions button[type="submit"] {
+  background: linear-gradient(180deg, var(--subject, #2f72c4), var(--subject-deep, #174d85));
+  border-color: var(--subject-deep, #14406f);
+  box-shadow: var(--edge-light-strong), 0 1px 2px rgba(20, 33, 61, 0.18),
+    0 10px 20px -12px var(--subject-deep, #174d85);
+  color: #ffffff;
+}
+
+.password-form button:not(.login-link):hover:not(:disabled),
+.start-activity:hover:not(:disabled),
+.diagnostic-start:hover:not(:disabled),
+.player-controls .player-play:hover:not(:disabled),
+.question-form .question-actions button[type="submit"]:hover:not(:disabled),
+.signup-form button[type="submit"]:hover:not(:disabled) {
+  box-shadow: var(--edge-light-strong), 0 2px 5px rgba(20, 33, 61, 0.2),
+    0 16px 28px -14px rgba(23, 77, 133, 0.95);
+  transform: translateY(-1px);
+}
+
+/* Outlined actions: reversible, so they sit on paper rather than in colour. */
+.ask-tutor,
+.secondary-button,
+.hint-button,
+.player-controls button:not(.player-play),
+.icon-button {
+  background: linear-gradient(180deg, #ffffff, #f4f7fb);
+  border: 1px solid #ccd8e6;
+  border-radius: 8px;
+  box-shadow: var(--edge-light), var(--lift-1);
+  font-weight: 500;
+}
+
+.ask-tutor:hover:not(:disabled),
+.secondary-button:hover:not(:disabled),
+.hint-button:hover:not(:disabled),
+.player-controls button:not(.player-play):hover:not(:disabled),
+.icon-button:hover:not(:disabled) {
+  border-color: var(--subject, #9fb6cf);
+  box-shadow: var(--edge-light), var(--lift-2);
+  transform: translateY(-1px);
+}
+
+/* Pressed: the lift collapses and the highlight goes, so a click is felt. */
+button:active:not(:disabled) {
+  box-shadow: inset 0 2px 4px rgba(20, 33, 61, 0.22);
+  transform: translateY(0);
+}
+
+/* Inputs get the same channelled treatment as the progress track. */
+.password-form input,
+.question-form textarea,
+.tutor-form input,
+.topic-picker select,
+.unit-filter select {
+  background: linear-gradient(180deg, #fbfcfe, #ffffff);
+  box-shadow: inset 0 1px 2px rgba(20, 33, 61, 0.07);
+  transition: border-color 160ms var(--ease), box-shadow 160ms var(--ease);
+}
+
+.password-form input:focus,
+.question-form textarea:focus,
+.tutor-form input:focus {
+  border-color: var(--subject-deep, #2563eb);
+  box-shadow: inset 0 1px 2px rgba(20, 33, 61, 0.07),
+    0 0 0 3px color-mix(in srgb, var(--subject-deep, #2563eb) 18%, transparent);
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button { transition: none; }
+  button:hover:not(:disabled) { transform: none; }
+}
+
+/* The check band -------------------------------------------------------------
+   Modernised as a piece: a flat fill and a six-pixel radius read as older than
+   anything around them, and the band it sits in was a square-cornered rectangle
+   with a hard rule underneath. Scoped to .workspace so the specificity settles
+   it against the earlier rules rather than relying on file order. */
+
+/* Dividers between the figures become hairlines of light rather than grey
+   lines, which is what a divider looks like on glass. */
+
+
+
+
+/* The evidence counter becomes a recessed pill, matching the progress track. */
+
+
+/* Take the check: the same material as every other committing action, in the
+   subject's own colour. */
+.workspace .diagnostic-start {
+  background: linear-gradient(180deg, var(--subject, #2f72c4), var(--subject-deep, #174d85));
+  border: 1px solid var(--subject-deep, #14406f);
+  border-radius: 10px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 1px 2px rgba(20, 33, 61, 0.16),
+    0 10px 20px -12px var(--subject-deep, #174d85);
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  min-height: 40px;
+  padding: 0 18px;
+}
+
+.workspace .diagnostic-start:hover:not(:disabled) {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    0 2px 5px rgba(20, 33, 61, 0.18),
+    0 16px 28px -14px var(--subject-deep, #174d85);
+  transform: translateY(-1px);
+}
+
+
+/* The theme, applied everywhere ----------------------------------------------
+   The workspace was modernised first and the rest of the application was left
+   on the radii and flat fills it was built with, which made every other screen
+   look like an older version of the same product. This carries the treatment
+   across: one radius scale, one button material, one input material.
+
+   The sidebar keeps its own identity - it is the solid spine everything else is
+   set against, and it already reads the way it should. */
+:root {
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+  --glass: rgba(255, 255, 255, 0.72);
+  --glass-edge: rgba(255, 255, 255, 0.85);
+  --page: linear-gradient(180deg, #eef3fa 0%, #f6f8fc 46%, #eff3f9 100%);
+}
+
+/* Rounded, everywhere. Controls in the sidebar are excluded: their shape is
+   part of the bookmark, not a button radius. */
+button,
+input:not([type="checkbox"]):not([type="radio"]),
+select, textarea {
+  border-radius: var(--radius-md);
+}
+
+.icon-button, .close-tutor { border-radius: var(--radius-pill); }
+
+/* The full-page views get the same ground as the workspace, so moving between
+   them does not feel like moving between two applications. */
+.password-login,
+.profile-page,
+.signup-page,
+.admin-page,
+.progress-dashboard,
+.diagnostic-page {
+  background: var(--page);
+}
+
+/* Panels and cards across every view take one surface. */
+.login-box,
+.login-panel,
+.pending-panel,
+.profile-page form,
+.signup-form,
+.admin-stats > div,
+.add-user-panel,
+.user-list-panel,
+.review-card,
+.review-summary article,
+.diagnostic-panel,
+.topic-card,
+.payments-table,
+.curriculum-state-summary {
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  background: var(--glass);
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 1px 2px rgba(20, 33, 61, 0.05),
+    0 18px 38px -26px rgba(20, 33, 61, 0.5);
+}
+
+/* Forms carry the longest reading, so they stay a shade more opaque. */
+.login-box, .signup-form, .profile-page form { background: rgba(255, 255, 255, 0.84); }
+
+/* Filled actions outside the workspace: same material, house blue, since there
+   is no subject to take a colour from on a sign-in or an admin screen. */
+.password-form button:not(.login-link),
+.signup-form button[type="submit"],
+.admin-page .primary-action,
+.add-user-panel button[type="submit"] {
+  background: linear-gradient(180deg, #3b82e8, #1d5aa8);
+  border: 1px solid #17497f;
+  border-radius: var(--radius-md);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 1px 2px rgba(20, 33, 61, 0.18),
+    0 10px 20px -12px rgba(23, 77, 133, 0.9);
+  color: #ffffff;
+  font-weight: 600;
+  min-height: 44px;
+}
+
+.password-form button:not(.login-link):hover:not(:disabled),
+.signup-form button[type="submit"]:hover:not(:disabled) {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    0 2px 5px rgba(20, 33, 61, 0.2),
+    0 16px 28px -14px rgba(23, 77, 133, 0.95);
+  transform: translateY(-1px);
+}
+
+/* Inputs everywhere sit in a channel, the way the progress track does. */
+input:not([type="checkbox"]):not([type="radio"]), select, textarea {
+  background: linear-gradient(180deg, #fbfcfe, #ffffff);
+  border: 1px solid #ccd8e6;
+  box-shadow: inset 0 1px 2px rgba(20, 33, 61, 0.07);
+}
+
+input:not([type="checkbox"]):not([type="radio"]):focus, select:focus, textarea:focus {
+  border-color: var(--subject-deep, #2563eb);
+  box-shadow:
+    inset 0 1px 2px rgba(20, 33, 61, 0.07),
+    0 0 0 3px color-mix(in srgb, var(--subject-deep, #2563eb) 18%, transparent);
+  outline: none;
+}
+
+/* Status chips become pills rather than rounded rectangles. */
+.state, .evidence-label, .message-source, .streak-count, .payments-account small {
+  border-radius: var(--radius-pill);
+}
+
+/* The admin bar that sits above every admin view. */
+.admin-session-header {
+  background: rgba(255, 255, 255, 0.78);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 1px 2px rgba(20, 33, 61, 0.05);
+}
+
+.admin-session-header button { border-radius: var(--radius-md); }
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .login-box, .login-panel, .pending-panel, .profile-page form, .signup-form,
+  .admin-stats > div, .add-user-panel, .user-list-panel, .review-card,
+  .review-summary article, .diagnostic-panel, .topic-card, .payments-table,
+  .curriculum-state-summary, .admin-session-header {
+    background: var(--surface);
+    border-color: #e2e9f3;
+  }
+}
+
+/* The sidebar's look, everywhere ---------------------------------------------
+   The sidebar reads better than anything else in the application because it is
+   a lit surface rather than a flat one: a navy gradient with a light source in
+   the top-left corner, translucent panels over it, a hairline of white along
+   every top edge, and saturated colour used sparingly against all that depth.
+
+   This carries that across. The subject hues, which were chosen to sit on the
+   sidebar, now sit on everything - they are considerably better on navy than on
+   white, which is why the sidebar looked best.
+
+   Text is the whole risk of a dark interface, so the ink is set deliberately:
+   near-white for headings, a light blue-grey for body at a weight that holds up
+   on a tinted ground, and nothing below #93a7c2 on any surface a learner has to
+   read for more than a moment. */
+:root {
+  --ground: #0e1730;
+  --ink-bright: #f2f7fd;
+  --ink: #d6e2f2;
+  --ink-soft: #a9bdd7;
+  --ink-faint: #93a7c2;
+  --surface: rgba(255, 255, 255, 0.055);
+  --surface-raised: rgba(255, 255, 255, 0.085);
+  --hairline: rgba(255, 255, 255, 0.11);
+  --recess-bg: rgba(0, 0, 0, 0.22);
+  --recess-bg-deep: rgba(0, 0, 0, 0.3);
+  --edge-top: inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  --recess: inset 0 1px 3px rgba(0, 0, 0, 0.38);
+}
+
+:root { color: var(--ink); background: var(--ground); }
+body { background: var(--ground); color: var(--ink); }
+
+/* Every full-page ground becomes the same lit navy as the sidebar. */
+.workspace,
+.password-login,
+.profile-page,
+.signup-page,
+.admin-page,
+.progress-dashboard,
+.diagnostic-page {
+  background:
+    radial-gradient(58rem 34rem at 10% -8%, color-mix(in srgb, var(--subject, #4c8dff) 26%, transparent), transparent 66%),
+    radial-gradient(44rem 28rem at 94% 2%, rgba(139, 124, 246, 0.16), transparent 62%),
+    linear-gradient(180deg, #16264d 0%, #111d3a 46%, #0c1529 100%);
+  background-attachment: fixed;
+  color: var(--ink);
+}
+
+/* Surfaces: translucent over the ground, lit along the top edge. */
+.workspace .lesson-panel,
+.workspace .question-panel,
+.workspace .tutor-panel,
+.workspace .daily-goal,
+.workspace .subtopic-card,
+.workspace .lesson-player,
+.login-box, .login-panel, .pending-panel,
+.profile-page form, .signup-form,
+.admin-stats > div, .add-user-panel, .user-list-panel,
+.review-card, .review-summary article,
+.diagnostic-panel, .topic-card, .payments-table,
+.curriculum-state-summary, .board-fieldset, .lesson-visual figure {
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  backdrop-filter: blur(16px) saturate(150%);
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--edge-top), 0 16px 34px -24px rgba(0, 0, 0, 0.8);
+  color: var(--ink);
+}
+
+.workspace .lesson-panel, .workspace .question-panel, .login-box,
+.profile-page form, .signup-form { background: var(--surface-raised); }
+
+/* Type. Headings near-white, body light enough to read on a tinted ground. */
+p, li, dd, label, td, span, small, figcaption { color: var(--ink); }
+.eyebrow, .stage-label, .progress-aside, .goal-note, .player-note,
+.board-note, .lesson-goal, .self-mark-prompt, .visual-notes dd,
+.progress-key li, .payments-date, .message-source { color: var(--ink-soft); }
+.workspace .topbar h2, .workspace .topbar .eyebrow { color: var(--ink-bright); }
+
+/* The subject colour is the accent on navy, as it always was in the sidebar. */
+.workspace .topbar::after { background: linear-gradient(90deg, var(--subject), var(--subject-deep)); }
+.guide-section h4, .panel-heading h3, .player-heading h4 { color: var(--ink-bright); }
+.panel-heading svg, .review-heading svg { color: var(--subject, #4c8dff); }
+
+/* Controls. Outlined ones become lit glass rather than white paper. */
+.ask-tutor, .secondary-button, .hint-button,
+.player-controls button:not(.player-play), .icon-button,
+.admin-session-header button, .close-tutor {
+  background: var(--surface-raised);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--edge-top);
+  color: var(--ink);
+}
+
+.ask-tutor:hover:not(:disabled), .secondary-button:hover:not(:disabled),
+.hint-button:hover:not(:disabled), .icon-button:hover:not(:disabled),
+.player-controls button:not(.player-play):hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: color-mix(in srgb, var(--subject, #4c8dff) 60%, transparent);
+  color: var(--ink-bright);
+}
+
+/* Inputs are recesses cut into the surface. */
+input:not([type="checkbox"]):not([type="radio"]), select, textarea {
+  background: var(--recess-bg-deep);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--recess);
+  color: var(--ink-bright);
+}
+
+input::placeholder, textarea::placeholder { color: #7c8fab; }
+select option { background: #16264d; color: var(--ink-bright); }
+
+/* Tracks and toolbars. */
+.progress-track, .goal-track, .workspace .progress-track, .workspace .goal-track,
+
+.mode-toolbar, .workspace .mode-toolbar { background: var(--recess-bg); box-shadow: var(--recess); }
+.mode-toolbar button { color: var(--ink-soft); }
+.mode-toolbar button.active {
+  background: var(--surface-raised);
+  box-shadow: var(--edge-top), 0 2px 8px -4px rgba(0, 0, 0, 0.6);
+  color: var(--ink-bright);
+}
+
+
+/* Sub-topic cards and formula blocks. */
+.subtopic-card { color: var(--ink); }
+.subtopic-card .subtopic-index { color: var(--ink-faint); }
+.formula-guide { background: var(--recess-bg); }
+.formula-guide code, .stage-formulae code, .example-formulae code {
+  background: var(--recess-bg-deep);
+  border-color: var(--hairline);
+  color: var(--ink-bright);
+}
+.stage-formulae code { border-left-color: var(--subject, #4c8dff); }
+
+/* Maths typesetting has to take the ink too, or it renders black on navy. */
+.maths, .maths .katex, .katex { color: inherit; }
+
+/* Authored visuals were drawn for white. Their plates become dark, and the
+   figures keep their own colour because those carry the meaning. */
+.lesson-visual figure, .lesson-visual svg { background: transparent; }
+.lesson-visual figcaption { border-left-color: var(--subject, #4c8dff); color: var(--ink-soft); }
+.visual-hop { background: var(--recess-bg-deep); border-color: var(--hairline); border-left-color: var(--subject, #4c8dff); }
+.visual-hop-number { color: var(--ink-bright); }
+.visual-hop-power { color: var(--ink-soft); }
+.visual-result { background: var(--recess-bg-deep); color: var(--ink-bright); }
+
+/* Chat. */
+.chat-message, .message-bubble { color: var(--ink); }
+.admin-session-header {
+  background: var(--recess-bg-deep);
+  border-bottom: 1px solid var(--hairline);
+  color: var(--ink);
+}
+
+/* Tables. */
+table, .payments-table { color: var(--ink); }
+th, .payments-table thead th { background: rgba(0, 0, 0, 0.24); color: var(--ink-bright); }
+td, .payments-table td { border-bottom-color: var(--hairline); }
+
+/* Status colours lift on navy: the darker variants used on white disappear. */
+.state.ok, .review-summary .approved strong { color: #4ade80; }
+.state.warn, .review-summary .pending strong { color: #fcd34d; }
+.state.off, .review-summary .rejected strong { color: #fca5a5; }
+.login-error { color: #fca5a5; }
+.progress-key .not-started .progress-dot { background: rgba(255, 255, 255, 0.16); box-shadow: inset 0 0 0 1px var(--hairline); }
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .workspace .lesson-panel, .workspace .question-panel, .workspace .tutor-panel,
+  .workspace .lesson-player, .login-box, .login-panel, .pending-panel,
+  .profile-page form, .signup-form, .admin-stats > div, .add-user-panel,
+  .user-list-panel, .review-card, .review-summary article, .diagnostic-panel,
+  .topic-card, .payments-table, .curriculum-state-summary, .board-fieldset {
+    background: #16264d;
+  }
+}
+
+/* Dark theme, second pass ----------------------------------------------------
+   The first pass covered the main panels. These are the controls and smaller
+   surfaces that were each given a white background and dark ink when they were
+   built, and which would otherwise be white boxes with white text on them.
+   Semantic colour - errors, warnings, success - is deliberately left alone. */
+
+/* Toolbars, filters and pickers. */
+.unit-filter, .tracker-toolbar, .review-filters, .payments-scroll,
+.priority-table-wrap, .search-box {
+  background: var(--recess-bg);
+  border-color: var(--hairline);
+  color: var(--ink);
+}
+
+.unit-filter select, .topic-picker select, .tracker-toolbar input,
+.tracker-toolbar select, .search-box input, .review-filters select {
+  background: var(--recess-bg-deep);
+  border-color: var(--hairline);
+  color: var(--ink-bright);
+}
+
+.topic-picker > span, .unit-filter svg, .review-filters label { color: var(--ink-soft); }
+
+/* Segmented and tabbed controls. */
+.segmented, .password-tabs { background: var(--recess-bg); }
+.segmented button, .password-tabs button {
+  background: transparent;
+  border-color: var(--hairline);
+  color: var(--ink-soft);
+}
+.segmented button.active, .password-tabs button[aria-pressed="true"] {
+  background: var(--surface-raised);
+  box-shadow: var(--edge-top);
+  color: var(--ink-bright);
+}
+
+/* Cards in the tracker and progress views. */
+.topic-card, .progress-metrics article, .subject-mastery-row,
+.attempt-card, .review-card-meta, .flag-card {
+  background: var(--surface);
+  border-color: var(--hairline);
+  color: var(--ink);
+}
+
+.topic-card span, .topic-card small, .attempt-card span,
+.subject-mastery-row span, .progress-metrics span { color: var(--ink-soft); }
+.topic-card strong, .topic-card.active, .progress-metrics strong,
+.subject-mastery-row strong { color: var(--ink-bright); }
+.topic-card.active, .subject-mastery-row.selected {
+  background: var(--surface-raised);
+  border-color: color-mix(in srgb, var(--subject, #4c8dff) 60%, transparent);
+}
+
+/* Attempt and outcome controls under a question. */
+.attempt-actions, .attempt-outcomes { color: var(--ink-soft); }
+.attempt-actions button, .attempt-outcomes button {
+  background: var(--surface-raised);
+  border-color: var(--hairline);
+  color: var(--ink);
+}
+.attempt-actions button:hover, .attempt-outcomes button:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--ink-bright);
+}
+.attempt-outcomes button.active {
+  background: color-mix(in srgb, var(--subject, #4c8dff) 34%, transparent);
+  border-color: var(--subject, #4c8dff);
+  color: #ffffff;
+}
+.attempt-actions span, .example-refresh { color: var(--ink-soft); }
+
+/* Brand marks and headings outside the workspace. */
+.brand-mark { background: var(--surface-raised); color: var(--ink-bright); }
+.password-brand, .admin-header h2, .review-heading h2,
+.profile-intro h1, .signup-page h1, .progress-dashboard h2 { color: var(--ink-bright); }
+.admin-header p, .review-heading p, .profile-intro p,
+.progress-dashboard p, .signup-page p { color: var(--ink-soft); }
+
+/* Sub-topic cards: the most-clicked surface in the application. */
+.subtopic-card { background: var(--surface); border-color: var(--hairline); }
+.subtopic-card strong { color: var(--ink-bright); }
+.subtopic-card small, .subtopic-card .subtopic-index { color: var(--ink-faint); }
+.subtopic-card.active {
+  background: color-mix(in srgb, var(--subject, #4c8dff) 22%, transparent);
+  border-color: var(--subject, #4c8dff);
+  color: var(--ink-bright);
+}
+
+/* Chat bubbles: the tutor's replies and the learner's own messages. */
+.chat-message .message-bubble, .chat-log li, .message-row {
+  background: var(--surface);
+  border-color: var(--hairline);
+  color: var(--ink);
+}
+.chat-message.user .message-bubble, .message-row.user {
+  background: color-mix(in srgb, var(--subject, #4c8dff) 26%, transparent);
+  color: var(--ink-bright);
+}
+.chat-header, .chat-header p { color: var(--ink-soft); }
+.chat-header h3 { color: var(--ink-bright); }
+
+/* Notes, statuses and reveals. */
+.note, .example-status, .question-hint, .question-reveal, .question-result,
+.review-empty, .player-note, .year-locked-note {
+  background: var(--recess-bg);
+  border-color: var(--hairline);
+  color: var(--ink-soft);
+}
+.question-reveal summary, .question-result strong { color: var(--ink-bright); }
+.worked-answer, .worked-answer strong { color: var(--ink-bright); }
+
+/* Lists of outcomes and key ideas. */
+.outcomes li, .guide-section ul li, .guide-section ol li { color: var(--ink); }
+.outcomes li::marker, .guide-section li::marker { color: var(--subject, #4c8dff); }
+
+/* Dividers that were drawn as light grey lines. */
+.lesson-actions, .guide-section + .guide-section, .player-controls,
+.self-mark-total, .review-card + .review-card, .payments-table td {
+  border-color: var(--hairline);
+}
+
+/* The one surface that stays light: KaTeX renders its own glyphs, and the
+   typeset maths inherits the ink from its container. */
+.katex-html { color: inherit; }
+
+/* Rounding, settled ----------------------------------------------------------
+   Roughly thirty-five rules set their own six-pixel radius when each control
+   was built, and a class selector beats the element-level rule, so the global
+   radius never reached any of them. Listed explicitly rather than chased with
+   !important, so the radius stays readable and adjustable in one place.
+
+   The sidebar is excluded: the bookmark's shape is part of the bookmark, and
+   its nav buttons belong to it. */
+.password-tabs button,
+.password-form button,
+.segmented button,
+.mode-toolbar button,
+.example-status.error button,
+.ask-tutor,
+.start-activity,
+.attempt-actions button,
+.attempt-outcomes button,
+.tracker-topic > button,
+.composer button,
+.row-actions button,
+.primary-button,
+.billing-toggle button,
+.subscribe-button,
+.account-section > button,
+.account-links button,
+.signup-year-options button,
+.signup-pending-page button,
+.signup-status-page a,
+.legal-dialog header button,
+.diagnostic-next,
+.diagnostic-start,
+.workspace .diagnostic-start,
+.pending-panel button,
+.year-options button,
+.profile-submit,
+.secondary-button,
+.question-hint,
+.hint-button,
+.question-actions button,
+.review-actions button,
+.review-bulk button,
+.payments-actions button,
+.payments-actions a,
+.player-controls button,
+.diagnostic-start:hover,
+button {
+  border-radius: var(--radius-lg);
+}
+
+/* The sidebar keeps its own shapes: the bookmark's silhouette is the point of
+   it, and the nav buttons belong to that. */
+.subject { border-radius: 0 12px 12px 0; }
+.primary-nav button { border-radius: 10px; }
+
+/* Text fields stay rectangular - a pill-shaped input is awkward to type into. */
+input:not([type="checkbox"]):not([type="radio"]), select, textarea {
+  border-radius: var(--radius-md);
+}
+
+/* Icon-only controls are circles, which is what makes them read as icons
+   rather than as very small buttons. */
+.icon-button,
+.close-tutor,
+.row-actions button.icon-only,
+.player-controls button[aria-label] {
+  border-radius: var(--radius-pill);
+}
+
+
+
+/* Light content ---------------------------------------------------------------
+   The same interface with the eleven tokens redefined. Scoped to the content
+   views, never to the sidebar: the sidebar is the spine the content is set
+   against, it reads well as it is, and keeping it dark is what stops the light
+   theme looking like a different application.
+
+   Nothing below is a new rule for a component - it is the same rules reading
+   different values, which is the whole reason the dark pass was done with
+   tokens rather than literals. */
+[data-content-theme="light"] .workspace,
+[data-content-theme="light"] .password-login,
+[data-content-theme="light"] .profile-page,
+[data-content-theme="light"] .signup-page,
+[data-content-theme="light"] .admin-page,
+[data-content-theme="light"] .progress-dashboard,
+[data-content-theme="light"] .diagnostic-page {
+  --ink-bright: #10192c;
+  --ink: #33425c;
+  --ink-soft: #5b6d86;
+  --ink-faint: #7d8ea6;
+  --surface: rgba(255, 255, 255, 0.78);
+  --surface-raised: rgba(255, 255, 255, 0.94);
+  --hairline: rgba(20, 33, 61, 0.1);
+  --recess-bg: rgba(20, 33, 61, 0.045);
+  --recess-bg-deep: rgba(20, 33, 61, 0.07);
+  --edge-top: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --recess: inset 0 1px 2px rgba(20, 33, 61, 0.09);
+
+  background:
+    radial-gradient(56rem 32rem at 10% -8%, color-mix(in srgb, var(--subject, #4c8dff) 17%, transparent), transparent 66%),
+    radial-gradient(42rem 26rem at 94% 2%, rgba(139, 124, 246, 0.1), transparent 62%),
+    linear-gradient(180deg, #eef3fa 0%, #f7f9fc 46%, #eef2f8 100%);
+  color: var(--ink);
+}
+
+/* Two places name a colour rather than a token, because they are about the
+   ground itself rather than about a surface on it. */
+[data-content-theme="light"] .workspace .lesson-panel,
+[data-content-theme="light"] .workspace .question-panel,
+[data-content-theme="light"] .login-box,
+[data-content-theme="light"] .profile-page form,
+[data-content-theme="light"] .signup-form { background: rgba(255, 255, 255, 0.94); }
+
+[data-content-theme="light"] input::placeholder,
+[data-content-theme="light"] textarea::placeholder { color: #8193ab; }
+[data-content-theme="light"] select option { background: #ffffff; color: #10192c; }
+
+/* Panels sit on a light ground, so the lift comes from a grey shadow rather
+   than from a black one. */
+[data-content-theme="light"] .workspace .lesson-panel,
+[data-content-theme="light"] .workspace .question-panel,
+[data-content-theme="light"] .workspace .tutor-panel,
+[data-content-theme="light"] .workspace .daily-goal,
+[data-content-theme="light"] .workspace .subtopic-card,
+[data-content-theme="light"] .workspace .lesson-player,
+[data-content-theme="light"] .login-box,
+[data-content-theme="light"] .profile-page form,
+[data-content-theme="light"] .signup-form,
+[data-content-theme="light"] .review-card,
+[data-content-theme="light"] .topic-card,
+[data-content-theme="light"] .admin-stats > div {
+  box-shadow: var(--edge-top), 0 1px 2px rgba(20, 33, 61, 0.05),
+    0 16px 34px -24px rgba(20, 33, 61, 0.45);
+}
+
+/* Status colours go back to their readable-on-white versions. */
+[data-content-theme="light"] .state.ok { color: #16793f; }
+[data-content-theme="light"] .state.warn { color: #8a5807; }
+[data-content-theme="light"] .state.off { color: #9f2d24; }
+
+/* The toggle itself, in the sidebar, styled like the nav it sits beside. */
+.theme-toggle {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  color: #cddcef;
+  cursor: pointer;
+  display: flex;
+  font-size: 0.82rem;
+  gap: 9px;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  transition: background-color 160ms var(--ease), color 160ms var(--ease);
+}
+
+.theme-toggle:hover { background: rgba(255, 255, 255, 0.12); color: #f2f7fd; }
+.theme-toggle svg { flex: 0 0 auto; }
+
+/* The bookmark, as a button --------------------------------------------------
+   The subject tab is the shape that works in this interface, so every
+   substantive button takes it: a rounded rectangle, a lit spine down the left
+   edge in the accent colour, and that colour falling away to the right rather
+   than filling the whole face.
+
+   Icon-only controls stay circular - a spine on a 34px square reads as a
+   mistake - and the sidebar keeps its own tabs. */
+.ask-tutor,
+.secondary-button,
+.hint-button,
+.start-activity,
+.diagnostic-start,
+.workspace .diagnostic-start,
+.password-form button:not(.login-link),
+.signup-form button[type="submit"],
+.profile-submit,
+.subscribe-button,
+.primary-button,
+.question-actions button,
+.review-actions button,
+.review-bulk button,
+.payments-actions button,
+.attempt-actions button,
+.attempt-outcomes button,
+.composer button,
+.account-section > button,
+.account-links button,
+.pending-panel button,
+.diagnostic-next,
+.player-controls .player-play,
+.theme-toggle,
+.admin-session-header button {
+  background:
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--subject, #4c8dff) 34%, transparent),
+      color-mix(in srgb, var(--subject, #4c8dff) 10%, transparent));
+  border: 1px solid var(--hairline);
+  border-left: 4px solid var(--subject, #4c8dff);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 10px 22px -16px color-mix(in srgb, var(--subject, #4c8dff) 85%, black);
+  color: var(--ink-bright);
+  font-weight: 600;
+  transition: background-color 160ms var(--ease), box-shadow 160ms var(--ease),
+    transform 160ms var(--ease);
+}
+
+/* The ones that commit carry more of the colour, so the primary action on a
+   screen is still obvious among them. */
+.start-activity,
+.diagnostic-start,
+.workspace .diagnostic-start,
+.password-form button:not(.login-link),
+.signup-form button[type="submit"],
+.profile-submit,
+.subscribe-button,
+.primary-button,
+.player-controls .player-play,
+.question-actions button[type="submit"] {
+  background:
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--subject, #4c8dff) 62%, transparent),
+      color-mix(in srgb, var(--subject, #4c8dff) 24%, transparent));
+  color: #ffffff;
+}
+
+.ask-tutor:hover:not(:disabled),
+.secondary-button:hover:not(:disabled),
+.hint-button:hover:not(:disabled),
+.start-activity:hover:not(:disabled),
+.diagnostic-start:hover:not(:disabled),
+.password-form button:not(.login-link):hover:not(:disabled),
+.signup-form button[type="submit"]:hover:not(:disabled),
+.profile-submit:hover:not(:disabled),
+.question-actions button:hover:not(:disabled),
+.attempt-actions button:hover,
+.attempt-outcomes button:hover,
+.theme-toggle:hover,
+.player-controls .player-play:hover:not(:disabled) {
+  background:
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--subject, #4c8dff) 52%, transparent),
+      color-mix(in srgb, var(--subject, #4c8dff) 18%, transparent));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 14px 26px -14px color-mix(in srgb, var(--subject, #4c8dff) 90%, black);
+  transform: translateX(1px);
+}
+
+/* Icon-only controls keep their circle. */
+.icon-button,
+.close-tutor,
+.player-controls button[aria-label] {
+  background: var(--surface-raised);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--edge-top);
+}
+
+/* On a light page the spine stays saturated while the face lightens, or the
+   button would wash out into the panel behind it. */
+[data-content-theme="light"] .ask-tutor,
+[data-content-theme="light"] .secondary-button,
+[data-content-theme="light"] .hint-button,
+[data-content-theme="light"] .attempt-actions button,
+[data-content-theme="light"] .attempt-outcomes button,
+[data-content-theme="light"] .admin-session-header button {
+  background:
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--subject, #4c8dff) 18%, #ffffff),
+      rgba(255, 255, 255, 0.92));
+  color: var(--ink-bright);
+}
+
+@supports not (background: color-mix(in srgb, red 50%, transparent)) {
+  .ask-tutor, .secondary-button, .hint-button, .start-activity, .diagnostic-start,
+  .theme-toggle { background: var(--surface-raised); }
+  .start-activity, .diagnostic-start, .password-form button:not(.login-link) {
+    background: #2f72c4; color: #ffffff;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ask-tutor:hover, .secondary-button:hover, .start-activity:hover,
+  .diagnostic-start:hover, .theme-toggle:hover { transform: none; }
+}
+
+/* The bookmark, wherever it applies ------------------------------------------
+   Anything that represents one item in a list - a sub-topic, a topic, a flag, a
+   review card, a stat - takes the same spine. Containers do not: a lesson panel
+   holds the work rather than being one of several things to pick from, and
+   giving everything a spine would leave nothing marked.
+
+   Where a card already carries a state, the spine takes that state's colour
+   instead of the subject's, because the colour is doing the more useful job. */
+.subtopic-card,
+.topic-card,
+.tracker-topic,
+.subject-mastery-row,
+.review-card,
+.flag-card,
+.attempt-card,
+.admin-stats > div,
+.progress-metrics article,
+.review-summary article,
+.safeguarding-summary article,
+.payments-summary article {
+  border-left: 4px solid color-mix(in srgb, var(--subject, #4c8dff) 55%, transparent);
+  border-radius: var(--radius-lg);
+  transition: border-left-color 160ms var(--ease), background-color 160ms var(--ease),
+    transform 160ms var(--ease);
+}
+
+.subtopic-card:hover,
+.topic-card:hover,
+.tracker-topic:hover,
+.subject-mastery-row:hover,
+.review-card:hover {
+  border-left-color: var(--subject, #4c8dff);
+  transform: translateX(1px);
+}
+
+/* Chosen: the face takes the colour as well as the edge, exactly as the active
+   bookmark does in the sidebar. */
+.subtopic-card.active,
+.topic-card.active,
+.subject-mastery-row.selected {
+  background:
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--subject, #4c8dff) 30%, transparent),
+      color-mix(in srgb, var(--subject, #4c8dff) 8%, transparent));
+  border-left-color: var(--subject, #4c8dff);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 10px 24px -18px color-mix(in srgb, var(--subject, #4c8dff) 85%, black);
+}
+
+/* State-carrying tiles keep their own meaning on the spine. */
+.review-summary .approved, .safeguarding-summary .low,
+.payments-summary .approved { border-left-color: #22c79a; }
+.review-summary .pending, .safeguarding-summary .medium,
+.payments-summary .pending { border-left-color: #ffb020; }
+.review-summary .rejected, .safeguarding-summary .high,
+.payments-summary .rejected { border-left-color: #f2766b; }
+
+/* Notes and callouts are one item of advice, so they take it too. */
+.note,
+.reveal-locked,
+.workspace .player-note,
+.year-locked-note,
+.profile-privacy,
+.evidence-lock,
+.checkout-note,
+.payments-note {
+  border-left: 4px solid color-mix(in srgb, var(--subject, #4c8dff) 55%, transparent);
+  border-radius: var(--radius-md);
+}
+
+@supports not (background: color-mix(in srgb, red 50%, transparent)) {
+  .subtopic-card, .topic-card, .tracker-topic, .subject-mastery-row, .review-card,
+  .flag-card, .attempt-card, .admin-stats > div, .progress-metrics article,
+  .review-summary article, .note, .reveal-locked, .player-note {
+    border-left-color: #4c8dff;
+  }
+  .subtopic-card.active, .topic-card.active, .subject-mastery-row.selected {
+    background: var(--surface-raised);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .subtopic-card, .topic-card, .tracker-topic, .subject-mastery-row, .review-card { transition: none; }
+  .subtopic-card:hover, .topic-card:hover, .tracker-topic:hover,
+  .subject-mastery-row:hover, .review-card:hover { transform: none; }
+}
+
+/* The bookmark, as a progress bar ---------------------------------------------
+   The bookmark's signature is a lit left edge with the colour falling away to
+   the right, and a progress fill is the one place that reading is literally
+   true: the work starts at the left and the bar is brightest where it began.
+
+   Squared-off corners on the track rather than a pill, so it is the same family
+   of shape as everything else, and tall enough for the gradient to be visible. */
+.progress-track,
+.goal-track,
+.mastery-bar,
+.workspace .progress-track,
+.workspace .goal-track {
+  border-radius: var(--radius-md);
+  box-shadow: var(--recess);
+  height: 12px;
+  overflow: hidden;
+}
+
+/* A bright cap on the leading edge, then the colour falling right. */
+.progress-fill,
+.goal-track span,
+.mastery-bar span {
+  border-left: 3px solid rgba(255, 255, 255, 0.55);
+  border-radius: 2px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.progress-fill.completed {
+  background: linear-gradient(90deg, var(--state-secure-lift), var(--state-secure));
+}
+.progress-fill.review {
+  background: linear-gradient(90deg, var(--state-review-lift), var(--state-review));
+}
+.progress-fill.in-progress {
+  background: linear-gradient(90deg, var(--state-progress-lift), var(--state-progress));
+}
+
+.goal-track span {
+  background: linear-gradient(90deg, var(--subject, #60a5fa), var(--subject-deep, #2563eb));
+}
+.goal-track span.met {
+  background: linear-gradient(90deg, var(--state-secure-lift, #4ade80), var(--state-secure, #16a34a));
+}
+.mastery-bar span {
+  background: linear-gradient(90deg, var(--subject, #60a5fa), var(--subject-deep, #2563eb));
+}
+
+/* The fortnight of days becomes a row of small bookmarks rather than chips. */
+.goal-days li {
+  border-left: 3px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0 6px 6px 0;
+  height: 22px;
+  width: 18px;
+}
+
+.goal-days li.partial { border-left-color: var(--subject, #4c8dff); }
+.goal-days li.met {
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--state-secure, #16a34a) 70%, transparent),
+    color-mix(in srgb, var(--state-secure, #16a34a) 26%, transparent));
+  border-left-color: var(--state-secure-lift, #4ade80);
+  color: #ffffff;
+}
+
+/* The lesson player's own progress line takes it as well. */
+.player-progress {
+  border-radius: var(--radius-md);
+  box-shadow: var(--recess);
+  height: 8px;
+}
+
+.player-progress span {
+  background: linear-gradient(90deg, var(--subject, #60a5fa), var(--subject-deep, #2563eb));
+  border-left: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+@supports not (background: color-mix(in srgb, red 50%, transparent)) {
+  .goal-days li.met { background: #16a34a; }
+}
+
+/* Play this as a lesson, beside the topic it plays ---------------------------
+   It used to sit at the foot of the panel, below the whole explanation - which
+   is the wrong place for a control that offers to read that explanation to you.
+   It now sits with the title, where the decision is actually made. */
+.panel-heading { gap: 12px; }
+.panel-heading > div:not(.play-lesson) { min-width: 0; }
+
+.play-lesson {
+  flex: 0 0 auto;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* On a narrow screen the heading stacks and the button takes the full width
+   rather than squeezing the title. */
+@media (max-width: 620px) {
+  .panel-heading { align-items: flex-start; flex-wrap: wrap; }
+  .play-lesson { margin-left: 0; width: 100%; justify-content: center; }
+}
+
+/* Take it again --------------------------------------------------------------
+   Dark text needs an opaque face to sit on. The bookmark gradient fades to
+   transparent on the right, which is fine under white text but would leave
+   black text sitting on whatever is behind the button. So this one keeps the
+   left-bright, right-lighter direction but stays solid the whole way across. */
+.diagnostic-start,
+.workspace .diagnostic-start {
+  background: linear-gradient(90deg,
+    var(--subject, #4c8dff),
+    color-mix(in srgb, var(--subject, #4c8dff) 62%, #ffffff));
+  border: 1px solid color-mix(in srgb, var(--subject, #4c8dff) 70%, #000000);
+  border-left: 4px solid color-mix(in srgb, var(--subject, #4c8dff) 62%, #000000);
+  color: #0d1526;
+  font-weight: 700;
+}
+
+.diagnostic-start:hover:not(:disabled),
+.workspace .diagnostic-start:hover:not(:disabled) {
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--subject, #4c8dff) 88%, #ffffff),
+    color-mix(in srgb, var(--subject, #4c8dff) 48%, #ffffff));
+  color: #0d1526;
+}
+
+.diagnostic-start svg,
+.workspace .diagnostic-start svg { color: #0d1526; }
+
+@supports not (background: color-mix(in srgb, red 50%, transparent)) {
+  .diagnostic-start, .workspace .diagnostic-start {
+    background: #7fb0f5;
+    color: #0d1526;
+  }
+}
+
+/* Type -----------------------------------------------------------------------
+   Inter carries the interface and the reading; Plus Jakarta Sans carries the
+   headings. Inter has the tallest x-height of the screen sans faces, which is
+   what keeps a 13px label or a progress figure legible, and it holds its stroke
+   on a dark ground where lighter faces thin out. Plus Jakarta gives the
+   headings warmth Inter does not have on its own.
+
+   Maths is left to KaTeX, which ships its own faces and should keep them. */
+:root {
+  --font-ui: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Plus Jakarta Sans", Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+body, button, input, select, textarea {
+  font-family: var(--font-ui);
+  /* cv05 gives the l a tail and ss02 disambiguates I, l and 1 - which matters
+     when a Year 8 is reading an algebra outcome and has to tell them apart. */
+  font-feature-settings: "cv05" 1, "ss02" 1;
+}
+
+h1, h2, h3, h4,
+.brand h1, .topbar h2, .panel-heading h3, .guide-section h4,
+.stage-title h3, .player-heading h4, .signup-intro h1, .profile-intro h1,
+.diagnostic-header h1, .login-box h2, .admin-header h2, .review-heading h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+h1, .signup-intro h1, .profile-intro h1, .diagnostic-header h1 { letter-spacing: -0.028em; }
+
+/* Body text is set a little heavier and looser than a light theme would need:
+   light-on-dark thins the stroke, and these are paragraphs a learner reads
+   rather than labels they scan. */
+.guide-section p,
+.guide-section li,
+.stage-prose,
+.lesson-goal,
+.chat-message p {
+  font-size: 1.02rem;
+  font-weight: 420;
+  line-height: 1.68;
+}
+
+[data-content-theme="light"] .guide-section p,
+[data-content-theme="light"] .guide-section li,
+[data-content-theme="light"] .stage-prose {
+  font-weight: 400;
+}
+
+/* Figures line up wherever they are compared or counted. */
+.review-summary strong, .progress-title strong, .price-row .amount,
+.payments-table td, .exam-timer strong, .admin-stats strong, .progress-metrics strong {
+  font-feature-settings: "tnum" 1, "cv05" 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Eyebrows and small caps labels get the tracking that small uppercase needs. */
+.eyebrow, .stage-label, .subtopic-index, .signup-section-heading,
+.choice-heading, .progress-section-heading span {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+/* Buttons sit between the two: Inter's clarity, a little more weight so they
+   hold their shape against a coloured face. */
+button { font-weight: 600; letter-spacing: 0.002em; }
+
+/* The check band, tightened --------------------------------------------------
+   It carried the same fact three times: a paragraph saying there were not
+   enough answers yet, a padlock labelled "answer more to see this", and the
+   count itself. The count is the only one that earns its place - a learner
+   reading "10 of 15" does not also need to be told that ten is not fifteen. */
+
+
+
+
+/* Three columns now rather than five, so the row breathes. */
+
+
+@media (max-width: 900px) {
+}
+
+/* Retake check ---------------------------------------------------------------
+   What is left of the band: the one thing it did that could not be got at any
+   other way. A toolbar control rather than a panel, because the check is
+   something you occasionally do, not something that needs explaining on every
+   page load. */
+.retake-check {
+  align-items: center;
+  background:
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--subject, #4c8dff) 26%, transparent),
+      color-mix(in srgb, var(--subject, #4c8dff) 8%, transparent));
+  border: 1px solid var(--hairline);
+  border-left: 4px solid var(--subject, #4c8dff);
+  border-radius: var(--radius-lg);
+  color: var(--ink);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.86rem;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
+.retake-check:hover {
+  background:
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--subject, #4c8dff) 40%, transparent),
+      color-mix(in srgb, var(--subject, #4c8dff) 14%, transparent));
+  color: var(--ink-bright);
+}
+
+.retake-check svg { color: var(--subject, #4c8dff); }
+
+@supports not (background: color-mix(in srgb, red 50%, transparent)) {
+  .retake-check { background: var(--surface-raised); }
+}
+
+/* Leave the check ------------------------------------------------------------
+   The way out. Set apart from the two controls that move through the questions,
+   so it is not mistaken for one of them. */
+.leave-check {
+  align-items: center;
+  position: absolute;
+  right: 28px;
+  top: 24px;
+  z-index: 2;
+  background: var(--surface-raised);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  color: var(--ink-soft);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.84rem;
+  gap: 7px;
+  min-height: 36px;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
+.leave-check:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--ink-bright);
+}
+
+.leave-check:disabled { cursor: default; opacity: 0.5; }
+
+/* The page becomes the positioning context for it. */
+.diagnostic-page { position: relative; }
+
+@media (max-width: 720px) {
+  .leave-check { right: 16px; top: 14px; }
+}
+
+/* The theme control on screens with no sidebar -------------------------------
+   Sign-in is the first thing anyone sees, and it has no sidebar to put this in,
+   so it floats at the top right where a page-level control belongs. */
+.theme-toggle.floating {
+  position: absolute;
+  right: 24px;
+  top: 20px;
+  z-index: 2;
+}
+
+.password-login, .profile-page, .signup-page { position: relative; }
+
+@media (max-width: 720px) {
+  .theme-toggle.floating { right: 14px; top: 12px; }
+}
+
+/* The sidebar never changes --------------------------------------------------
+   Pinned rather than merely left out of the light theme. The theme attribute
+   sits on the document root so that every screen is inside it, which means any
+   token set there inherits into the sidebar as well - so the sidebar declares
+   its own, and stays the spine the content is set against in either theme. */
+.sidebar {
+  --ink-bright: #f2f7fd;
+  --ink: #d6e2f2;
+  --ink-soft: #a9bdd7;
+  --ink-faint: #93a7c2;
+  --surface: rgba(255, 255, 255, 0.055);
+  --surface-raised: rgba(255, 255, 255, 0.085);
+  --hairline: rgba(255, 255, 255, 0.11);
+  --recess-bg: rgba(0, 0, 0, 0.22);
+  --recess-bg-deep: rgba(0, 0, 0, 0.3);
+  --edge-top: inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  --recess: inset 0 1px 3px rgba(0, 0, 0, 0.38);
+  color: var(--ink);
+}
+
+/* Only the page behind the content follows the theme, not the tokens. */
+[data-content-theme="light"] body { background: #eef2f8; }
+[data-content-theme="dark"] body { background: #0e1730; }

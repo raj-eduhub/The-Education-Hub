@@ -4,6 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- The stylesheet has always asked for Inter and nothing ever loaded it, so
+         the application has been rendering in whatever the device defaults to.
+         Weights 400-700 because the interface uses all of them. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Two faces doing two jobs. Inter for the interface and body: the tallest
+         x-height of the screen sans faces, so 13px labels and figures stay
+         readable, with tabular numerals and letterform disambiguation. Plus
+         Jakarta Sans for headings: warmer and more distinctive than Inter,
+         which on its own reads as a dashboard rather than as somewhere a
+         fourteen-year-old wants to spend an hour. -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+    />
     <meta
       name="description"
       content="Education Hub for KS3, KS4, and GCSE revision with Azure AI tutoring support."

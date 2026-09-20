@@ -9,16 +9,17 @@ import {
   ChartNoAxesCombined,
   ChevronRight,
   ClipboardCheck,
+  CreditCard,
   ClipboardList,
   FlaskConical,
   GraduationCap,
   LayoutDashboard,
   Landmark,
   ListFilter,
-  LockKeyhole,
   LogOut,
   Map as MapIcon,
   MessageCircle,
+  MonitorPlay,
   PenLine,
   Play,
   Repeat2,
@@ -31,9 +32,7 @@ import {
   Sparkles,
   Target,
   Timer,
-  Square,
   UserRound,
-  Volume2,
   X,
   Users,
 } from "lucide-react";
@@ -41,10 +40,13 @@ import { curriculum, subjects, topicsFor } from "./curriculum.js";
 import { AdminDashboard } from "./AdminDashboard.jsx";
 import { AccountSettings } from "./AccountSettings.jsx";
 import { AttemptRecorder } from "./AttemptRecorder.jsx";
+import { CurriculumProgress } from "./CurriculumProgress.jsx";
+import { DailyGoal } from "./DailyGoal.jsx";
+import { ThemeToggle } from "./ThemeToggle.jsx";
 import { DiagnosticAssessment } from "./DiagnosticAssessment.jsx";
 import { LegalNotice } from "./LegalNotice.jsx";
 import { LearnerProfileSetup } from "./LearnerProfileSetup.jsx";
-import { LoginScreen, PasswordReset } from "./PasswordLogin.jsx";
+import { EmailVerification, LoginScreen, PasswordReset } from "./PasswordLogin.jsx";
 import { ProgressDashboard } from "./ProgressDashboard.jsx";
 import { CheckoutConfirming } from "./CheckoutConfirming.jsx";
 import { SubscriberSignup } from "./SubscriberSignup.jsx";
@@ -55,11 +57,13 @@ import { boardFor, loadLearnerProfile, saveLearnerProfile } from "./learnerProfi
 import { formatTopicGuide, getTopicGuide } from "./topicGuides.js";
 import { subtopicsFor } from "./subtopics.js";
 import { hasMaths, MathsText } from "./MathsText.jsx";
-import { speak, speechSupported, stopSpeaking } from "./speech.js";
+import { stopSpeaking } from "./speech.js";
+import { LessonPlayer } from "./LessonPlayer.jsx";
 import { QuestionPanel } from "./QuestionPanel.jsx";
 import { ReviewPanel } from "./ReviewPanel.jsx";
 import { ContentReview } from "./ContentReview.jsx";
 import { SafeguardingReview } from "./SafeguardingReview.jsx";
+import { PaymentsDashboard } from "./PaymentsDashboard.jsx";
 import "katex/dist/katex.min.css";
 import "./styles.css";
 
@@ -71,6 +75,21 @@ const subjectIcons = {
   Geography: MapIcon,
   Computing: Cpu,
   "Design Technology": DraftingCompass,
+};
+
+// What the check said about a topic, in words a learner can act on. The stored
+// values are "priority", "developing" and "strength". The short forms are for
+// the topic dropdown, where the title is already using most of the line.
+const checkVerdicts = {
+  priority: "Your check says: start here",
+  developing: "Your check says: nearly there",
+  strength: "Your check says: this looked strong",
+};
+
+const checkLabels = {
+  priority: "start here",
+  developing: "nearly there",
+  strength: "looked strong",
 };
 
 const learningModes = {
@@ -91,6 +110,7 @@ const subscriptionPreview = previewMode === "subscription";
 const signupPreview = previewMode === "signup";
 const signupToken = new URLSearchParams(window.location.search).get("signup");
 const resetToken = new URLSearchParams(window.location.search).get("reset");
+const verifyToken = new URLSearchParams(window.location.search).get("verify");
 const resetPreview = previewMode === "reset";
 const previewReviewRows = [
   {
@@ -273,8 +293,8 @@ function App() {
   const [learnerProfile, setLearnerProfile] = useState(appPreview ? previewProfile : null);
   const [diagnostic, setDiagnostic] = useState(null);
   const [showDiagnostic, setShowDiagnostic] = useState(false);
-  const [requestedView, setView] = useState(adminPreview ? "admin" : ["admin", "review", "safeguarding", "progress", "parent", "account"].includes(window.location.hash.slice(1)) ? window.location.hash.slice(1) : "learning");
-  const view = ["admin", "review", "safeguarding"].includes(requestedView) && !currentUser?.isAdmin
+  const [requestedView, setView] = useState(adminPreview ? "admin" : ["admin", "review", "safeguarding", "payments", "progress", "parent", "account"].includes(window.location.hash.slice(1)) ? window.location.hash.slice(1) : "learning");
+  const view = ["admin", "review", "safeguarding", "payments"].includes(requestedView) && !currentUser?.isAdmin
     ? "learning"
     : requestedView === "parent" && !currentUser?.isAdmin && currentUser?.accessRole !== "parent"
       ? "learning" : requestedView;
@@ -299,8 +319,14 @@ function App() {
   // The tutor is a chat the learner opens, not a panel competing with the
   // lesson for space. It appears once they ask for it, below the explanation.
   const [tutorOpen, setTutorOpen] = useState(false);
-  const [speaking, setSpeaking] = useState(false);
-  const canSpeak = speechSupported();
+  // The narrated lesson is opened on request rather than shown by default:
+  // a learner who only wants to read should not meet a player first.
+
+  const [playerOpen, setPlayerOpen] = useState(false);
+  // Bumped whenever an answer is recorded, so the daily goal reflects it at once
+  // rather than at the next page load - the whole point of a target is watching
+  // it move.
+  const [habitKey, setHabitKey] = useState(0);
   const [messages, setMessages] = useState([
     {
       role: "assistant",
@@ -348,13 +374,6 @@ function App() {
     [activeDiagnostic]
   );
 
-  const diagnosticSummary = useMemo(() => {
-    const results = activeDiagnostic?.results ?? [];
-    return {
-      priorities: results.filter((item) => item.classification === "priority").length,
-      strengths: results.filter((item) => item.classification === "strength").length,
-    };
-  }, [activeDiagnostic]);
 
   const availableUnits = useMemo(
     () => ["All", ...new Set(visibleTopics.map((topic) => topic.unit))],
@@ -391,7 +410,6 @@ function App() {
   useEffect(() => {
     // A voice carrying on about the previous topic is worse than no voice.
     stopSpeaking();
-    setSpeaking(false);
   }, [selectedTopicId, learningMode, subject, view]);
 
   const checkSession = useCallback(async () => {
@@ -556,7 +574,7 @@ function App() {
   }
 
   function chooseView(nextView) {
-    if (["admin", "review", "safeguarding"].includes(nextView) && !currentUser?.isAdmin) return;
+    if (["admin", "review", "safeguarding", "payments"].includes(nextView) && !currentUser?.isAdmin) return;
     if (nextView === "parent" && !currentUser?.isAdmin && currentUser?.accessRole !== "parent") return;
     setView(nextView);
     window.location.hash = nextView === "learning" ? "" : nextView;
@@ -768,7 +786,7 @@ function App() {
 
   // A submitted answer is marked by the tutor against the stored question, which
   // is also what triggers the automatic progress record.
-  async function submitBankAnswer(learnerAnswer) {
+  async function submitBankAnswer(learnerAnswer, learnerWorking = "") {
     if (bankItem.status !== "ready" || marking) return;
     setMarking(true);
     setMarkResult(null);
@@ -790,10 +808,16 @@ function App() {
           mastery: selectedMastery,
           // Framed explicitly as marking. With only the question in the history the
           // model often treated the reply as a new request and skipped the mark line.
+          // The working goes to the marker as well as the answer. A method with
+          // one slip earns most of the marks in a real paper, and a marker that
+          // only sees the final line cannot award them.
           question: `Here is my answer to the question you set.
 
 Question: ${questionContext}
-
+${learnerWorking ? `
+My working:
+${learnerWorking}
+` : ""}
 My answer: ${learnerAnswer}
 
 Mark my answer.`,
@@ -813,6 +837,7 @@ Mark my answer.`,
       if (data.recorded?.mastery) {
         const updated = data.recorded.mastery;
         setMastery((items) => [updated, ...items.filter((item) => item.topicId !== updated.topicId)]);
+        setHabitKey((key) => key + 1);
       }
       setExamRunning(false);
     } catch (failure) {
@@ -865,6 +890,7 @@ Mark my answer.`,
         setMastery((items) => [updated, ...items.filter((item) => item.topicId !== updated.topicId)]);
         setAttemptMessage(`Progress recorded automatically: ${data.recorded.mark.earned}/${data.recorded.mark.available}`);
         setActivityStartedAt(Date.now());
+        setHabitKey((key) => key + 1);
       }
     } catch {
       setMessages((items) => [
@@ -885,24 +911,8 @@ Mark my answer.`,
     sendTutorPrompt(prompt);
   }
 
-  // The authored explanation is on screen and correct, so it is what gets read.
-  // Waiting for the model would mean fifteen seconds of silence after a click.
-  function readAloud() {
-    if (explanation.status !== "ready") return;
-    const started = speak([explanation.explanation, ...(explanation.keyIdeas ?? [])], {
-      onEnd: () => setSpeaking(false),
-    });
-    setSpeaking(started);
-  }
-
-  function silence() {
-    stopSpeaking();
-    setSpeaking(false);
-  }
-
   function startActivity() {
     setTutorOpen(true);
-    if (canSpeak) readAloud();
     setActivityStartedAt(Date.now());
     setAttemptMessage("");
     if (learningMode === "exam") {
@@ -970,6 +980,10 @@ Mark my answer.`,
 
   if (signupToken || signupPreview) {
     return <SubscriberSignup preview={signupPreview} token={signupToken} />;
+  }
+
+  if (verifyToken) {
+    return <EmailVerification token={verifyToken} />;
   }
 
   if (resetToken || resetPreview) {
@@ -1053,6 +1067,7 @@ Mark my answer.`,
     return (
         <DiagnosticAssessment
         learner={{ ...learnerProfile, subject }}
+        onCancel={() => setShowDiagnostic(false)}
         onComplete={completeDiagnostic}
         request={appRequest}
       />
@@ -1105,6 +1120,12 @@ Mark my answer.`,
               <span>Safeguarding</span>
             </button>
           )}
+          {currentUser?.isAdmin && (
+            <button className={view === "payments" ? "active" : ""} onClick={() => chooseView("payments")} title="Payments" type="button">
+              <CreditCard size={18} />
+              <span>Payments</span>
+            </button>
+          )}
           <button className={view === "account" ? "active" : ""} onClick={() => chooseView("account")} title="Account & privacy" type="button">
             <Settings size={18} />
             <span>Account & privacy</span>
@@ -1125,6 +1146,10 @@ Mark my answer.`,
             return (
               <button
                 className={item === subject ? "subject active" : "subject"}
+                // The subject's colour is carried on the element itself, so the
+                // tab, its icon and the workspace it opens all read from one
+                // token rather than seven hard-coded rules.
+                data-subject={item}
                 key={item}
                 onClick={() => chooseSubject(item)}
                 type="button"
@@ -1137,6 +1162,8 @@ Mark my answer.`,
           })}
         </nav>}
 
+        <ThemeToggle />
+
         <div className="account-panel">
           {currentUser?.picture ? <img alt="" src={currentUser.picture} /> : <span>{currentUser?.name?.charAt(0) ?? "U"}</span>}
           <div><strong>{currentUser?.name}</strong><small>{currentUser?.email}</small></div>
@@ -1148,13 +1175,15 @@ Mark my answer.`,
         <ContentReview request={appRequest} />
       ) : view === "safeguarding" ? (
         <SafeguardingReview request={appRequest} />
+      ) : view === "payments" ? (
+        <PaymentsDashboard request={appRequest} />
       ) : view === "account" ? (
         <AccountSettings currentUser={currentUser} onDeleted={finishAccountDeletion} request={appRequest} subscription={subscription} />
       ) : view === "progress" ? (
         <ProgressDashboard learner={learnerProfile} onOpenTopic={openTrackedTopic} request={appRequest} />
       ) : view === "parent" ? (
         <ProgressDashboard audience="parent" learner={learnerProfile} onOpenTopic={openTrackedTopic} request={appRequest} />
-      ) : <section className="workspace">
+      ) : <section className="workspace" data-subject={subject}>
         <header className="topbar">
           <div>
             <p className="eyebrow">{learnerProfile.firstName}'s Year {learnerYear} learning path</p>
@@ -1167,6 +1196,10 @@ Mark my answer.`,
                 {availableUnits.map((unit) => <option key={unit}>{unit}</option>)}
               </select>
             </label>
+            <button className="retake-check" onClick={() => setShowDiagnostic(true)} type="button">
+              <Target size={15} />
+              <span>{activeDiagnostic ? "Retake check" : "Take the check"}</span>
+            </button>
             <div className="model-pill">
               <Sparkles size={16} />
               <span>AI tutor</span>
@@ -1184,29 +1217,16 @@ Mark my answer.`,
           {learningMode === "exam" && <div className={`exam-timer ${examRunning ? "running" : ""}`}><Timer size={16} /><strong>{String(Math.floor(examSeconds / 60)).padStart(2, "0")}:{String(examSeconds % 60).padStart(2, "0")}</strong></div>}
         </section>
 
-        <section className="diagnostic-summary" aria-label="Diagnostic evidence">
-          <div className="diagnostic-summary-title">
-            <Target size={19} />
-            <div>
-              <strong>{activeDiagnostic ? "Personalised learning order" : "No diagnostic evidence yet"}</strong>
-              <span>{activeDiagnostic ? "Priority topics appear first" : `Take a short ${subject} check to personalise this path`}</span>
-            </div>
-          </div>
-          <div className="diagnostic-stat priority"><span>Priority areas</span><strong>{diagnosticSummary.priorities}</strong></div>
-          <div className="diagnostic-stat strength"><span>Strengths</span><strong>{diagnosticSummary.strengths}</strong></div>
-          <div className="grade-lock">
-            <LockKeyhole size={16} />
-            <div>
-              <span>{activeDiagnostic?.gradePrediction?.status === "evidence-threshold-met" ? "Evidence threshold met" : "Grade prediction locked"}</span>
-              <strong>{activeDiagnostic?.evidenceCount ?? 0} / 15 evidence checks</strong>
-            </div>
-          </div>
-          <button className="diagnostic-start" onClick={() => setShowDiagnostic(true)} type="button">
-            {activeDiagnostic ? "Retake check" : "Start check"}
-          </button>
-        </section>
+        <DailyGoal refreshKey={habitKey} request={appRequest} />
+
 
         <section className="curriculum-browser" aria-label="Curriculum">
+          <CurriculumProgress
+            mastery={mastery}
+            subject={subject}
+            topics={baseVisibleTopics}
+            year={learnerYear}
+          />
           <label className="topic-picker">
             <span>Topic</span>
             <select
@@ -1219,7 +1239,7 @@ Mark my answer.`,
                   {unitTopics.map((topic) => {
                     const evidence = evidenceByTopic.get(topic.id);
                     return <option key={topic.id} value={topic.id}>
-                      {evidence ? `${topic.title} (${evidence.classification})` : topic.title}
+                      {evidence ? `${topic.title} - ${checkLabels[evidence.classification] ?? "checked"}` : topic.title}
                     </option>;
                   })}
                 </optgroup>
@@ -1279,26 +1299,41 @@ Mark my answer.`,
                 <p className="eyebrow">{selectedTopic.exam} / {selectedTopic.unit}</p>
                 <h3>{selectedTopic.title}</h3>
               </div>
+              {explanation.status === "ready" && <button className="ask-tutor play-lesson" onClick={() => {
+                stopSpeaking();
+                setPlayerOpen((open) => !open);
+              }} type="button">
+                <MonitorPlay size={16} /> {playerOpen ? "Close the lesson player" : "Play this as a lesson"}
+              </button>}
             </div>
             <p className="lesson-goal">{selectedTopic.goal}</p>
             <div className="topic-guide">
-              <section className="guide-section">
-                <h4>Clear explanation</h4>
-                {explanation.status === "loading" && <p className="example-status" role="status">Loading this topic...</p>}
-                {explanation.status === "error" && <p className="login-error" role="alert">{explanation.error}</p>}
-                {explanation.status === "ready" && <>
-                  <p><MathsText enabled={typeset(explanation.explanation)}>{explanation.explanation}</MathsText></p>
-                  <ul>
-                    {(explanation.keyIdeas ?? []).map((idea) => <li key={idea}><MathsText enabled={typeset(idea)}>{idea}</MathsText></li>)}
-                  </ul>
-                </>}
-              </section>
-              {explanation.status === "ready" && (explanation.formulae ?? []).length > 0 && (
-                <section className="guide-section formula-guide">
-                  <h4>Key formulas</h4>
-                  {explanation.formulae.map((formula) => <code className={typeset(formula) ? "typeset" : ""} key={formula}><MathsText enabled={typeset(formula)}>{formula}</MathsText></code>)}
+              {/* The narrated lesson presents the same authored content, so it
+                  takes the place of the written explanation rather than sitting
+                  alongside it and saying everything twice. */}
+              {playerOpen && explanation.status === "ready" ? (
+                <section className="guide-section">
+                  <LessonPlayer content={explanation} request={appRequest} topic={selectedTopic} />
                 </section>
-              )}
+              ) : <>
+                <section className="guide-section">
+                  <h4>Clear explanation</h4>
+                  {explanation.status === "loading" && <p className="example-status" role="status">Loading this topic...</p>}
+                  {explanation.status === "error" && <p className="login-error" role="alert">{explanation.error}</p>}
+                  {explanation.status === "ready" && <>
+                    <p><MathsText enabled={typeset(explanation.explanation)}>{explanation.explanation}</MathsText></p>
+                    <ul>
+                      {(explanation.keyIdeas ?? []).map((idea) => <li key={idea}><MathsText enabled={typeset(idea)}>{idea}</MathsText></li>)}
+                    </ul>
+                  </>}
+                </section>
+                {explanation.status === "ready" && (explanation.formulae ?? []).length > 0 && (
+                  <section className="guide-section formula-guide">
+                    <h4>Key formulas</h4>
+                    {explanation.formulae.map((formula) => <code className={typeset(formula) ? "typeset" : ""} key={formula}><MathsText enabled={typeset(formula)}>{formula}</MathsText></code>)}
+                  </section>
+                )}
+              </>}
               <section className="guide-section worked-example">
                 <div className="worked-example-heading">
                   <h4>Worked example: {selectedSubtopic?.title ?? selectedTopic.title}</h4>
@@ -1339,7 +1374,7 @@ Mark my answer.`,
             </div>
             {selectedEvidence && (
               <div className={`topic-evidence ${selectedEvidence.classification}`}>
-                <strong>Diagnostic: {selectedEvidence.classification}</strong>
+                <strong>{checkVerdicts[selectedEvidence.classification] ?? "From your check"}</strong>
                 <p>{selectedEvidence.feedback}</p>
                 <span>Next step: {selectedEvidence.nextStep}</span>
               </div>
@@ -1353,16 +1388,9 @@ Mark my answer.`,
               ))}
             </div>
             <div className="lesson-actions">
-              <button className="start-activity" disabled={isThinking} onClick={startActivity} type="button">
+              {learningMode !== "learn" && <button className="start-activity" disabled={isThinking} onClick={startActivity} type="button">
                 <Play size={15} /> {learningModes[learningMode].action}
-              </button>
-              {canSpeak && explanation.status === "ready" && (speaking
-                ? <button className="ask-tutor listening" onClick={silence} type="button">
-                    <Square size={15} /> Stop reading
-                  </button>
-                : <button className="ask-tutor" onClick={readAloud} type="button">
-                    <Volume2 size={16} /> Read this aloud
-                  </button>)}
+              </button>}
               {!tutorOpen && <button className="ask-tutor" onClick={() => setTutorOpen(true)} type="button">
                 <MessageCircle size={16} /> Ask the tutor a question
               </button>}
@@ -1388,7 +1416,7 @@ Mark my answer.`,
                 <h3>Tutor</h3>
                 <p>{learningModes[learningMode].label} / {selectedTopic.title}</p>
               </div>
-              <button className="start-activity" disabled={isThinking} onClick={startActivity} type="button"><Play size={15} /> {learningModes[learningMode].action}</button>
+              {learningMode !== "learn" && <button className="start-activity" disabled={isThinking} onClick={startActivity} type="button"><Play size={15} /> {learningModes[learningMode].action}</button>}
               <button aria-label="Close the tutor" className="close-tutor" onClick={() => setTutorOpen(false)} title="Close the tutor" type="button"><X size={18} /></button>
             </div>
 
