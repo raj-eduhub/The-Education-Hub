@@ -12,6 +12,7 @@
     "@azure/data-tables": "^13.3.0",
     "@azure/functions": "^4.0.0",
     "@azure/identity": "^4.0.0",
+    "@azure/storage-blob": "^12.32.0",
     "google-auth-library": "^10.3.0",
     "stripe": "^22.6.1"
   },

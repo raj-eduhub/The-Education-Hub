@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:all": "concurrently -k -n storage,api,web \"npm:dev:storage\" \"npm:dev:api\" \"npm:dev -- --host 127.0.0.1 --port 5173\"",
-    "dev:storage": "azurite --location .azurite --silent",
+    "dev:storage": "azurite --location .azurite --silent --skipApiVersionCheck",
     "dev:api": "powershell.exe -NoProfile -Command \"& 'C:\\Program Files\\Microsoft\\Azure Functions Core Tools\\func.exe' start --prefix api --port 7071\"",
     "build": "vite build",
     "preview": "vite preview",
@@ -15,6 +15,7 @@
     "start:swa": "swa start http://localhost:5173 --api-location api",
     "seed:content": "node api/scripts/seed-content.mjs",
     "content:coverage": "node api/scripts/content-coverage.mjs",
+    "content:audit": "node api/scripts/audit-content.mjs",
     "test": "node api/scripts/run-tests.mjs",
     "test:e2e": "node api/scripts/test-e2e.mjs",
     "stubs": "node api/scripts/local-stubs.mjs",
@@ -22,7 +23,9 @@
     "wait:storage": "node api/scripts/wait-for-azurite.mjs",
     "review:content": "node api/scripts/review-content.mjs",
     "validate:curriculum": "node api/scripts/validate-curriculum.mjs",
-    "prune:content": "node api/scripts/prune-content.mjs"
+    "prune:content": "node api/scripts/prune-content.mjs",
+    "narration:cost": "node api/scripts/narration-cost.mjs",
+    "narration:synthesise": "node api/scripts/synthesise-narration.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.0",

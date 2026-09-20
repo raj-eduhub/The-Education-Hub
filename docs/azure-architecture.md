@@ -173,11 +173,55 @@ Mastery weights the newest attempt at 35% so improvement is reflected without er
 
 The student and parent curriculum tracker joins those mastery aggregates to the complete bundled curriculum for the learner's immutable year. A topic is `Completed` at 80% mastery or above, `Review due` when its review date has passed, `In progress` when it has evidence but is below the completion threshold, and `Not started` when no mastery record exists. This lets the interface report both studied work and the full remaining curriculum without creating extra storage records for untouched topics.
 
+## Subscription Lifecycle
+
+Checkout is created with `mode: "subscription"`, so Stripe stores the card and
+charges the monthly price on its own until the subscription ends. Education Hub
+never sees a card number.
+
+What the application does with each state:
+
+| Stripe status | Access | Why |
+| --- | --- | --- |
+| `active` | Yes | Paid and current |
+| `past_due` | **Yes** | A renewal failed and Stripe is retrying, which it does for around three weeks. Most failures are an expired or briefly declined card that recovers within days, so cutting a learner off at the first failure would take the product away mid-revision for a payment that is probably about to succeed |
+| `active` with `cancel_at_period_end` | Yes | They cancelled but have paid to the end of the period |
+| `canceled`, `unpaid` | No | Stripe gave up, or the paid period ended |
+| `checkout_pending` | No | Checkout was opened and never completed |
+
+The rule lives in `grantsAccess()` in `api/src/lib/subscriptionStore.js` so the
+gate and the payments view cannot disagree about what counts as paying.
+
+Cancellation reaches the application through `customer.subscription.updated`
+(with `cancel_at_period_end`) and then `customer.subscription.deleted`. Both are
+in the webhook subscription list, along with `customer.subscription.created` and
+`checkout.session.completed`.
+
+## Payments Administration
+
+`GET /api/billing/subscribers` returns every subscription with totals for an
+administrator, and the **Payments** screen presents it. It deliberately does not
+reproduce Stripe: refunds, invoices and card details stay there, and each row
+links to the customer in the Stripe dashboard.
+
+What it adds that Stripe cannot answer is agreement between the two systems.
+Everything the application knows about a subscription arrives by webhook, so a
+misconfigured endpoint or an outage while Stripe stops retrying leaves the local
+row silently stale - a cancelled customer keeps their access, and nothing
+notices. `POST /api/billing/reconcile` reads one subscription back from Stripe
+and repairs the row, and the screen reports whether anything changed.
+
+The monthly revenue figure is computed from the price read from Stripe rather
+than from a constant in the code, so it cannot drift from what customers are
+actually charged.
+
 ## Security Boundary
 
 - `/api/session`, `/api/tutor`, `/api/diagnostic`, `/api/progress`, `/api/safeguarding`, and `/api/users` verify the Google bearer token inside the Function. Invalid, expired, unverified-email, or wrong-audience tokens are rejected.
 - Tutor, diagnostic, and progress APIs require an active roster user, active paid subscription, completed signup, and stored learner profile. Administrators are exempt for service operation.
 - Learner setup is authenticated rather than token-based: `POST /api/onboarding` identifies the account from the signed-in principal and refuses an account without an active subscription. The older emailed links contained 256-bit random tokens stored only as SHA-256 hashes; no new links are issued, and any already sent expire after 48 hours.
+- Registration with a username and password grants nothing until the address is confirmed by email: no session and no access-roster row, and an unconfirmed account cannot sign in. The address is the key for the roster, subscription, profile, progress and safeguarding records, and a Google sign-in with the same address resolves to the same account, so an unproven address must not create one.
+- `POST /api/content` accepts a row key only in the shapes `contentKey()` produces, and treats it as a lookup rather than a commission: a key that is not already stored returns 404 instead of generating content at a client-chosen location in the shared curriculum table.
 - The user management, content review, and safeguarding APIs require a verified Gmail address configured in `ADMIN_EMAILS`. Safeguarding is administrator-only rather than parent-level, because a flag may concern the household a parent account belongs to.
 - Static Web Apps provides HTTPS and same-origin routing, but the current code does not implement per-user quotas or application-level rate limiting.
 - The server limits forwarded chat history to six messages, but it does not yet enforce request-size or token budgets.

@@ -90,4 +90,6 @@ api/local.settings.json
 output/playwright/
 .copilot-azure/
 api/scripts/.stub-log.json
+## Word lock files, written while a .docx in the repo is open
+~$*
 # End

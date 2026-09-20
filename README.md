@@ -72,6 +72,8 @@ GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 - Full curriculum tracker showing completed, in-progress, review-due, and not-started topics
 - Subject and status filters, topic search, coverage totals, and direct links back into the learning hub
 - Administrator dashboard for adding, deactivating, reactivating, and removing application users
+- Payments screen listing every subscription with totals, monthly revenue read from Stripe, and a reconcile action that repairs a record when a webhook was missed
+- Access continues through a late payment while Stripe retries, and stops when Stripe gives up or the paid period ends
 - Safeguarding dashboard recording every message the tutor refused, with per-learner history, guardian contact details, and an email alert to administrators on a safety flag
 - One subscription at GBP 9.99 per month, with no free trial, through Stripe-hosted checkout
 - Welcome email after confirmed payment through Azure Communication Services, carrying no token and no deadline
@@ -242,6 +244,72 @@ varies. Seed a year, run `npm run prune:content` to strip anything that breaks t
 curriculum rules, review the stored rows, then move on; see
 [the curriculum model](docs/curriculum-model.md) for the rules and the corrections
 behind them.
+
+## Narrated lessons
+
+A topic can be played as a lesson rather than read: the authored explanation is
+broken into beats, narrated, and the key ideas and formulae build up as they are
+spoken. Where a topic has authored visuals, those play too. The beat sequence
+lives in `src/lessonBeats.js`, which the player, the synthesis script and the API
+all share so that the audio recorded matches the beats requested.
+
+The voice is either recorded or the browser's own, never a mixture:
+
+- **Recorded.** One neural voice for every learner, synthesised once and cached
+  in Blob Storage. Served through `POST /api/narration`, behind the same access
+  check as the lesson, because it reads the paid explanations aloud.
+- **Fallback.** The device's own speech synthesis where a topic has not been
+  voiced. Quality then depends on what the device has installed, which is the
+  problem the recorded voice exists to solve.
+
+```bash
+npm run narration:cost                                  # what it would cost to voice everything
+npm run narration:synthesise -- --dry-run               # beats and characters, calls nothing
+npm run narration:synthesise -- --topic y10-maths-number
+npm run narration:synthesise                            # the whole curriculum
+```
+
+Audio is keyed by a digest of the **spoken** text and the voice, so editing one
+sentence re-synthesises that sentence alone, and correcting the LaTeX-to-words
+rules invalidates exactly the beats those rules changed. Re-runs skip anything
+already stored; `--force` overrides that.
+
+Settings, alongside the others in `api/local.settings.json` or the Static Web
+Apps application settings:
+
+```
+AZURE_SPEECH_KEY=your-speech-resource-key
+AZURE_SPEECH_REGION=uksouth
+AZURE_SPEECH_VOICE=en-GB-SoniaNeural
+AZURE_STORAGE_NARRATION_CONTAINER=narration
+```
+
+Without `AZURE_SPEECH_KEY` nothing is recorded and every lesson uses the browser
+voice, which is a degraded experience rather than a broken one.
+
+## Limiting model spend
+
+Every call to the model costs money, and a signed-in learner could previously
+make them without limit: the tutor guard refuses abusive *content*, but nothing
+counted the calls themselves. A leaked session had an uncapped meter attached.
+
+`checkModelBudget()` caps each learner over two windows, counted with the same
+conditional write the sign-in limiter uses so the count holds across Functions
+instances:
+
+```
+MODEL_CALLS_PER_MINUTE=12    catches a script or a stuck retry loop
+MODEL_CALLS_PER_DAY=200      catches the slow, patient version
+```
+
+Two properties are deliberate. It is checked **only where a call reaches the
+model** - reading stored content, a guarded tutor message, and a question
+answered from stored material all cost nothing, so a learner revising for hours
+is never limited. And it **fails open**: if the table cannot be reached the
+lesson still runs, because this protects a budget rather than data, and a
+limiter that breaks the product when it breaks is worse than the overspend.
+
+Set either to `0` to disable that window.
 
 ## Tests
 

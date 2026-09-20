@@ -12,7 +12,7 @@
 import { randomBytes } from "node:crypto";
 import { readFileSync } from "node:fs";
 import Stripe from "stripe";
-import { deleteCredentials } from "../src/lib/passwordAuth.js";
+import { createEmailVerification, deleteCredentials, digest } from "../src/lib/passwordAuth.js";
 import { deleteUserByEmail } from "../src/lib/userStore.js";
 import { accountKey, deleteSubscription } from "../src/lib/subscriptionStore.js";
 import { deleteProfile } from "../src/lib/signupStore.js";
@@ -85,8 +85,14 @@ console.log("reset: any previous account for this email removed\n");
 // 1. Registration -------------------------------------------------------------
 console.log("--- 1. Register ---");
 const registered = await call("/auth/register", json({ username, email, password }));
-record(registered.status === 201, "register creates the account", `HTTP ${registered.status}`);
-record(Boolean(cookie), "a session cookie is issued", cookie ? "education_session set" : "no cookie");
+record(registered.status === 202, "register creates the account", `HTTP ${registered.status}`);
+record(!cookie, "registration issues no session until the address is confirmed", cookie ? "cookie issued" : "no cookie");
+
+// Standing in for the emailed confirmation link.
+const verifyToken = await createEmailVerification(`user-${digest(username)}`);
+const confirmed = await call("/auth/verify", json({ token: verifyToken }));
+record(confirmed.status === 200, "confirming the address signs the account in", `HTTP ${confirmed.status}`);
+record(Boolean(cookie), "a session cookie is issued on confirmation", cookie ? "education_session set" : "no cookie");
 
 const session = await call("/session");
 record(session.status === 200, "session is recognised", `HTTP ${session.status}`);
@@ -218,8 +224,61 @@ record(typeof unsafe.body?.answer === "string" && unsafe.body.answer.includes("t
 const flagsAsLearner = await call("/safeguarding");
 record(flagsAsLearner.status === 403, "a learner cannot read safeguarding flags", `HTTP ${flagsAsLearner.status}`);
 
-// 8. Account ------------------------------------------------------------------
-console.log("\n--- 8. Account ---");
+
+// 8. The lesson read aloud ----------------------------------------------------
+// The narration is the paid explanation spoken, so it sits behind the same
+// access check as the lesson itself.
+console.log("\n--- 8. The lesson read aloud ---");
+const { contentKey, getContent } = await import("../src/lib/contentStore.js");
+const { beatSpeech, lessonBeats } = await import("../../src/lessonBeats.js");
+const { toSpoken } = await import("../../src/speech.js");
+const { curriculum } = await import("../../src/data/curriculumCatalog.js");
+
+const voicedTopic = curriculum.find((entry) => entry.id === "y10-maths-number");
+const voicedContent = await getContent(contentKey("explanation", voicedTopic.id));
+const beats = lessonBeats(voicedTopic, voicedContent).map((beat) => beatSpeech(beat, toSpoken)).filter(Boolean);
+
+const spoken = await call("/narration", json({ topicId: voicedTopic.id, text: beats[0] }));
+record(spoken.status === 200, "the lesson narration is served", `HTTP ${spoken.status}`);
+
+const everyBeat = await Promise.all(beats.map(async (text) => {
+  const response = await call("/narration", json({ topicId: voicedTopic.id, text }));
+  return response.status === 200;
+}));
+record(everyBeat.every(Boolean), "every beat of the lesson is voiced, so it never switches voice midway",
+  `${everyBeat.filter(Boolean).length} of ${beats.length}`);
+
+const unvoiced = await call("/narration", json({ topicId: voicedTopic.id, text: "a line nobody recorded" }));
+record(unvoiced.status === 404, "an unrecorded line is a 404, so the player falls back rather than failing",
+  `HTTP ${unvoiced.status}`);
+
+// 9. The daily goal -----------------------------------------------------------
+console.log("\n--- 9. The daily goal ---");
+const habit = await call("/progress/habit");
+record(habit.status === 200, "the daily goal is served", `HTTP ${habit.status}`);
+record(habit.body?.today >= 1, "the attempt just recorded counts towards today", `today=${habit.body?.today}`);
+record(habit.body?.goal >= 4 && habit.body?.goal <= 25, "the goal is sized from the learner's own pace",
+  `${habit.body?.goal} questions for ${habit.body?.targetMinutes} minutes at ${habit.body?.secondsPerQuestion}s each`);
+record(Array.isArray(habit.body?.days) && habit.body.days.length === 14, "a fortnight of days is returned",
+  `${habit.body?.days?.length} days`);
+
+// 10. Model spend -------------------------------------------------------------
+// Every model call is money. Stored content must not spend any, and a runaway
+// caller must be stopped.
+console.log("\n--- 10. Model spend ---");
+const { modelUsage } = await import("../src/lib/modelBudget.js");
+const before = await modelUsage(email);
+for (let i = 0; i < 3; i += 1) {
+  await call("/content", json({ type: "explanation", subject: "Maths", topic }));
+}
+const after = await modelUsage(email);
+record(after.daily.used === before.daily.used,
+  "reading stored content spends nothing from the budget",
+  `${before.daily.used} -> ${after.daily.used} of ${after.daily.limit}`);
+record(after.daily.limit > 0, "a per-day cap is configured", `${after.daily.limit} calls a day`);
+
+// 11. Account -----------------------------------------------------------------
+console.log("\n--- 11. Account ---");
 const portal = await call("/billing/portal", json({}));
 record(portal.status === 200 && typeof portal.body?.url === "string", "the billing portal opens", `HTTP ${portal.status}`);
 
