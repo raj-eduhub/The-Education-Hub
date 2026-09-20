@@ -61,10 +61,11 @@ GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 - Short initial diagnostic of up to five questions with topic-level strengths, development areas, and next steps
 - Personalised topic ordering that places priority areas first while retaining the complete curriculum
 - Evidence-gated grade predictions; no grade is displayed before at least 15 assessment checks
-- Broad curriculum catalogue with 210 modules and 630 outcomes across Years 7-11, validated against the DfE subject content and the AQA specifications
-- Authored explanations, key ideas and formulae for every one of the 210 topics, served from storage so the model is never asked to write the core teaching text
+- Broad curriculum catalogue with 235 modules and 1,439 outcomes across Years 7-11, validated against the DfE subject content and the AQA specifications
+- Authored explanations, key ideas and formulae for every one of the 235 topics, served from storage so the model is never asked to write the core teaching text
 - Automatic year, GCSE exam-board, tier, subject, and unit filtering, with tiering applied only to the tiered qualifications
 - `npm run validate:curriculum` enforcing catalogue structure, tiering, board coverage and authored-content coverage as part of `npm test`
+- Every subject except Geography audited both ways: the catalogue read against the specifications and against real school schemes of work, and each piece of required content searched for across every year; see [the curriculum model](docs/curriculum-model.md#coverage-audits)
 - AI tutor chat for explanations, original quiz questions, worked examples, and answer feedback
 - Learn, Practice, Exam, and Review modes with Socratic teaching, adaptive questions, timed mark-based work, and spaced retrieval
 - Azure Table Storage attempts and mastery records tracking accuracy, confidence, time, and last-practised dates

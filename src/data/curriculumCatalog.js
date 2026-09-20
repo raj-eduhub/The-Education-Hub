@@ -46,6 +46,7 @@ const coreCurriculumByYear = {
     subjects: {
       Maths: [
         topic("y7-maths-number", "Number", "Integers and Place Value", "Build fluency with integers, decimals, factors, multiples, and directed number.", ["Order integers and decimals", "Use factors and multiples", "Calculate with negative numbers"]),
+        topic("y7-maths-primes", "Number", "Primes, Factors and Multiples", "Break numbers into their prime building blocks and use them to compare and combine.", ["Identify prime numbers", "Write a number as a product of its prime factors", "Find the highest common factor and lowest common multiple"]),
         topic("y7-maths-fractions", "Number", "Fractions, Decimals and Percentages", "Move confidently between common numerical representations.", ["Simplify and compare fractions", "Convert fractions, decimals and percentages", "Find fractions and percentages of amounts"]),
         topic("y7-maths-algebra", "Algebra", "Expressions and Equations", "Represent and solve simple relationships with algebra.", ["Collect like terms", "Substitute into expressions", "Solve one-step equations"]),
         topic("y7-maths-geometry", "Geometry", "Angles and 2D Shape", "Reason with angle facts and properties of polygons.", ["Use angle facts", "Classify polygons", "Calculate perimeter and area"]),
@@ -53,6 +54,9 @@ const coreCurriculumByYear = {
         topic("y7-maths-coordinates", "Geometry", "Coordinates and Transformations", "Describe positions and transformations accurately on coordinate grids.", ["Plot in four quadrants", "Reflect and rotate shapes", "Describe translations"]),
       ],
       Science: [
+        topic("y7-science-safety", "Working Scientifically", "Laboratory Safety and Apparatus", "Work safely in a laboratory and choose the right equipment for the measurement.", ["Work safely in a laboratory", "Identify hazard symbols and the risks they warn of", "Select the right apparatus for a measurement"]),
+        topic("y7-science-substances", "Chemistry", "Elements, Compounds and Mixtures", "Tell the three kinds of substance apart, and a physical change from a chemical one.", ["Distinguish elements, compounds and mixtures", "Use chemical symbols for common elements", "Tell a physical change from a chemical change"]),
+        topic("y7-science-space", "Physics", "Space Physics", "Explain day, night, the seasons and the motion of the solar system.", ["Describe the structure of the solar system", "Explain day, night and the seasons", "Explain gravity and weight on different bodies"]),
         topic("y7-science-cells", "Biology", "Cells and Organisation", "Connect cell structures to their functions in living organisms.", ["Compare plant and animal cells", "Explain specialised cells", "Link cells, tissues and organs"]),
         topic("y7-science-particles", "Chemistry", "Particles and States", "Use the particle model to explain states and changes of state.", ["Describe particle arrangements", "Explain changes of state", "Interpret diffusion"]),
         topic("y7-science-forces", "Physics", "Forces and Motion", "Describe forces and use speed to explain simple motion.", ["Identify types of force", "Calculate speed", "Interpret distance-time graphs"]),
@@ -62,6 +66,8 @@ const coreCurriculumByYear = {
       ],
       English: [
         topic("y7-english-fiction", "Reading", "Fiction: Character and Setting", "Support interpretations of fiction with precise textual evidence.", ["Retrieve and infer", "Select useful quotations", "Explain language choices"]),
+        topic("y7-english-myths", "Literature", "Myths, Legends and Story Structure", "Recognise the shapes and figures stories reuse, and use them in your own.", ["Describe the conventions of myths and legends", "Identify the stages of a story arc", "Explain how an archetype works"]),
+        topic("y7-english-shakespeare", "Literature", "Shakespeare: Comedy and Performance", "Read a Shakespeare comedy as a script written to be performed.", ["Follow Shakespeare's language with confidence", "Explain how a comedy is structured", "Explain how a scene works on a stage"]),
         topic("y7-english-nonfiction", "Reading", "Non-fiction Viewpoints", "Identify purpose, audience, and viewpoint in non-fiction.", ["Recognise purpose and audience", "Summarise key ideas", "Identify persuasive methods"]),
         topic("y7-english-narrative", "Writing", "Narrative Craft", "Shape an engaging short narrative with deliberate structure and detail.", ["Plan a clear sequence", "Use sensory description", "Control sentences and paragraphs"]),
         topic("y7-english-speaking", "Spoken English", "Discussion and Presentation", "Express and justify ideas clearly for an audience.", ["Organise a presentation", "Use Standard English", "Respond constructively to questions"]),
@@ -79,6 +85,7 @@ const coreCurriculumByYear = {
         topic("y8-maths-measures", "Geometry", "Area, Volume and Constructions", "Apply formulae and construct accurate geometric figures.", ["Calculate compound areas", "Find prism volumes", "Use ruler and compass constructions"]),
         topic("y8-maths-data", "Statistics", "Data and Averages", "Represent data and compare distributions using suitable measures.", ["Choose appropriate charts", "Calculate averages and range", "Compare data sets"]),
         topic("y8-maths-percentages", "Number", "Percentages and Financial Maths", "Use percentage change and proportional reasoning in financial contexts.", ["Calculate percentage change", "Use multipliers", "Solve profit, loss and interest problems"]),
+        topic("y8-maths-probability", "Probability", "Probability of Single Events", "Measure how likely something is, and predict what a run of trials should produce.", ["Place events on the probability scale", "Calculate the probability of a single event", "List all the possible outcomes systematically"]),
         topic("y8-maths-transformations", "Geometry", "Transformations and Congruence", "Describe and combine geometric transformations.", ["Reflect and rotate accurately", "Translate with vectors", "Recognise congruent shapes"]),
       ],
       Science: [
@@ -87,12 +94,14 @@ const coreCurriculumByYear = {
         topic("y8-science-energy", "Physics", "Energy Transfers", "Track energy stores and pathways through physical systems.", ["Identify energy stores", "Describe transfer pathways", "Calculate simple energy changes"]),
         topic("y8-science-ecosystems", "Biology", "Ecosystems", "Explain feeding relationships and interdependence in ecosystems.", ["Construct food webs", "Explain competition", "Describe environmental change"]),
         topic("y8-science-periodic", "Chemistry", "Periodic Table and Materials", "Relate elements, groups, and material properties to atomic patterns.", ["Use symbols and formulae", "Describe group patterns", "Compare metals and non-metals"]),
+        topic("y8-science-metals", "Chemistry", "Metals, Reactivity and Extraction", "Order metals by how readily they react, and use that order to get them out of the ground.", ["Place metals in order of reactivity", "Predict the products of a displacement reaction", "Explain how a metal is extracted from its ore"]),
         topic("y8-science-waves", "Physics", "Sound and Light Waves", "Use wave models to explain sound, light, reflection, and refraction.", ["Describe wave properties", "Explain reflection and refraction", "Relate frequency to pitch and colour"]),
       ],
       English: [
         topic("y8-english-shakespeare", "Literature", "Shakespeare and Drama", "Analyse character, theme, and dramatic method in a Shakespeare play.", ["Track a character", "Analyse dramatic methods", "Explore interpretations"]),
         topic("y8-english-poetry", "Literature", "Poetry: Voice and Form", "Compare how poets use language, structure, and form.", ["Identify poetic methods", "Explain effects of form", "Build a comparison"]),
         topic("y8-english-argument", "Writing", "Argument and Persuasion", "Craft convincing arguments for different audiences.", ["Develop a viewpoint", "Use rhetorical methods", "Structure an argument"]),
+        topic("y8-english-change", "Language", "How English Has Changed", "Trace how the language arrived at its present shape, and why its spelling is so strange.", ["Compare Old, Middle and Modern English", "Explain how English borrowed words from other languages", "Explain how the meaning of a word shifts over time"]),
         topic("y8-english-accuracy", "Language", "Grammar, Punctuation and Style", "Control sentences and punctuation for clarity and effect.", ["Vary sentence structures", "Use punctuation deliberately", "Edit for accuracy"]),
         topic("y8-english-novel", "Literature", "The Novel and Context", "Explore how a novel's context, narration, and structure shape meaning.", ["Analyse narrative viewpoint", "Track themes", "Use context to illuminate the text"]),
         topic("y8-english-comparison", "Reading", "Comparing Texts", "Make purposeful comparisons between writers' ideas and methods.", ["Select comparison points", "Compare evidence", "Connect methods to viewpoints"]),
@@ -147,6 +156,8 @@ const coreCurriculumByYear = {
         gcse("y10-science-organisation", "Biology", "Organisation and Digestion", "Explain how tissues, organs and organ systems keep an organism supplied.", ["Explain enzyme action", "Describe digestion and food tests", "Link heart, lungs and blood to transport"]),
         gcse("y10-science-atomic", "Chemistry", "Atomic Structure and Bonding", "Use models of atoms and bonding to explain properties.", ["Explain electronic structure", "Compare bonding", "Link structure and properties"]),
         gcse("y10-science-energy", "Physics", "Energy and Electricity", "Calculate energy transfers and analyse circuits.", ["Use energy equations", "Calculate electrical power", "Analyse circuits"]),
+        gcse("y10-science-motion", "Physics", "Motion and Acceleration", "Describe and calculate how things move, and read motion off a graph.", ["Calculate speed, distance and time", "Interpret distance-time and velocity-time graphs", "Calculate acceleration"]),
+        gcse("y10-science-organic", "Chemistry", "Crude Oil and Fuels", "Separate crude oil into useful fuels and explain why the molecules are broken down.", ["Describe crude oil as a mixture of hydrocarbons", "Explain fractional distillation", "Explain why cracking is carried out"]),
         gcse("y10-science-practicals", "Working Scientifically", "Required Practical Skills", "Plan, analyse, and evaluate GCSE investigations.", ["Identify variables", "Process data", "Evaluate uncertainty"]),
         gcse("y10-science-bioenergetics", "Biology", "Bioenergetics", "Explain photosynthesis, respiration, and responses to exercise.", ["Use photosynthesis equations", "Interpret limiting factors", "Compare respiration pathways"]),
         gcse("y10-science-infection", "Biology", "Infection and Response", "Explain communicable disease, defence, and medicine development.", ["Compare pathogen types", "Explain immune responses", "Evaluate drugs and vaccination"]),

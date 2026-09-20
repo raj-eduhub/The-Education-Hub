@@ -39,6 +39,29 @@ export const humanitiesContent = {
     ],
     formulae: [],
   },
+  "y7-history-britain-before-1066": {
+    explanation:
+      "Britain did not begin in 1066. Rome ruled the province for nearly four hundred years, leaving roads, towns, walls and Latin, and when the legions withdrew around 410 those towns emptied rather than falling in a single catastrophe. Peoples from northern Europe, the Angles, Saxons and Jutes, settled over the following centuries and their small kingdoms - Northumbria, Mercia, Wessex and others - fought, absorbed one another and gradually converted to Christianity. From the 790s Viking raids became Viking settlement, until half of England was under Danish law, and it was the resistance and reorganisation that followed, under Alfred of Wessex and his successors, that produced a single kingdom of England with shires, burhs and a common coinage. That is the kingdom William took in 1066. Knowing this makes the conquest a change of ruler over an already organised state, not the start of English history.",
+    keyIdeas: [
+      "Roman Britain ended gradually, not in a single collapse.",
+      "Anglo-Saxon England was many kingdoms before it was one.",
+      "Viking raids became settlement, and settlement forced English unification.",
+      "England was already a governed kingdom when the Normans arrived.",
+    ],
+    formulae: [],
+  },
+  "y7-history-the-crusades-and-the-islamic-world": {
+    explanation:
+      "Islam began in Arabia in the seventh century and within a hundred years was the faith of an empire reaching from Spain to the borders of India. Its cities were among the largest in the world, and scholars in Baghdad, Cordoba and Cairo translated and extended Greek, Persian and Indian learning: the word algebra is Arabic, so are algorithm, alkali and alcohol. In 1095 Pope Urban II called for an armed expedition to take Jerusalem, and the First Crusade captured the city in 1099 with great slaughter. Further crusades followed for two centuries, most of them failures, and Saladin retook Jerusalem in 1187. Both sides recorded these wars, and the accounts differ in ways that are themselves evidence: a chronicler writing for a crusading lord and one writing in Damascus describe the same siege with different heroes, different atrocities and different explanations. The lasting consequence was less territorial than intellectual, as goods, texts and techniques moved along the routes the fighting had opened.",
+    keyIdeas: [
+      "The medieval Islamic world was a centre of learning, not a backdrop to European history.",
+      "Much Greek learning reached Europe through Arabic translation.",
+      "The Crusades ran for two centuries and mostly failed in their stated aim.",
+      "Christian and Muslim accounts of the same event differ, and the difference is evidence.",
+      "The lasting effects were as much in trade and ideas as in territory.",
+    ],
+    formulae: [],
+  },
   "y7-history-local-history-investigation": {
     explanation:
       "A local investigation begins with a question narrow enough to answer, such as how one street or building changed over a period, rather than a topic. Primary sources are those created at the time - censuses, maps, photographs, parish records, newspapers - and each was made by someone for a purpose, which affects what it shows and what it leaves out. Cross-referencing two sources is how a claim becomes reliable. A conclusion should answer the question directly and say how confident the evidence allows you to be.",
@@ -82,6 +105,18 @@ export const humanitiesContent = {
       "The trade was economically central to British ports and industry.",
       "Resistance took many forms, including the revolution in Haiti.",
       "Abolition has several competing explanations and no single cause.",
+    ],
+    formulae: [],
+  },
+  "y8-history-the-age-of-enlightenment": {
+    explanation:
+      "The Enlightenment was an argument, running through the eighteenth century, that questions about the world should be settled by reason and evidence rather than by tradition or authority. It grew out of the scientific revolution: if Newton could explain the motion of the planets with a few laws anyone could check, then perhaps government, law and belief could be examined the same way. Locke argued that rulers govern by consent and may be removed; Montesquieu argued for separating the powers of government so none could dominate; Voltaire attacked censorship and religious persecution; Rousseau argued that sovereignty belongs to the people. These ideas spread in printed books, pamphlets and newspapers, and were argued over in coffee houses and salons by people who were not aristocrats. They shaped the American and French Revolutions and later reform movements in Britain. They also had limits their authors rarely admitted: many Enlightenment thinkers defended slavery or profited from it, and few extended their arguments about liberty to women, which Mary Wollstonecraft pointed out at the time.",
+    keyIdeas: [
+      "Reason and evidence were set against tradition and authority.",
+      "The scientific revolution supplied the method the political arguments borrowed.",
+      "Print and coffee houses spread the ideas beyond the aristocracy.",
+      "Enlightenment arguments underpinned revolution in America and France.",
+      "Those arguments were applied inconsistently, notably to slavery and to women.",
     ],
     formulae: [],
   },
@@ -212,6 +247,53 @@ export const humanitiesContent = {
   },
 
   // ---- History, Year 11 (GCSE) -------------------------------------------
+  "y10-history-greece-and-persia": {
+    explanation:
+      "Wider reading, beyond the AQA and Edexcel specifications. By 500 BC the Persian empire ran from the Aegean to the Indus, governed through satraps who collected tribute and kept order while leaving local custom largely alone: it was tolerant by the standards of the age and vastly richer than Greece. The Greek world was the opposite, hundreds of small independent cities that fought each other as readily as anyone else. When Ionian Greeks under Persian rule revolted and Athens sent help, Darius came for Athens and was beaten at Marathon in 490. Ten years later Xerxes returned with an army and fleet on a scale nothing in Greece could match, held for three days at Thermopylae, took and burned Athens, and then lost his fleet in the narrows at Salamis where numbers counted against him. The land army was destroyed at Plataea the following year. Almost everything we know comes from Herodotus, who wrote within living memory, interviewed participants, and also reported marvels he had not checked - which is why he has to be read closely rather than simply believed.",
+    keyIdeas: [
+      "Persia was the larger, richer and more organised power throughout.",
+      "The Greek cities were rivals who cooperated only under direct threat.",
+      "Terrain and narrow water cancelled Persian numbers at Thermopylae and Salamis.",
+      "Herodotus is the main source, close to events and not always reliable.",
+    ],
+    formulae: [],
+  },
+  "y10-history-alexander-the-great": {
+    explanation:
+      "Wider reading, beyond the AQA and Edexcel specifications. Alexander inherited rather than invented his advantage: his father Philip II had turned Macedon into the strongest military power in Greece, with the pike phalanx and companion cavalry Alexander would use. Taking the throne at twenty in 336 BC, he crossed into Asia and beat Persian armies at the Granicus, at Issus and finally at Gaugamela in 331, where Darius III fled and the empire fell to him. He kept going, through Bactria and over the Hindu Kush into the Punjab, until his own army refused to march further east. He founded cities, most famously Alexandria in Egypt, and governed partly through the Persian administration he had defeated, adopting Persian dress and court practice in ways that angered his Macedonian veterans. He died at Babylon in 323, aged thirty-two, leaving no viable heir, and his generals divided the empire between them within a generation. Verdicts have always differed: a genius who spread Greek culture across three continents, or a destructive conqueror whose empire could not outlive him.",
+    keyIdeas: [
+      "Philip II built the army and the position Alexander used.",
+      "Gaugamela in 331 BC decided the Persian empire.",
+      "He ruled through existing Persian administration, which divided his own men.",
+      "Nothing held the empire together once he died without an heir.",
+      "The verdict on him has been contested since antiquity.",
+    ],
+    formulae: [],
+  },
+  "y11-history-rome-and-its-neighbours": {
+    explanation:
+      "Wider reading, beyond the AQA and Edexcel specifications. Rome began as one city among many in Italy and spent two centuries subduing the rest, not mainly because its soldiers were better but because of what it did after winning. Defeated peoples were not usually destroyed or simply taxed; they were bound to Rome by treaty, left to run their own affairs, and required to supply troops. Some were granted Roman citizenship, in full or in part, and citizenship could be extended further over time. The result was that every victory enlarged the pool of manpower Rome could draw on, so defeats could be absorbed and wars outlasted, which is exactly what happened against Hannibal. The army itself was organised in legions of citizens, drilled, engineered and supplied to a standard no neighbour matched, and able to build roads and camps as it advanced. Romans explained their expansion to themselves as defensive, a series of just wars fought against aggressors, a claim worth examining against the pattern of who actually attacked whom.",
+    keyIdeas: [
+      "Rome absorbed defeated peoples rather than only extracting from them.",
+      "Extending citizenship turned former enemies into a source of soldiers.",
+      "That manpower let Rome lose battles and still win wars.",
+      "The legions' advantage was drill, engineering and supply, not individual prowess.",
+      "Rome's own account of its wars as defensive should be tested, not accepted.",
+    ],
+    formulae: [],
+  },
+  "y11-history-hannibal-and-the-second-punic-war": {
+    explanation:
+      "Wider reading, beyond the AQA and Edexcel specifications. Carthage lost the First Punic War and with it Sicily, and rebuilt its strength in Spain, where Hannibal took command. War came again in 218 BC over the city of Saguntum, and Hannibal did what Rome did not expect: rather than wait to be invaded he marched an army, with elephants, from Spain across the Alps into Italy, losing many thousands on the way. Then he beat Roman armies repeatedly - at the Trebia, at Lake Trasimene, and at Cannae in 216, where he encircled and destroyed a much larger force in what is still studied as a model of battlefield manoeuvre. And yet he could not win. Rome's Italian allies mostly did not defect, so he could not replace losses while Rome could; he was never able to take the city itself; and Rome eventually carried the war to Spain and then to Africa, forcing him home to be beaten at Zama in 202. The war shows that winning battles and winning a war are different problems.",
+    keyIdeas: [
+      "The war grew out of the settlement of the first one.",
+      "Crossing the Alps was costly but achieved complete surprise.",
+      "Cannae is a model of encirclement and still destroyed nothing decisive.",
+      "Rome's allies held, so Rome could replace losses and Hannibal could not.",
+      "Battlefield victory did not translate into winning the war.",
+    ],
+    formulae: [],
+  },
   "y11-history-conflict-and-tension": {
     explanation:
       "A wider-world depth study covers international conflict in a defined period, and success depends on knowing the sequence of developments well enough to explain how one led to another. Causation answers should show factors interacting - how an economic pressure shaped a political decision, which then provoked a response - rather than presenting them as a list. Significance judgements need a stated criterion. Build a timeline of perhaps fifteen key moments with dates, and rehearse explaining the links between them, because that is what most questions are testing.",

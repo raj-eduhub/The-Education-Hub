@@ -18,6 +18,7 @@ export const outcomeExpansions = {
     "Round to the nearest 10, 100 and 1000",
     "Use the four operations with decimals",
     "Find squares, cubes and their roots",
+    "Apply the order of operations, including brackets and indices",
   ],
   "y7-maths-fractions": [
     "Add and subtract fractions with different denominators",
@@ -53,6 +54,8 @@ export const outcomeExpansions = {
     "Explain gas pressure using the particle model",
     "Describe evaporation and condensation",
     "Interpret heating and cooling curves",
+    "Compare the properties of solids, liquids and gases",
+    "Explain the energy change that drives melting and boiling",
   ],
   "y7-science-forces": [
     "Describe balanced and unbalanced forces",
@@ -118,6 +121,7 @@ export const outcomeExpansions = {
     "Describe the Black Death and its effects",
     "Explain the causes of the Peasants' Revolt",
     "Assess change and continuity across a period",
+    "Describe developments in science and technology in the later Middle Ages",
   ],
   "y7-history-local-history-investigation": [
     "Select sources relevant to an enquiry",
@@ -148,16 +152,19 @@ export const outcomeExpansions = {
     "Use abstraction to simplify a problem",
     "Compare linear and binary search",
     "Represent an algorithm as a flowchart",
+    "Use a trace table to follow an algorithm step by step",
   ],
   "y7-computing-programming-foundations": [
     "Use condition-controlled loops",
     "Debug common syntax and logic errors",
     "Use arithmetic and comparison operators",
+    "Use integer, real, Boolean and string data types",
   ],
   "y7-computing-binary-and-data-representation": [
     "Convert between binary and denary",
     "Perform simple binary addition",
     "Explain how sound is sampled and stored",
+    "Convert between binary, denary and hexadecimal",
   ],
   "y7-computing-networks-and-digital-safety": [
     "Compare LAN and WAN",
@@ -183,6 +190,7 @@ export const outcomeExpansions = {
     "Compare tension and compression",
     "Explain how beams and frames carry load",
     "Improve the stability of a structure",
+    "Stiffen and reinforce a material by folding, lamination or webbing",
   ],
 
   // --- Year 8 ---------------------------------------------------------------
@@ -225,6 +233,8 @@ export const outcomeExpansions = {
     "Balance symbol equations",
     "Describe reactions of acids with metals and carbonates",
     "Distinguish exothermic and endothermic changes",
+    "Write the chemical formula of a common compound",
+    "Name a compound from its formula",
   ],
   "y8-science-energy": [
     "Describe energy dissipation and efficiency",
@@ -240,6 +250,9 @@ export const outcomeExpansions = {
     "Describe the structure of the atom",
     "Explain how the periodic table is arranged",
     "Describe the properties of the noble gases",
+    "Describe the properties and reactions of the halogens",
+    "Describe how the model of the atom changed over time",
+    "Explain how Mendeleev arranged the first periodic table",
   ],
   "y8-science-waves": [
     "Compare transverse and longitudinal waves",
@@ -255,6 +268,7 @@ export const outcomeExpansions = {
     "Analyse imagery and symbolism",
     "Explain the effect of enjambment and caesura",
     "Write a comparative paragraph",
+    "Analyse how a narrative poem tells a story",
   ],
   "y8-english-argument": [
     "Counter an opposing viewpoint",
@@ -270,6 +284,8 @@ export const outcomeExpansions = {
     "Analyse a writer's structural choices",
     "Explore how setting creates atmosphere",
     "Evaluate a character's role in the whole text",
+    "Recognise the conventions of a genre",
+    "Explain how a writer uses or subverts those conventions",
   ],
   "y8-english-comparison": [
     "Compare writers' attitudes",
@@ -325,6 +341,7 @@ export const outcomeExpansions = {
     "Describe the role of the CPU components",
     "Explain the purpose of RAM and ROM",
     "Compare the functions of an operating system",
+    "Apply the input, process and output model to a system",
   ],
   "y8-computing-databases-and-data-modelling": [
     "Use primary keys and relationships",
@@ -340,6 +357,7 @@ export const outcomeExpansions = {
     "Explain levers and linkages",
     "Calculate mechanical advantage",
     "Describe gear and pulley systems",
+    "Describe cams and followers and the motion they produce",
   ],
   "y8-design-technology-electronic-systems": [
     "Explain input, process and output",
@@ -359,7 +377,10 @@ export const outcomeExpansions = {
 
   // --- Year 9 ---------------------------------------------------------------
   "y9-maths-powers": ["Use powers of ten to multiply and divide", "Convert between ordinary and standard form", "Apply the priority of operations to powers and roots"],
-  "y9-maths-quadratics": ["Solve quadratics by factorising", "Identify the roots of a quadratic from its graph", "Plot and read quadratic graphs"],
+  // The last two are Higher-tier skills that schools running a three-year
+  // GCSE teach in Year 9. Both build directly on expanding and factorising
+  // above them, so they belong to this topic rather than to a new one.
+  "y9-maths-quadratics": ["Solve quadratics by factorising", "Identify the roots of a quadratic from its graph", "Plot and read quadratic graphs", "Expand three brackets", "Factorise the difference of two squares"],
   "y9-maths-pythagoras": ["Find a shorter side using Pythagoras", "Identify the hypotenuse, opposite and adjacent sides", "Apply Pythagoras to problems in context"],
   "y9-maths-probability": ["Use frequency trees", "Calculate probabilities for independent events", "Use two-way tables"],
   "y9-maths-equations": ["Solve inequalities and show them on a number line", "Solve simultaneous linear equations", "Form equations from worded problems"],
@@ -405,12 +426,12 @@ export const outcomeExpansions = {
   "y10-maths-constructions": ["Construct a triangle from given measurements", "Construct perpendiculars from and to a point", "Solve region problems using intersecting loci"],
   "y10-science-cell-biology": ["Describe mitosis and the cell cycle", "Compare eukaryotic and prokaryotic cells", "Use magnification calculations"],
   "y10-science-organisation": ["Describe enzyme action and the factors affecting it", "Explain the structure of the heart and lungs", "Describe risk factors for non-communicable disease"],
-  "y10-science-atomic": ["Describe how the atomic model developed", "Explain ionic, covalent and metallic bonding", "Relate structure to properties"],
-  "y10-science-energy": ["Calculate kinetic and potential energy", "Use the power and efficiency equations", "Describe the National Grid"],
+  "y10-science-atomic": ["Describe how the atomic model developed", "Explain ionic, covalent and metallic bonding", "Relate structure to properties", "Explain why an alloy is harder than a pure metal"],
+  "y10-science-energy": ["Calculate kinetic and potential energy", "Use the power and efficiency equations", "Describe the National Grid", "Describe the live, neutral and earth wires in a plug", "Explain why a fuse or circuit breaker makes a circuit safe", "Compare direct and alternating current"],
   "y10-science-practicals": ["Select apparatus with a suitable resolution", "Calculate uncertainty and percentage error", "Evaluate a method and suggest improvements"],
   "y10-science-bioenergetics": ["Investigate the rate of photosynthesis", "Explain the uses of glucose in plants", "Describe oxygen debt after exercise"],
   "y10-science-infection": ["Describe pathogens and how they spread", "Explain the immune response and vaccination", "Describe drug discovery and testing"],
-  "y10-science-chemical-changes": ["Describe extraction of metals by reduction with carbon", "Describe electrolysis of molten and aqueous compounds", "Describe neutralisation and salt formation"],
+  "y10-science-chemical-changes": ["Describe extraction of metals by reduction with carbon", "Describe electrolysis of molten and aqueous compounds", "Describe neutralisation and salt formation", "Prepare a pure, dry sample of a soluble salt", "Use the pH scale and describe strong and weak acids"],
   "y10-science-particles": ["Describe internal energy and changes of state", "Explain specific heat capacity and latent heat", "Explain gas pressure and its relationship with temperature"],
   "y10-science-earth": ["Describe the evolution of the atmosphere", "Explain how potable water is produced", "Explain the causes and effects of atmospheric pollutants"],
   "y10-english-lang-reading": ["Analyse language for effect", "Analyse structural features", "Evaluate a text critically"],
@@ -435,13 +456,13 @@ export const outcomeExpansions = {
   "y10-geography-the-changing-economic-world": ["Explain the demographic transition model", "Explain the causes of uneven development", "Assess strategies to reduce the development gap"],
   "y10-geography-cartography-data-and-gis": ["Use Ordnance Survey map skills", "Present data using suitable graphs", "Apply statistical skills to geographical data"],
   "y10-computing-algorithms-and-efficiency": ["Trace and correct an algorithm", "Compare bubble, merge and insertion sort", "Explain the efficiency of search algorithms"],
-  "y10-computing-programming-techniques": ["Use arrays and records", "Write and call subprograms", "Use string manipulation"],
+  "y10-computing-programming-techniques": ["Use arrays and records", "Write and call subprograms", "Use string manipulation", "Choose and convert between data types"],
   "y10-computing-data-representation": ["Perform binary addition and binary shifts", "Explain character sets", "Calculate sound file size from sample rate and depth"],
   "y10-computing-architecture-and-storage": ["Describe the fetch-decode-execute cycle", "Explain the purpose of cache and registers", "Compare types of secondary storage"],
   "y10-computing-networks-protocols-and-security": ["Describe network topologies", "Compare wired and wireless connections", "Describe network threats and prevention"],
   "y10-computing-testing-and-defensive-design": ["Design a test plan with suitable test data", "Write normal, boundary and erroneous test data", "Explain how code is made maintainable"],
   "y10-design-technology-materials-and-their-properties": ["Compare physical and working properties", "Select materials with justification", "Describe stock forms and standard components"],
-  "y10-design-technology-energy-systems-and-mechanisms": ["Compare methods of energy generation", "Explain mechanical and electronic systems", "Describe types of motion and mechanical devices"],
+  "y10-design-technology-energy-systems-and-mechanisms": ["Compare methods of energy generation", "Explain mechanical and electronic systems", "Describe types of motion and mechanical devices", "Compare alkaline and rechargeable batteries"],
   "y10-design-technology-investigation-and-design-brief": ["Investigate existing products in the same market", "Carry out primary and secondary research", "Produce a design brief from a client context"],
   "y10-design-technology-generating-and-developing-ideas": ["Generate a range of design ideas", "Model and prototype ideas", "Use client feedback to develop a design"],
   "y10-design-technology-processes-and-quality": ["Select suitable manufacturing processes", "Apply tolerance and quality control", "Select tools and equipment for a given process"],
@@ -458,7 +479,7 @@ export const outcomeExpansions = {
   "y11-maths-found-probability": ["Use the probability scale", "List outcomes systematically", "Use relative frequency"],
   "y11-maths-found-statistics": ["Choose the most appropriate average", "Construct and read bar charts and pictograms", "Find the mode, median and range from a table"],
   "y11-maths-found-ratio": ["Convert between fractions, decimals and percentages", "Use scale factors and maps", "Calculate percentage change"],
-  "y11-maths-number": ["Expand brackets containing surds", "Estimate the value of a surd", "Use exact values in calculations"],
+  "y11-maths-number": ["Expand brackets containing surds", "Estimate the value of a surd", "Use exact values in calculations", "Convert a recurring decimal to a fraction"],
   "y11-maths-algebra": ["Solve simultaneous equations with a quadratic", "Solve algebraic fractions", "Prove algebraic results"],
   "y11-maths-probability": ["Interpret probability from a two-way table", "Apply probability without replacement", "Use Venn diagrams for conditional events"],
   "y11-maths-statistics": ["Construct and interpret histograms with unequal widths", "Use cumulative frequency graphs", "Find and interpret the interquartile range"],
@@ -504,6 +525,121 @@ export const outcomeExpansions = {
   "y11-design-technology-mechanisms-electronics-and-control": ["Calculate gear and pulley ratios", "Design a simple electronic system", "Explain feedback in control systems"],
   "y11-design-technology-quantitative-design-skills": ["Calculate material quantities and costs", "Work to tolerance in calculations", "Interpret data to inform design decisions"],
   "y11-design-technology-design-decisions-and-exam-practice": ["Respond to a design context under timed conditions", "Use technical vocabulary precisely", "Structure extended design answers"],
+  "y7-maths-primes": [
+    "Use a factor tree to write a number as a product of primes",
+    "Use prime factors to find the HCF of two numbers",
+    "Solve problems where two repeating events coincide",
+  ],
+  "y8-maths-probability": [
+    "Use the fact that probabilities sum to one",
+    "Find the probability of an event not happening",
+    "Estimate how often an event should occur in a number of trials",
+  ],
+  "y7-science-safety": [
+    "Light and use a Bunsen burner safely",
+    "Measure volume, mass and temperature accurately",
+    "Write a risk assessment for a practical",
+  ],
+  "y7-science-substances": [
+    "Describe the composition of the air",
+    "Explain why a mixture can be separated but a compound cannot",
+    "Recognise the signs that a chemical reaction has happened",
+  ],
+  "y7-science-space": [
+    "Explain the phases of the Moon",
+    "Describe how solar and lunar eclipses happen",
+    "Distinguish mass from weight",
+  ],
+  "y8-science-metals": [
+    "Use carbon to extract a metal from its oxide",
+    "Explain why some metals need electrolysis instead",
+    "Relate a metal's reactivity to how it is found in the Earth",
+  ],
+  "y10-science-motion": [
+    "Distinguish scalar and vector quantities",
+    "Find acceleration from the gradient of a velocity-time graph",
+    "Explain the factors affecting stopping distance",
+  ],
+  "y10-science-organic": [
+    "Describe the properties of the different fractions",
+    "Compare complete and incomplete combustion",
+    "Test for an alkene using bromine water",
+  ],
+  "y7-english-myths": [
+    "Compare how different cultures tell a similar story",
+    "Explain why oral stories repeat phrases and patterns",
+    "Retell a myth with a deliberate structure",
+  ],
+  "y7-english-shakespeare": [
+    "Work out unfamiliar words from the surrounding lines",
+    "Explain the effect of a comic misunderstanding",
+    "Suggest how an actor might deliver a line",
+  ],
+  "y8-english-change": [
+    "Read a short passage of Middle English with support",
+    "Explain why English spelling is often irregular",
+    "Identify archaic vocabulary in a pre-1914 text",
+  ],
+  "y7-history-britain-before-1066": [
+    "Describe what the Romans left behind in Britain",
+    "Explain how Anglo-Saxon kingdoms were governed",
+    "Assess the effects of Viking settlement",
+  ],
+  "y7-history-the-crusades-and-the-islamic-world": [
+    "Describe learning and science in the medieval Islamic world",
+    "Explain how ideas and technology travelled between the two worlds",
+    "Assess the consequences of the Crusades for both sides",
+  ],
+  "y8-history-the-age-of-enlightenment": [
+    "Explain the significance of the scientific revolution",
+    "Describe how new ideas spread in print and in coffee houses",
+    "Explain the limits of Enlightenment thinking on slavery and on women",
+  ],
+  "y10-history-greece-and-persia": [
+    "Compare Greek and Persian accounts of the same war",
+    "Explain why Herodotus is both essential and unreliable",
+    "Assess the significance of Marathon, Thermopylae and Salamis",
+  ],
+  "y10-history-alexander-the-great": [
+    "Explain what Alexander inherited from Philip II",
+    "Describe the founding of cities across the empire",
+    "Explain why the empire broke apart after his death",
+  ],
+  "y11-history-rome-and-its-neighbours": [
+    "Explain the role of citizenship in Roman expansion",
+    "Describe the organisation of the Roman army",
+    "Assess how Rome justified its conquests",
+  ],
+  "y11-history-hannibal-and-the-second-punic-war": [
+    "Explain the significance of the crossing of the Alps",
+    "Describe the defeat at Cannae and its aftermath",
+    "Assess the consequences of the war for both sides",
+  ],
+  "y9-computing-artificial-intelligence-and-machine-learning": [
+    "Distinguish rule-based programs from trained models",
+    "Describe supervised learning and the need for labelled data",
+    "Explain why a model's output should not be trusted uncritically",
+  ],
+  "y9-computing-programming-languages-and-paradigms": [
+    "Explain why source code must be translated to run",
+    "Describe the same algorithm written in two languages",
+    "Explain how an IDE helps find and fix errors",
+  ],
+  "y7-design-technology-food-hygiene-and-healthy-eating": [
+    "Explain how bacteria spread and how to prevent it",
+    "Follow a recipe accurately from written instructions",
+    "Plan a balanced meal for a stated need",
+  ],
+  "y8-design-technology-cooking-skills-and-food-provenance": [
+    "Use heat to change food in a controlled way",
+    "Explain how farming has changed and may change again",
+    "Compare seasonal and imported ingredients",
+  ],
+  "y10-design-technology-new-and-emerging-technologies": [
+    "Compare flexible manufacturing, just in time and lean manufacturing",
+    "Explain how crowd funding and co-operatives change who funds a product",
+    "Evaluate the impact of a new technology on people and on work",
+  ],
 };
 
 export function expansionFor(topicId) {

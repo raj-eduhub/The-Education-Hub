@@ -130,6 +130,29 @@ export const technicalContent = {
     ],
     formulae: [],
   },
+  "y9-computing-artificial-intelligence-and-machine-learning": {
+    explanation:
+      "Most programs are rules a person wrote: if this, do that, and the computer follows them exactly. Machine learning works the other way round. You supply examples, and the program adjusts itself until it can produce the right answer for them, then applies whatever it settled on to examples it has never seen. In supervised learning the examples are labelled, so thousands of pictures are each marked cat or not cat, and training means repeatedly checking the model's guess against the label and nudging its internal numbers to reduce the error. Nobody writes the rule for what a cat looks like, and nobody can read it afterwards either, which is why these systems are hard to explain. That also makes them inherit whatever is in the data. A model trained on past hiring decisions learns the pattern of those decisions, including the unfair parts, and will repeat them while appearing neutral because it is a computer. A trained model produces the most likely answer given its data, which is not the same as a true one.",
+    keyIdeas: [
+      "A traditional program follows rules a person wrote; a model learns patterns from examples.",
+      "Supervised learning needs labelled data, and lots of it.",
+      "Training means reducing the error between the model's guess and the label.",
+      "A model inherits the bias in its training data and looks neutral doing it.",
+      "The output is the most likely answer, not a guaranteed correct one.",
+    ],
+    formulae: [],
+  },
+  "y9-computing-programming-languages-and-paradigms": {
+    explanation:
+      "A processor only executes machine code, which is binary. Assembly language gives those instructions short names such as ADD and LDA, one line per instruction, and is still tied to one kind of processor. High-level languages such as Python, C++ and Visual Basic read much more like English, let one line stand for many machine instructions, and run on any machine with a translator available. That translation happens in one of two ways: a compiler converts the whole program in advance and produces a file that runs fast but must be recompiled after every change, while an interpreter translates and runs line by line, which is slower but reports each error as it reaches it. Languages also differ in how you are expected to organise a solution. A procedural approach breaks a problem into subprograms that act on data passed to them; an object-oriented approach bundles the data and the operations on it together into objects. An IDE is the workshop rather than the language: an editor, a translator, a debugger that lets you stop the program and inspect its variables, and error highlighting as you type.",
+    keyIdeas: [
+      "Machine code is binary; assembly names those instructions; high-level languages abstract above both.",
+      "A compiler translates everything first; an interpreter translates line by line as it runs.",
+      "Procedural code separates data from the subprograms acting on it; object-oriented code bundles them.",
+      "An IDE supplies the editor, translator and debugger, not the language itself.",
+    ],
+    formulae: [],
+  },
   "y9-computing-ethics-law-and-the-environment": {
     explanation:
       "Computing is governed by law as well as by good practice: data protection law sets rules for handling personal data, computer misuse law makes unauthorised access an offence, and copyright law covers software and content. Algorithmic bias arises when a system trained on unrepresentative data produces systematically worse outcomes for some groups, and it is a design problem rather than a mysterious property of the technology. Computing also carries environmental costs in energy use, in the materials mined for devices, and in electronic waste. Evaluating an issue means naming the benefit, the cost and who bears each.",
@@ -316,6 +339,18 @@ export const technicalContent = {
     ],
     formulae: ["Scale $1:2$ means the drawing is half the real size"],
   },
+  "y7-design-technology-food-hygiene-and-healthy-eating": {
+    explanation:
+      "Most food poisoning comes from bacteria that were already present and were given warmth, moisture and time to multiply. That is why the rules are what they are: wash hands before and after handling raw meat, keep raw and cooked food apart so nothing drips from one to the other, chill below 5 degrees and cook through above 75, and never leave food standing in the danger zone between them. Cross-contamination is the one most often missed, because a board or a knife carries bacteria just as readily as a hand. Knife safety is a grip and a posture: the claw grip with fingertips tucked back, a board that cannot slide, and cutting away from yourself. A balanced diet is about proportion rather than any single food being good or bad. Carbohydrates supply most of the energy, protein builds and repairs, fats provide concentrated energy and carry some vitamins, and fibre, vitamins, minerals and water keep the system working. The Eatwell Guide shows those proportions on a plate, which is easier to act on than a list.",
+    keyIdeas: [
+      "Bacteria need warmth, moisture and time, so remove one of them.",
+      "Keep raw and cooked food apart; the board and knife carry bacteria too.",
+      "Chill below 5 degrees, cook above 75, and do not leave food between them.",
+      "Carbohydrate for energy, protein to build and repair, fat for stored energy.",
+      "Balance is about proportion, not about any one food being forbidden.",
+    ],
+    formulae: [],
+  },
   "y7-design-technology-forces-and-structures": {
     explanation:
       "Structures carry loads, and the forces involved are tension pulling apart, compression squashing together, bending, shear and torsion twisting. A structure fails where the force exceeds what the material and shape can carry, so the shape matters as much as the material. Triangulation stiffens a frame because a triangle cannot change shape without changing the length of a side, which is why bracing is added to rectangular frames. Testing a structure means loading it in a controlled and repeatable way and recording where and how it failed.",
@@ -362,6 +397,18 @@ export const technicalContent = {
       "Match the property to the use: absorbency, stretch, durability.",
       "Accurate seams and finishes decide whether a product lasts.",
       "Smart materials respond to an environmental change.",
+    ],
+    formulae: [],
+  },
+  "y8-design-technology-cooking-skills-and-food-provenance": {
+    explanation:
+      "Cooking is the controlled use of heat, and the method changes the result. Boiling and simmering cook in water, so flavour leaches out unless you keep the liquid; frying is hotter and drier, browning the surface and creating flavours that simply do not form in water; baking surrounds food with dry heat so it rises and sets. Heat also makes food safe and easier to digest. Provenance means knowing where an ingredient came from and what producing it involved: whether it was grown, reared or caught, how far it travelled, what season it belongs to, and how the animals or the land were treated. Those questions rarely have a single clean answer. A tomato grown locally in a heated greenhouse in January can carry a larger carbon cost than one shipped from Spain; free-range welfare standards usually mean a higher price and more land. Being able to hold several perspectives at once, and still make a decision, is what the topic is really asking of you.",
+    keyIdeas: [
+      "Wet heat, dry heat and fat-based heat produce different textures and flavours.",
+      "Cooking makes food safe as well as palatable.",
+      "Provenance covers how food is grown, reared, caught and transported.",
+      "Local is not automatically lower impact than imported.",
+      "Welfare, environment and cost usually pull against each other.",
     ],
     formulae: [],
   },
@@ -448,6 +495,18 @@ export const technicalContent = {
       "Mechanical advantage $= \\frac{\\text{load}}{\\text{effort}}$",
       "Velocity ratio $= \\frac{\\text{distance moved by effort}}{\\text{distance moved by load}}$",
     ],
+  },
+  "y10-design-technology-new-and-emerging-technologies": {
+    explanation:
+      "New products reach us in two ways. Technology push is where a development in the laboratory comes first and a use is found for it afterwards, which is how the microwave oven arrived. Market pull is where a demand already exists and designers respond to it. Most real products involve both. Once a product exists, how long it is meant to last is also a design decision. Planned obsolescence builds in a limited life, through a battery that cannot be replaced or a part that is no longer made, which guarantees repeat sales and generates waste; designing for repair does the opposite, with standard fixings, replaceable parts and published instructions. Manufacturing has changed just as much. Automation and robotics took over repetitive and dangerous tasks, raising consistency and output while removing many jobs and creating fewer, more technical ones. Flexible manufacturing systems let a line switch between products rather than making one thing. Just in time keeps almost no stock, delivering components as they are needed, which cuts storage cost and leaves no cushion when a supplier fails. Lean manufacturing is the wider effort to remove anything the customer would not pay for.",
+    keyIdeas: [
+      "Technology push starts with the invention; market pull starts with the demand.",
+      "Planned obsolescence shortens a product's life on purpose; design for repair extends it.",
+      "Automation raises consistency and output and changes what the workforce does.",
+      "Just in time removes storage cost and removes the buffer against failure.",
+      "Lean manufacturing removes anything the customer would not pay for.",
+    ],
+    formulae: [],
   },
   "y10-design-technology-investigation-and-design-brief": {
     explanation:

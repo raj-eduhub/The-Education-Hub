@@ -20,6 +20,20 @@ export const mathsContent = {
     ],
     formulae: ["Subtracting a negative: $a - (-b) = a + b$", "Multiplying signs: $(-) \\times (-) = (+)$"],
   },
+  "y7-maths-primes": {
+    explanation:
+      "A prime number has exactly two factors: itself and 1. That is why 1 is not prime, and why 2 is the only even prime. Every other whole number above 1 can be broken into primes multiplied together, and there is only one way to do it however you start, so $60 = 2 \times 2 \times 3 \times 5$ whether you split off the 6 first or the 10. Writing two numbers as products of primes is what makes the rest easy to see. The highest common factor is built from the primes they share, and it is the largest number that divides into both. The lowest common multiple is built from every prime either of them needs, and it is the smallest number they both divide into, which is what you want when two repeating events line up again.",
+    keyIdeas: [
+      "A prime has exactly two factors, so 1 is not prime and 2 is the only even one.",
+      "Every whole number above 1 is a product of primes in exactly one way.",
+      "The highest common factor is made from the primes both numbers share.",
+      "The lowest common multiple takes every prime either number needs, at its higher power.",
+    ],
+    formulae: [
+      "Product of primes: $60 = 2^{2} \times 3 \times 5$",
+      "Linking the two: $\text{HCF} \times \text{LCM} = a \times b$",
+    ],
+  },
   "y7-maths-fractions": {
     explanation:
       "A fraction, a decimal and a percentage are three ways of writing the same amount: $\\frac{3}{4}$, $0.75$ and $75\\%$ are identical. Simplifying a fraction means dividing the numerator and denominator by the same number until no common factor is left. To compare fractions you need a common denominator, because quarters and fifths cannot be compared directly. Finding a fraction or percentage of an amount is multiplication: divide by the denominator and multiply by the numerator, or multiply by the percentage as a decimal.",
@@ -147,6 +161,21 @@ export const mathsContent = {
     formulae: [
       "Percentage change $= \\frac{\\text{change}}{\\text{original}} \\times 100$",
       "Compound total $= P \\times \\left(1 + \\frac{r}{100}\\right)^{n}$",
+    ],
+  },
+  "y8-maths-probability": {
+    explanation:
+      "Probability measures how likely something is on a scale from 0, meaning impossible, to 1, meaning certain. When every outcome is equally likely, the probability of an event is the number of outcomes you want divided by the total number of outcomes, so one head from two equally likely faces is $\frac{1}{2}$. Because one of the outcomes must happen, all the probabilities add to 1, which is why the chance of an event not happening is 1 minus the chance that it does. Listing outcomes systematically rather than at random is what stops you missing one. Probability does not promise what will happen in any single trial; over many trials it predicts roughly how often, so 60 throws of a fair die should give about 10 sixes, not exactly 10.",
+    keyIdeas: [
+      "Probability runs from 0 for impossible to 1 for certain.",
+      "With equally likely outcomes, probability is wanted outcomes over total outcomes.",
+      "All the probabilities of an event add to 1, so $P(\text{not } A) = 1 - P(A)$.",
+      "Expected results are what a long run should give roughly, not exactly.",
+    ],
+    formulae: [
+      "Equally likely outcomes: $P(A) = \dfrac{\text{outcomes in } A}{\text{total outcomes}}$",
+      "The complement: $P(\text{not } A) = 1 - P(A)$",
+      "Expected number: $\text{trials} \times P(A)$",
     ],
   },
   "y8-maths-transformations": {

@@ -5,6 +5,41 @@
 // quantitative treatments the specification does not ask for.
 export const scienceContent = {
   // ---- Year 7 ------------------------------------------------------------
+  "y7-science-safety": {
+    explanation:
+      "A laboratory is safe because of what people do in it, not because of the room. Before any practical you work out what could go wrong and what will stop it: eye protection against splashes and anything heated, hair tied back and bags off the floor, and you stand rather than sit when something is hot. Hazard symbols on a bottle are the warning in advance, so the flame means flammable and keep it away from a Bunsen, the corrosive symbol means it attacks skin, and the exclamation mark means an irritant. Apparatus is chosen for the measurement you actually need: a measuring cylinder for volume read at the bottom of the curve your eye is level with, a balance for mass with the container zeroed first, a thermometer left in the liquid while you read it. A Bunsen burner is lit with the air hole shut, giving the yellow safety flame you can see, and only opened to the roaring blue flame while you are heating.",
+    keyIdeas: [
+      "Decide what could go wrong, and what will prevent it, before you start.",
+      "Hazard symbols warn you what a substance will do before you handle it.",
+      "Choose apparatus for the measurement, and read it at eye level.",
+      "Light a Bunsen on the yellow safety flame; open the air hole only to heat.",
+    ],
+    formulae: [],
+  },
+  "y7-science-substances": {
+    explanation:
+      "An element is a substance made of only one kind of atom, and the periodic table lists every one of them with its own symbol, written with a capital first letter and a small second letter, so Co is cobalt but CO is carbon and oxygen joined. A compound is two or more elements chemically bonded, in a fixed ratio, and it behaves as a new substance: sodium is a metal that reacts violently with water and chlorine is a poisonous gas, yet sodium chloride is table salt. A mixture is substances simply put together without bonding, in any proportion, each keeping its own properties, which is why a mixture can be separated by physical means such as filtering or distilling and a compound cannot. Air is a mixture, roughly four-fifths nitrogen and one-fifth oxygen with small amounts of argon and carbon dioxide. A physical change alters form but makes no new substance, so ice melting is still water; a chemical change makes one, and you can often tell by a colour change, a gas given off, a temperature change or a precipitate.",
+    keyIdeas: [
+      "An element is one kind of atom; a compound is elements chemically bonded.",
+      "A mixture is not bonded, so physical methods can separate it.",
+      "A compound's properties are nothing like those of the elements in it.",
+      "Air is a mixture: about 78% nitrogen and 21% oxygen.",
+      "A chemical change makes a new substance; a physical change does not.",
+    ],
+    formulae: [],
+  },
+  "y7-science-space": {
+    explanation:
+      "The Sun is a star, and eight planets orbit it, held in their orbits by gravity: the four rocky inner planets, then the four gas and ice giants, with moons orbiting the planets in the same way. Gravity is a force of attraction between any two masses, stronger for a larger mass and weaker with distance, which is why weight changes from world to world while mass does not; the same astronaut has the same mass on the Moon but weighs about a sixth as much. Day and night come from the Earth spinning once every 24 hours, so the half facing the Sun has day. The seasons come from something different: the Earth's axis is tilted, so for half the year the northern hemisphere leans towards the Sun and gets longer days and light striking more directly, which is summer, while the southern hemisphere has winter at the same time. The Moon takes about 28 days to orbit the Earth, and the phases are how much of its sunlit half we can see from where we are.",
+    keyIdeas: [
+      "Gravity holds the solar system together and is stronger for larger masses.",
+      "Mass stays the same everywhere; weight depends on the gravitational field.",
+      "Day and night come from the Earth's rotation, not from its orbit.",
+      "The seasons come from the tilt of the Earth's axis, not from distance to the Sun.",
+      "The phases of the Moon are how much of its lit half faces us.",
+    ],
+    formulae: ["Weight: $W = m \\times g$", "On Earth: $g = 10\\ \\text{N/kg}$"],
+  },
   "y7-science-cells": {
     explanation:
       "All living things are made of cells. Animal cells have a nucleus controlling the cell, cytoplasm where reactions happen, a cell membrane controlling what enters and leaves, and mitochondria releasing energy. Plant cells have all of those plus a cell wall for support, a permanent vacuole holding sap, and chloroplasts containing the chlorophyll that traps light. Cells become specialised for a job, so a red blood cell loses its nucleus to carry more oxygen and a root hair cell has a long extension to absorb water, and cells of one type group into tissues, tissues into organs, and organs into organ systems.",
@@ -127,6 +162,21 @@ export const scienceContent = {
       "A formula gives the number of atoms of each element.",
     ],
     formulae: ["$\\mathrm{H_{2}O}$: two hydrogen atoms and one oxygen atom", "$\\mathrm{CO_{2}}$: one carbon and two oxygen atoms"],
+  },
+  "y8-science-metals": {
+    explanation:
+      "Metals differ in how readily they react, and putting them in order of that gives the reactivity series: potassium, sodium, calcium, magnesium, aluminium, carbon, zinc, iron, copper, silver, gold. The order predicts what happens when metals meet. A more reactive metal displaces a less reactive one from its compound, so magnesium added to copper sulfate takes the sulfate and leaves copper behind, while copper added to magnesium sulfate does nothing at all. The same order explains how metals are obtained. Gold is unreactive enough to be found as the metal itself, but most metals are locked in ores as compounds, usually oxides. Any metal below carbon in the series can be freed by heating its oxide with carbon, which takes the oxygen for itself, and that is how iron is made in a blast furnace. Metals above carbon hold their oxygen too tightly for that, so aluminium is extracted by electrolysis instead, passing electricity through the molten compound to pull it apart. Electrolysis works but costs far more energy, which is why aluminium was once more precious than gold.",
+    keyIdeas: [
+      "The reactivity series orders metals by how readily they react.",
+      "A more reactive metal displaces a less reactive one from its compound.",
+      "An unreactive metal such as gold is found uncombined in the Earth.",
+      "Metals below carbon are extracted by heating the ore with carbon.",
+      "Metals above carbon need electrolysis, which uses far more energy.",
+    ],
+    formulae: [
+      "Displacement: $\\text{magnesium} + \\text{copper sulfate} \\rightarrow \\text{magnesium sulfate} + \\text{copper}$",
+      "Extraction with carbon: $\\text{iron oxide} + \\text{carbon} \\rightarrow \\text{iron} + \\text{carbon dioxide}$",
+    ],
   },
   "y8-science-waves": {
     explanation:
@@ -269,6 +319,37 @@ export const scienceContent = {
       "$E = mc\\Delta\\theta$",
       "$P = VI$ and $P = I^{2}R$",
       "Efficiency $= \\frac{\\text{useful output}}{\\text{total input}}$",
+    ],
+  },
+  "y10-science-motion": {
+    explanation:
+      "Speed is how much distance is covered each second, and it is a scalar: it has a size and nothing else. Velocity is speed in a stated direction, which makes it a vector, so a car going round a roundabout at a steady 30 mph is changing velocity the whole way round even though its speed never changes. Acceleration is how quickly velocity changes, measured in metres per second squared, and it is negative when something slows down. Graphs carry the same information in a form you can read at a glance. On a distance-time graph the gradient is the speed, so a horizontal line means stationary and a steeper line means faster. On a velocity-time graph the gradient is the acceleration and the area underneath is the distance travelled, which is why a flat line high up covers ground quickly while accelerating not at all. Stopping a car needs thinking distance plus braking distance; tiredness, alcohol and distraction lengthen the first, and wet roads, worn tyres and speed lengthen the second.",
+    keyIdeas: [
+      "Speed is a scalar; velocity is a vector, so direction is part of it.",
+      "On a distance-time graph the gradient is the speed.",
+      "On a velocity-time graph the gradient is acceleration and the area is distance.",
+      "Stopping distance is thinking distance plus braking distance.",
+    ],
+    formulae: [
+      "Speed: $s = \\dfrac{d}{t}$",
+      "Acceleration: $a = \\dfrac{\\Delta v}{t}$",
+      "Uniform acceleration: $v^{2} - u^{2} = 2as$",
+    ],
+  },
+  "y10-science-organic": {
+    explanation:
+      "Crude oil is the remains of ancient plankton, and it is a mixture of hydrocarbons: compounds of hydrogen and carbon only. Because it is a mixture, it can be separated physically, and fractional distillation does it by boiling point. The oil is heated until it vaporises and fed into a column that is hot at the bottom and cool at the top; each fraction rises until it reaches a level cool enough to condense, so the short molecules travel furthest and the long ones drain out low down. Molecule length decides the properties: short chains have weaker forces between them, so they boil at lower temperatures, flow more easily and ignite more readily, which is why petrol is a better fuel than bitumen. The problem is that distillation gives far more long-chain fractions than anyone wants, so cracking breaks them into shorter ones using heat with a catalyst or steam. Cracking produces alkenes as well as alkanes, and alkenes are the starting point for polymers. An alkene decolourises bromine water; an alkane leaves it orange.",
+    keyIdeas: [
+      "A hydrocarbon contains hydrogen and carbon only.",
+      "Fractional distillation separates a mixture by boiling point.",
+      "Shorter chains boil lower, flow more easily and ignite more readily.",
+      "Cracking turns surplus long chains into useful short ones and alkenes.",
+      "Bromine water is decolourised by an alkene, not by an alkane.",
+    ],
+    formulae: [
+      "Alkanes: $\\text{C}_{n}\\text{H}_{2n+2}$",
+      "Alkenes: $\\text{C}_{n}\\text{H}_{2n}$",
+      "Complete combustion: $\\text{hydrocarbon} + \\text{oxygen} \\rightarrow \\text{carbon dioxide} + \\text{water}$",
     ],
   },
   "y10-science-practicals": {

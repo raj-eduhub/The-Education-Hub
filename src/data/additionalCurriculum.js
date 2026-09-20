@@ -26,12 +26,15 @@ const h = {
     ["Medieval Britain", "Norman Conquest", "Explain how conquest changed power, land, and society after 1066.", ["Use chronology accurately", "Compare claimants and causes", "Evaluate evidence about Norman control"]],
     ["Medieval Britain", "Church, Crown and Society", "Explore the relationship between belief, monarchy, and everyday medieval life.", ["Explain the Church's influence", "Analyse conflicts over authority", "Describe social hierarchy"]],
     ["Medieval Britain", "Crisis and Change", "Assess the effects of the Black Death and the Peasants' Revolt.", ["Explain cause and consequence", "Compare social experiences", "Judge the extent of change"]],
+    ["Early Britain", "Britain Before 1066", "Place the Normans in a longer story of Roman, Anglo-Saxon and Viking Britain.", ["Sequence Roman, Anglo-Saxon and Viking Britain", "Explain how successive settlers changed Britain", "Explain why 1066 is treated as a turning point"]],
+    ["Medieval World", "The Crusades and the Islamic World", "Study the medieval Islamic world on its own terms, and the wars that connected it to Europe.", ["Explain the rise and spread of Islam", "Explain the causes and course of the Crusades", "Compare Christian and Muslim accounts of the same events"]],
     ["Historical Enquiry", "Local History Investigation", "Construct an evidence-led account of change in the local area.", ["Frame an enquiry question", "Interrogate primary sources", "Reach a supported conclusion"]],
   ],
   8: [
     ["Early Modern Britain", "Tudors and Reformation", "Explain religious and political change under the Tudors.", ["Trace religious change", "Analyse motives of rulers", "Assess effects on communities"]],
     ["Early Modern Britain", "Stuarts and Civil War", "Evaluate why monarchy and Parliament went to war.", ["Explain long- and short-term causes", "Compare contemporary viewpoints", "Assess consequences of conflict"]],
     ["Empire and Slavery", "Transatlantic Slavery and Empire", "Examine how empire and slavery developed, were resisted, and were abolished.", ["Describe the triangular trade", "Centre enslaved people's experiences", "Evaluate abolition explanations"]],
+    ["Ideas and Reform", "The Age of Enlightenment", "Follow the argument that reason and evidence, not authority, should decide what is true.", ["Explain what Enlightenment thinkers argued", "Link new science to new political ideas", "Assess the influence of those ideas on revolution and reform"]],
     ["Industrial Britain", "Industrial Revolution and Reform", "Assess how industrialisation transformed work, cities, and political rights.", ["Explain industrial growth", "Compare living conditions", "Judge the impact of reform"]],
   ],
   9: [
@@ -46,6 +49,8 @@ const h = {
     ["Period Study", "International Period Study", "Understand a board-selected period beyond Britain.", ["Connect developments", "Analyse significance", "Write focused explanations"]],
     ["Evidence", "Historical Sources", "Evaluate source utility in relation to a specific enquiry.", ["Analyse provenance and content", "Apply contextual knowledge", "Reach a balanced utility judgement"]],
     ["Interpretations", "Historical Interpretations", "Explain and evaluate differences between historical interpretations.", ["Identify interpretation arguments", "Explain differences", "Evaluate using contextual knowledge"]],
+    ["Ancient World (Wider Reading)", "Greece and Persia", "Wider reading: why a scattering of Greek cities held off the largest empire on earth.", ["Describe the Persian empire at its height", "Explain the causes of the Persian Wars", "Assess why the Greek cities succeeded"]],
+    ["Ancient World (Wider Reading)", "Alexander the Great", "Wider reading: how one reign redrew the map from Greece to the Indus, and what it cost.", ["Describe Alexander's campaigns", "Explain how he governed what he conquered", "Assess competing verdicts on his reign"]],
     ["Historic Environment", "Site and Context", "Connect a studied historic site to its wider period.", ["Read visual and material evidence", "Explain site development", "Apply knowledge to unfamiliar evidence"]],
   ],
   11: [
@@ -54,6 +59,8 @@ const h = {
     ["Thematic Study", "Patterns of Change", "Compare developments and turning points across the thematic study.", ["Identify patterns", "Evaluate turning points", "Use breadth and depth together"]],
     ["Exam Practice", "Source Enquiry Mastery", "Answer source questions accurately under timed conditions.", ["Decode question demands", "Select contextual evidence", "Evaluate sources concisely"]],
     ["Exam Practice", "Interpretation and Essay Mastery", "Build convincing interpretation responses and extended essays.", ["Plan a line of argument", "Integrate evidence", "Reach reasoned conclusions"]],
+    ["Ancient World (Wider Reading)", "Rome and its Neighbours", "Wider reading: how a single city came to govern the Mediterranean, and how it held it.", ["Explain how Rome expanded across Italy", "Describe how Rome treated those it defeated", "Assess the reasons for Roman military success"]],
+    ["Ancient World (Wider Reading)", "Hannibal and the Second Punic War", "Wider reading: the war Rome nearly lost, and the general who almost won it.", ["Explain the causes of the Second Punic War", "Describe Hannibal's campaign in Italy", "Assess why Carthage lost despite winning battles"]],
     ["Revision", "Chronology and Connections", "Connect the specification's studies into secure chronological frameworks.", ["Build retrieval timelines", "Link causes and consequences", "Diagnose knowledge gaps"]],
   ],
 };
@@ -114,6 +121,8 @@ const c = {
     ["Programming", "Programming Project", "Plan, implement, test, and refine a substantial program.", ["Analyse requirements", "Use modular design", "Document testing and improvements"]],
     ["Logic", "Logic Gates and Truth Tables", "Connect Boolean expressions, truth tables, and logic gates.", ["Evaluate Boolean expressions", "Complete truth tables", "Design simple logic circuits"]],
     ["Web and Data", "Web Technologies and Data", "Create data-driven web content and explain internet protocols.", ["Structure accessible pages", "Explain client-server requests", "Process data responsibly"]],
+    ["Artificial Intelligence", "Artificial Intelligence and Machine Learning", "Understand what a model learns from data, and what it cannot.", ["Explain what machine learning is", "Describe how a model is trained on data", "Explain why training data can make a model biased"]],
+    ["Programming", "Programming Languages and Paradigms", "Compare how different languages express the same solution, and the tools used to write them.", ["Compare high-level and low-level languages", "Compare procedural and object-oriented approaches", "Explain the purpose and features of an IDE"]],
     ["Impacts", "Ethics, Law and the Environment", "Evaluate impacts of digital technology on people and society.", ["Apply legal principles", "Discuss algorithmic bias", "Evaluate environmental costs"]],
   ],
   10: [
@@ -139,12 +148,14 @@ const d = {
     ["Design", "User Needs and Iterative Design", "Develop ideas from a clear understanding of users and contexts.", ["Research user needs", "Write a design brief", "Iterate from feedback"]],
     ["Materials", "Materials, Tools and Safety", "Select and work safely with common material categories.", ["Compare material properties", "Choose suitable tools", "Follow workshop safety"]],
     ["Communication", "Technical Drawing and CAD", "Communicate design ideas accurately by hand and with CAD.", ["Use orthographic drawing", "Add dimensions", "Create a simple CAD model"]],
+    ["Food and Nutrition", "Food Hygiene and Healthy Eating", "Prepare food safely, and understand what a balanced diet is actually made of.", ["Apply food hygiene and safety rules", "Use a knife and a heat source safely", "Explain how the main nutrient groups are balanced in a diet"]],
     ["Structures", "Forces and Structures", "Design structures that manage loads efficiently.", ["Identify forces", "Use triangulation", "Test structural performance"]],
   ],
   8: [
     ["Mechanisms", "Motion and Mechanisms", "Use mechanisms to control movement and mechanical advantage.", ["Compare motion types", "Calculate simple ratios", "Prototype a mechanism"]],
     ["Electronics", "Electronic Systems", "Build and test input-process-output electronic systems.", ["Recognise components", "Read circuit diagrams", "Test system behaviour"]],
     ["Materials", "Textiles and Modern Materials", "Select processes for textiles, composites, and smart materials.", ["Compare material properties", "Join and finish accurately", "Evaluate material innovation"]],
+    ["Food and Nutrition", "Cooking Skills and Food Provenance", "Cook a repertoire of savoury dishes, and find out where the ingredients came from.", ["Use a range of cooking techniques", "Explain where food is grown, reared and caught", "Evaluate the welfare and environmental cost of an ingredient"]],
     ["Manufacture", "Sustainable CAD/CAM", "Use digital manufacture while considering environmental impact.", ["Prepare a CAD model", "Explain CAM processes", "Complete a life-cycle analysis"]],
   ],
   9: [
@@ -156,6 +167,7 @@ const d = {
   10: [
     ["Core Principles", "Materials and Their Properties", "Apply material properties to design and manufacturing decisions.", ["Classify material families", "Explain property selection", "Choose stock forms"]],
     ["Core Principles", "Energy, Systems and Mechanisms", "Explain energy sources, mechanisms, and electronic systems in products.", ["Analyse mechanical systems", "Interpret block diagrams", "Evaluate energy choices"]],
+    ["Core Principles", "New and Emerging Technologies", "Understand what drives a product to market, and what automation does to how it is made.", ["Distinguish technology push from market pull", "Explain planned obsolescence and designing for repair", "Describe how automation and robotics changed manufacturing"]],
     ["Design Practice", "Investigation and Design Brief", "Investigate a contextual challenge and define a justified design direction.", ["Identify user needs", "Analyse existing products", "Write measurable specifications"]],
     ["Design Practice", "Generating and Developing Ideas", "Develop creative, feasible ideas through modelling and iteration.", ["Generate varied concepts", "Use CAD and physical models", "Respond to user feedback"]],
     ["Manufacture", "Processes and Quality", "Select accurate manufacturing processes and quality controls.", ["Plan production", "Justify process choices", "Apply tolerances and quality checks"]],

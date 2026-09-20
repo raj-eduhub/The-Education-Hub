@@ -16,6 +16,30 @@ export const englishContent = {
     ],
     formulae: [],
   },
+  "y7-english-myths": {
+    explanation:
+      "Myths and legends were told aloud for centuries before anyone wrote them down, and that is why they are built the way they are. Repeated phrases, sets of three and strong patterns are memory aids for a teller working without a book. A myth usually explains something - why the seasons turn, why a mountain stands where it does - while a legend grows from a real person or event and exaggerates with each retelling. Underneath, most stories share an arc: an ordinary world, something that disturbs it, rising difficulty, a crisis, and a resolution that leaves the world changed. They also reuse archetypes, which are character roles rather than characters: the hero, the mentor who gives knowledge and then withdraws, the trickster, the threshold guardian. Noticing an archetype is not the end of the analysis but the start of it, because the interesting question is what a particular writer does differently with a figure the reader already expects.",
+    keyIdeas: [
+      "Repetition and patterns of three come from stories being spoken, not read.",
+      "A myth explains something; a legend exaggerates something that happened.",
+      "Most narratives follow an arc from an ordinary world to a changed one.",
+      "An archetype is a role a character fills, not the character itself.",
+      "What matters is how a writer varies the pattern a reader expects.",
+    ],
+    formulae: [],
+  },
+  "y7-english-shakespeare": {
+    explanation:
+      "A Shakespeare play is a script, not a novel: it was written to be spoken by actors on a bare stage in daylight, to an audience who could not rewind. That explains much of what looks difficult. Characters describe the scenery because there was none, and they say what they are thinking aloud because there is no narrator to do it. The language is only about four hundred years old, so most of it is ordinary English with unfamiliar arrangement, and you can usually work out a word from the lines around it rather than stopping at it. A comedy is shaped by confusion: people are mistaken for one another, fall in love with the wrong person, or hide who they are, and the audience is let in on the secret so they can enjoy watching characters get it wrong. It ends with the confusion untangled, usually in marriage. Reading a scene, keep asking what an actor would actually do - where they stand, who they look at, what they hold back.",
+    keyIdeas: [
+      "The play is a script written for performance, not a book to be read silently.",
+      "Characters describe the setting because the stage was bare.",
+      "Work an unfamiliar word out from the lines around it; do not stop at it.",
+      "Comedy runs on mistaken identity and misunderstanding, resolved at the end.",
+      "The audience usually knows more than the characters, and that is the joke.",
+    ],
+    formulae: [],
+  },
   "y7-english-nonfiction": {
     explanation:
       "Non-fiction writing is always written by someone, for someone, for a reason. Purpose is what the writer wants to achieve - to inform, persuade, advise or entertain - and audience is who they are writing for, which shapes vocabulary, tone and length. Viewpoint is the writer's attitude to the subject, and it shows in word choice long before it is stated openly. Summarising means selecting the ideas that matter and putting them in your own words, keeping the writer's meaning but not their phrasing.",
@@ -103,6 +127,17 @@ export const englishContent = {
       "Rhetoric supports reasoning; it does not replace it.",
       "Answering the counter-argument strengthens your case.",
       "Register is chosen from audience and purpose.",
+    ],
+    formulae: [],
+  },
+  "y8-english-change": {
+    explanation:
+      "English has been spoken in Britain for about fifteen hundred years, and it has changed so much that its earliest form has to be translated. Old English, the language of the Anglo-Saxons, is unreadable without study. Middle English, the language Chaucer wrote in around 1400, is recognisable but strange: you can follow much of it aloud even where the spelling looks wrong. Early Modern English, Shakespeare's, is close enough to read directly. The language changed because its speakers were invaded, traded and travelled: Norse from the Vikings, a great deal of French after 1066, Latin and Greek through the church and science, and words from every part of the world Britain reached. That history is why English spelling is so irregular. Spelling was fixed by printers at a point when pronunciation was still moving, so the silent letters in knight and through are not mistakes but fossils of sounds people once made. Meanings drift too: nice once meant foolish, and awful once meant full of awe.",
+    keyIdeas: [
+      "Old, Middle and Early Modern English are stages, not different languages.",
+      "Invasion, trade and religion brought in Norse, French, Latin and Greek words.",
+      "Spelling was fixed in print while pronunciation kept moving, hence silent letters.",
+      "Word meanings drift, so a pre-1914 text can mislead a modern reader.",
     ],
     formulae: [],
   },
