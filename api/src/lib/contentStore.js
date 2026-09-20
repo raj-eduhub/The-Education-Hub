@@ -39,10 +39,11 @@ export function contentKey(type, topicId, { index, board, tier } = {}) {
   // Worked examples keep their original key shape so rows already stored stay readable.
   if (type === contentTypes.EXAMPLE) return { partitionKey: topicId, rowKey: `example-${position}-${tierPart}` };
   if (!isQuestionBank(type)) return null;
-  // Every board offered at signup must key its own content. OCR used to fall
-  // through to "core", so an OCR learner silently shared rows with a learner
-  // whose board was not set at all.
-  const boardPart = ["AQA", "Edexcel", "OCR"].includes(board) ? board : "core";
+  // Every board offered at signup must key its own content, or two boards share
+  // one bank. "core" is for the years before a board is chosen, not a fallback
+  // for an unrecognised one: a board outside this list has no content path, and
+  // the curriculum validator fails rather than letting one be offered.
+  const boardPart = ["AQA", "Edexcel"].includes(board) ? board : "core";
   return { partitionKey: topicId, rowKey: `${type}-${position}-${boardPart}-${tierPart}` };
 }
 

@@ -276,7 +276,15 @@ export function getTopicGuide(subject, topic) {
   const formulae = authored?.formulae ?? [];
 
   const maths = subject === "Maths" ? mathsExamples[topic.id] : null;
-  if (maths) return { explanation, keyIdeas, ...maths, formulae: maths.formulae ?? formulae };
+  if (maths) {
+    // The maths entry supplies the worked example. Its formulae predate the
+    // authored content and are plain-text restatements of it, so they are a
+    // fallback, not an override: taking them first meant every one of the 42
+    // maths topics served "Rounded value - half unit <= true value" in place of
+    // the authored, typeset "$x - \frac{u}{2} \le \text{true value}$", and the
+    // authored formulae reached no learner at all.
+    return { explanation, keyIdeas, ...maths, formulae: formulae.length ? formulae : (maths.formulae ?? []) };
+  }
 
   const method = subjectMethods[subject] ?? [
     "Identify the key knowledge required by the question.",

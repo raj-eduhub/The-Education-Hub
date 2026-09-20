@@ -1,3 +1,4 @@
+import { expansionFor } from "./outcomeExpansions.js";
 import {
   additionalCurriculumByYear,
   additionalQualifications,
@@ -5,13 +6,17 @@ import {
 } from "./additionalCurriculum.js";
 
 export const subjects = ["Maths", "Science", "English", ...additionalSubjects];
-export const examBoards = ["AQA", "Edexcel", "OCR"];
+// Two boards are offered, and every layer that can key or validate a board must
+// agree on exactly these: the signup form, the profile screen, the API's
+// validation, and the storage key. A board that is selectable but not offered at
+// signup leaves the learner with no content at all, which is what OCR did.
+export const examBoards = ["AQA", "Edexcel"];
 export const tiers = ["Foundation", "Higher"];
 
 export const qualifications = {
-  Maths: { AQA: "8300", Edexcel: "1MA1", OCR: "J560" },
-  Science: { AQA: "8464", Edexcel: "1SC0", OCR: "J250" },
-  English: { AQA: "8700 / 8702", Edexcel: "1EN0 / 1ET0", OCR: "J351 / J352" },
+  Maths: { AQA: "8300", Edexcel: "1MA1" },
+  Science: { AQA: "8464", Edexcel: "1SC0" },
+  English: { AQA: "8700 / 8702", Edexcel: "1EN0 / 1ET0" },
   ...additionalQualifications,
 };
 
@@ -131,7 +136,7 @@ const coreCurriculumByYear = {
         gcse("y10-maths-algebra", "Algebra", "Equations and Quadratics", "Manipulate expressions and solve equations.", ["Rearrange formulae", "Solve simultaneous equations", "Solve quadratics"]),
         gcse("y10-maths-geometry", "Geometry", "Similarity and Right-angled Trigonometry", "Use similarity and right-angled trigonometry in geometric problems.", ["Prove similarity", "Use sine, cosine and tangent in right-angled triangles", "Solve bearings problems with right-angled triangles"]),
         gcse("y10-maths-statistics", "Statistics", "Sampling and Comparing Data", "Infer what a sample shows about a population and compare distributions.", ["Infer population properties from a sample", "Compare distributions using averages and spread", "Interpret scatter graphs and correlation"]),
-        gcse("y10-maths-ratio", "Ratio and Proportion", "Ratio, Rates and Growth", "Solve ratio, compound-measure, and growth problems.", ["Use compound units", "Solve direct proportion", "Apply repeated percentage change"]),
+        gcse("y10-maths-ratio", "Ratio and Proportion", "Ratio, Rates and Growth", "Solve ratio, compound-measure, and growth problems.", ["Use compound units", "Solve direct proportion", "Calculate percentage increase and decrease"]),
         gcse("y10-maths-graphs", "Algebra", "Sequences and Linear Graphs", "Connect sequences, equations, and straight-line graphs.", ["Generate sequence rules", "Find gradients and intercepts", "Interpret real-life graphs"]),
         gcse("y10-maths-probability", "Probability", "Probability Models", "Use diagrams and relative frequency to model combined events.", ["Use Venn diagrams and set notation", "Construct tree diagrams", "Estimate outcomes from experiments"]),
         gcse("y10-maths-mensuration", "Geometry", "Mensuration and Measures", "Calculate with compound shapes, circles, prisms, and units.", ["Use circle formulae", "Calculate surface area and volume", "Convert compound units"]),
@@ -166,7 +171,7 @@ const coreCurriculumByYear = {
     stage: "KS4",
     subjects: {
       Maths: [
-        gcse("y11-maths-proportion", "Ratio and Proportion", "Direct and Inverse Proportion", "Model proportional relationships algebraically and graphically.", ["Form proportion equations", "Interpret rates", "Solve growth and decay"]),
+        gcse("y11-maths-proportion", "Ratio and Proportion", "Direct and Inverse Proportion", "Model proportional relationships algebraically and graphically.", ["Form proportion equations", "Interpret rates", "Solve growth and decay"], ["Higher"]),
         gcse("y11-maths-graphs", "Algebra", "Functions and Graphs", "Interpret and transform linear, quadratic, and other graphs.", ["Solve graphically", "Interpret gradients", "Transform functions"], ["Higher"]),
         gcse("y11-maths-circle", "Geometry", "Circle Theorems and Vectors", "Construct multi-step geometric arguments and proofs.", ["Apply circle theorems", "Use vector notation", "Build a proof"], ["Higher"]),
         gcse("y11-maths-foundation", "Consolidation", "Foundation Problem Solving", "Connect core domains in multi-step problems.", ["Select efficient methods", "Show complete working", "Check solutions"], ["Foundation"]),
@@ -184,11 +189,11 @@ const coreCurriculumByYear = {
       ],
       Science: [
         gcse("y11-science-homeostasis", "Biology", "Homeostasis and Response", "Explain how the body detects change and holds internal conditions steady.", ["Explain the reflex arc", "Describe hormonal control of blood glucose", "Interpret homeostasis data"]),
-        gcse("y11-science-rates", "Chemistry", "Rates, Equilibrium and Organic Chemistry", "Explain how conditions affect chemical systems.", ["Calculate reaction rates", "Apply collision theory", "Predict equilibrium changes"]),
+        gcse("y11-science-rates", "Chemistry", "Rates, Equilibrium and Organic Chemistry", "Explain how conditions affect chemical systems.", ["Calculate reaction rates", "Apply collision theory", "Describe reversible reactions"]),
         gcse("y11-science-waves", "Physics", "Forces, Waves and Electromagnetism", "Use models and equations to solve physical problems.", ["Analyse forces", "Use wave equations", "Explain electromagnetism"]),
         gcse("y11-science-ecology", "Biology", "Ecology and Human Impact", "Analyse ecosystems, biodiversity, and human impacts.", ["Interpret abundance data", "Explain material cycles", "Evaluate strategies"]),
         gcse("y11-science-inheritance", "Biology", "Inheritance, Variation and Evolution", "Use genetic models and evidence to explain inheritance and evolution.", ["Use genetic diagrams", "Explain variation", "Evaluate selective breeding and engineering"]),
-        gcse("y11-science-quantitative", "Chemistry", "Quantitative Chemistry", "Calculate chemical quantities and interpret yields and concentrations.", ["Use relative formula mass", "Calculate moles", "Evaluate atom economy"]),
+        gcse("y11-science-quantitative", "Chemistry", "Quantitative Chemistry", "Calculate chemical quantities and interpret yields and concentrations.", ["Use relative formula mass", "Explain conservation of mass in reactions", "Explain mass changes when a gas is involved"]),
         gcse("y11-science-analysis", "Chemistry", "Chemical Analysis and Using Resources", "Identify substances and evaluate sustainable chemical processes.", ["Interpret chromatography", "Use gas tests", "Explain potable water treatment"]),
         gcse("y11-science-atomic", "Physics", "Atomic Physics", "Explain nuclear radiation, half-life, and associated risks.", ["Balance nuclear equations", "Interpret half-life", "Evaluate radiation uses"]),
       ],
@@ -207,40 +212,58 @@ const coreCurriculumByYear = {
   },
 };
 
+// Topics are declared with only what distinguishes them, so the fields every
+// consumer relies on are filled in once, here. This used to happen only while
+// flattening into `curriculum`, which left `curriculumByYear` holding the raw
+// declarations: the same topic had exam boards when read one way and none when
+// read the other, and the seeding and coverage scripts read it the other way.
+const normalise = (entry, year, subject, stage) => ({
+  ...entry,
+  year: Number(year),
+  years: [Number(year)],
+  stage,
+  subject,
+  exam: Number(year) >= 10 ? "GCSE" : `Year ${year}`,
+  // A board is chosen from Year 9, when GCSE preparation starts, and
+  // contentKey() carries the board into the row key from Year 9 too. Year 9
+  // topics are declared without boards because their content is common to
+  // both, so the boards are filled in rather than repeated on all 34.
+  examBoards: entry.examBoards ?? (Number(year) >= 9 ? [...examBoards] : []),
+  tiers: entry.tiers ?? [],
+  // Appended, never inserted: worked examples are keyed example-{index}-{tier},
+  // so an outcome that changed position would point stored content at a
+  // different sub-topic without anything failing.
+  outcomes: [...entry.outcomes, ...expansionFor(entry.id)],
+});
+
 export const curriculumByYear = Object.fromEntries(
   Object.entries(coreCurriculumByYear).map(([year, plan]) => [
     year,
     {
       ...plan,
-      subjects: {
-        ...plan.subjects,
-        ...additionalCurriculumByYear[year].subjects,
-      },
+      subjects: Object.fromEntries(
+        Object.entries({
+          ...plan.subjects,
+          ...additionalCurriculumByYear[year].subjects,
+        }).map(([subject, entries]) => [
+          subject,
+          entries.map((entry) => normalise(entry, year, subject, plan.stage)),
+        ])
+      ),
     },
   ])
 );
 
-export const curriculum = Object.entries(curriculumByYear).flatMap(([year, plan]) =>
-  Object.entries(plan.subjects).flatMap(([subject, entries]) =>
-    entries.map((entry) => ({
-      ...entry,
-      year: Number(year),
-      years: [Number(year)],
-      stage: plan.stage,
-      subject,
-      exam: Number(year) >= 10 ? "GCSE" : `Year ${year}`,
-      examBoards: entry.examBoards ?? [],
-      tiers: entry.tiers ?? [],
-    }))
-  )
-);
+export const curriculum = Object.values(curriculumByYear)
+  .flatMap((plan) => Object.values(plan.subjects).flat());
 
 export function topicsFor({ year, subject, examBoard, tier }) {
   return curriculum.filter((entry) => {
     if (entry.year !== Number(year) || entry.subject !== subject) return false;
+    // A topic that names its boards is filtered by them at any key stage. Tier
+    // entry is only decided in the exam years, so it is checked only there.
+    if (examBoard && entry.examBoards.length && !entry.examBoards.includes(examBoard)) return false;
     if (entry.stage !== "KS4") return true;
-    const boardMatch = !examBoard || entry.examBoards.includes(examBoard);
-    const tierMatch = !["Maths", "Science"].includes(subject) || !tier || entry.tiers.includes(tier);
-    return boardMatch && tierMatch;
+    return !["Maths", "Science"].includes(subject) || !tier || entry.tiers.includes(tier);
   });
 }

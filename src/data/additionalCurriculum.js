@@ -1,13 +1,14 @@
 export const additionalSubjects = ["History", "Geography", "Computing", "Design Technology"];
 
 export const additionalQualifications = {
-  History: { AQA: "8145", Edexcel: "1HI0", OCR: "J411" },
-  Geography: { AQA: "8035", Edexcel: "1GB0", OCR: "J384" },
-  Computing: { AQA: "8525", Edexcel: "1CP2", OCR: "J277" },
-  "Design Technology": { AQA: "8552", Edexcel: "1DT0", OCR: "J310" },
+  History: { AQA: "8145", Edexcel: "1HI0" },
+  Geography: { AQA: "8035", Edexcel: "1GB0" },
+  Computing: { AQA: "8525", Edexcel: "1CP2" },
+  "Design Technology": { AQA: "8552", Edexcel: "1DT0" },
 };
 
-const boards = ["AQA", "Edexcel", "OCR"];
+// Kept in step with examBoards in curriculumCatalog.js.
+const boards = ["AQA", "Edexcel"];
 const slug = (value) => value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
 const buildTopics = (year, subject, entries, gcse = false) =>
@@ -63,12 +64,14 @@ const g = {
     ["UK Landscapes", "Britain's Physical Landscapes", "Explain how geology and processes shape UK landscapes.", ["Locate major regions", "Read relief maps", "Explain landscape formation"]],
     ["Weather and Climate", "UK Weather and Climate", "Interpret weather data and explain Britain's variable climate.", ["Measure weather", "Read climate graphs", "Explain air-mass effects"]],
     ["Tectonics", "Earthquakes and Volcanoes", "Explain tectonic hazards and how risk varies between places.", ["Describe plate movement", "Interpret hazard evidence", "Compare responses"]],
+    ["Place Knowledge", "West Africa: A Regional Study", "Study the human and physical geography of a region within Africa.", ["Locate West Africa and describe its physical geography", "Explain the climate of the Sahel and the rainforest belt", "Describe how people make a living in the region", "Compare a rural and an urban place in West Africa", "Explain how trade links the region to the wider world", "Challenge single stories told about Africa"]],
   ],
   8: [
     ["Physical Processes", "Rivers and Coasts", "Explain how erosion, transport, and deposition create landforms.", ["Sequence physical processes", "Interpret landform diagrams", "Evaluate management choices"]],
     ["Ecosystems", "Global Ecosystems", "Explore interactions in contrasting ecosystems and threats to biodiversity.", ["Explain nutrient cycles", "Compare adaptations", "Evaluate sustainable management"]],
     ["Human Geography", "Population and Urbanisation", "Analyse population change and rapid urban growth.", ["Interpret population data", "Explain migration", "Compare urban opportunities and challenges"]],
     ["Development", "Development and Globalisation", "Evaluate how development and global connections vary between places.", ["Use development indicators", "Explain global supply chains", "Assess strategies for change"]],
+    ["Place Knowledge", "South Asia: A Regional Study", "Study the human and physical geography of a region within Asia, and how people earn a living.", ["Locate South Asia and describe its physical geography", "Explain the monsoon and its effect on life", "Compare economic activity in the primary, secondary, tertiary and quaternary sectors", "Explain why cities in the region are growing", "Describe links between South Asia and the UK", "Evaluate the uneven benefits of economic growth"]],
   ],
   9: [
     ["Climate", "Climate Change", "Evaluate evidence, causes, impacts, and responses to climate change.", ["Interpret climate evidence", "Explain human and natural drivers", "Compare mitigation and adaptation"]],

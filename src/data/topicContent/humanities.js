@@ -302,6 +302,46 @@ export const humanitiesContent = {
     ],
     formulae: [],
   },
+  "y7-geography-west-africa-a-regional-study": {
+    explanation:
+      "West Africa runs from the Sahara in the north to the Gulf of Guinea in the south, and almost everything about "
+      + "life there follows that line. The Sahel is a dry belt of grassland where rain falls in a short season and "
+      + "herders move animals to find it; further south the rainfall rises and the land becomes farmland and then "
+      + "rainforest. Nigeria, Ghana, Senegal and Mali sit in this band, and between them they hold huge cities - Lagos "
+      + "is one of the fastest-growing cities on Earth - alongside villages where most people farm. People make a "
+      + "living from farming cocoa, groundnuts and cotton, from oil and minerals, and increasingly from trade, "
+      + "technology and music that reach far beyond the region. A single story of West Africa as only poor or only "
+      + "rural is inaccurate: the region contains great wealth and great poverty, ancient cities and new industries, "
+      + "and its cities and trade routes have connected it to Europe, North Africa and Asia for a thousand years.",
+    keyIdeas: [
+      "Rainfall increases from north to south: desert, then Sahel, then savanna, then rainforest.",
+      "The Sahel has one short rainy season, so farming and herding follow it closely.",
+      "Lagos is among the fastest-growing cities in the world.",
+      "West Africa has long-standing trade links, not only recent ones.",
+      "Describing a whole region by one image is a single story, and it is wrong.",
+    ],
+    formulae: [],
+  },
+  "y8-geography-south-asia-a-regional-study": {
+    explanation:
+      "South Asia - India, Pakistan, Bangladesh, Nepal and Sri Lanka - is shaped by the Himalayas in the north, the "
+      + "great river plains of the Indus and Ganges in the middle, and a long coastline in the south. The monsoon "
+      + "dominates the year: in summer, moist air is drawn in from the ocean and brings the rain that agriculture "
+      + "depends on, while too much of it floods and too little of it ruins a harvest. Economic activity spans all "
+      + "four sectors. Primary work such as farming still employs the largest share of people; secondary industry "
+      + "makes textiles and vehicles; tertiary services include transport and retail; and a fast-growing quaternary "
+      + "sector of software and research is centred on cities such as Bengaluru. That growth has not been shared "
+      + "evenly - it has drawn millions to cities and raised incomes sharply for some while leaving rural areas and "
+      + "informal workers behind.",
+    keyIdeas: [
+      "The monsoon brings the rain that farming depends on, and the floods that threaten it.",
+      "Primary work is farming and fishing; secondary is manufacturing.",
+      "Tertiary is services; quaternary is knowledge work such as software and research.",
+      "Cities grow because work is there, which is a pull factor.",
+      "Economic growth can be real and still be shared unevenly.",
+    ],
+    formulae: [],
+  },
   "y7-geography-uk-weather-and-climate": {
     explanation:
       "Weather is the state of the atmosphere at a moment; climate is the average pattern over decades. Weather is measured with instruments - rain gauge, thermometer, anemometer, barometer - each sited carefully so readings are comparable. A climate graph shows average monthly temperature as a line and average monthly rainfall as bars, and reading one means quoting figures and describing the pattern. The UK's changeable weather comes from the meeting of different air masses, bringing warm or cold and wet or dry conditions depending on where the air has travelled from.",

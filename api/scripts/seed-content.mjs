@@ -35,7 +35,9 @@ const years = args.has("year") ? [Number(args.get("year"))] : [7, 8, 9, 10, 11];
 const onlySubject = args.get("subject");
 const tier = args.get("tier") ?? "Higher";
 const limit = Number(args.get("limit") ?? Infinity);
-const concurrency = Math.max(1, Math.min(8, Number(args.get("concurrency") ?? 4)));
+// Raised from 8: the deployment tolerates more, and callFoundry now backs off
+// and retries rather than losing a row when it does not.
+const concurrency = Math.max(1, Math.min(16, Number(args.get("concurrency") ?? 4)));
 const dryRun = args.get("dry-run") === "true";
 const explanationsOnly = args.get("explanations-only") === "true";
 // example | practice | exam. Question banks are seeded per board and per tier.
