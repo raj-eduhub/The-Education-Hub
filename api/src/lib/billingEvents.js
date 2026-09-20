@@ -39,7 +39,11 @@ export async function handleStripeEvent(event, { appUrl, sendEmail = sendWelcome
       status: "active",
       stripeCustomerId: object.customer,
       stripeSubscriptionId: object.subscription,
-      onboardingComplete: false,
+      // Setup already done stays done. A second checkout event for the same
+      // account is not a new learner: someone resubscribing after cancelling
+      // still has their profile, and sending them back through learner setup
+      // would ask for a school year that is immutable anyway.
+      onboardingComplete: existing?.onboardingComplete === true,
       lastCheckoutEventId: event.id,
     });
 

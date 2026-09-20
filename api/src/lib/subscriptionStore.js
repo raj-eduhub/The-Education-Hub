@@ -7,6 +7,25 @@ const partitionKey = "subscriptions";
 let tableClient;
 let tableReady;
 
+// Which Stripe statuses still open the app.
+//
+// "past_due" is deliberately included. A failed renewal is usually an expired
+// or briefly declined card, and Stripe keeps retrying for about three weeks
+// before giving up. Cutting a child off at the first failure would take the
+// product away mid-revision for a payment that is probably about to succeed.
+// When Stripe does give up, the status becomes "unpaid" or "canceled" and this
+// returns false.
+const accessStatuses = new Set(["active", "past_due"]);
+
+export function grantsAccess(status) {
+  return accessStatuses.has(status);
+}
+
+// Payment is late but access continues, so the app can say so.
+export function inGracePeriod(subscription) {
+  return subscription?.status === "past_due";
+}
+
 export function accountKey(email) {
   return createHash("sha256").update(email.trim().toLowerCase()).digest("hex");
 }
@@ -98,6 +117,29 @@ export async function updateSubscriptionByAccountKey(key, details) {
     ...details,
     updatedAt: new Date().toISOString(),
   }, "Merge");
+}
+
+// Every subscription, for the administrator's payments view. The table holds one
+// row per account, so this is a small scan rather than a paged query.
+export async function listSubscriptions() {
+  const current = await readyClient();
+  const rows = [];
+  for await (const entity of current.listEntities()) {
+    rows.push({
+      accountKey: entity.rowKey,
+      email: entity.email ?? "",
+      plan: entity.plan ?? "",
+      status: entity.status ?? "",
+      currentPeriodEnd: entity.currentPeriodEnd ?? null,
+      cancelAtPeriodEnd: entity.cancelAtPeriodEnd === true,
+      onboardingComplete: entity.onboardingComplete === true,
+      stripeCustomerId: entity.stripeCustomerId ?? "",
+      stripeSubscriptionId: entity.stripeSubscriptionId ?? "",
+      welcomeDelivery: entity.welcomeDelivery ?? "",
+      updatedAt: entity.updatedAt ?? "",
+    });
+  }
+  return rows.sort((left, right) => String(right.updatedAt).localeCompare(String(left.updatedAt)));
 }
 
 export async function deleteSubscription(email) {

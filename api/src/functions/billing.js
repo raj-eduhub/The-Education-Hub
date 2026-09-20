@@ -5,7 +5,10 @@ import {
   accountKey,
   getSubscription,
   getSubscriptionEntity,
+  grantsAccess,
+  listSubscriptions,
   savePendingSubscription,
+  updateSubscriptionByAccountKey,
 } from "../lib/subscriptionStore.js";
 import { userCanAccess } from "../lib/userStore.js";
 import { handleStripeEvent } from "../lib/billingEvents.js";
@@ -89,6 +92,40 @@ app.http("billing", {
         return { jsonBody: { subscription: await getSubscription(email) } };
       }
 
+      // Who is paying, for an administrator. Read from the local table rather
+      // than from Stripe: it is one row per account and answers instantly, and
+      // the reconcile action below exists for the cases where the two disagree.
+      if (request.method === "GET" && action === "subscribers") {
+        if (!admin) return { status: 403, jsonBody: { error: "An administrator account is required." } };
+        const subscribers = await listSubscriptions();
+        const counted = (predicate) => subscribers.filter(predicate).length;
+        // The price comes from Stripe so the revenue figure cannot drift away
+        // from what customers are actually charged.
+        let monthlyPrice = null;
+        try {
+          const price = priceId() ? await stripeClient().prices.retrieve(priceId()) : null;
+          if (price?.unit_amount != null) monthlyPrice = price.unit_amount / 100;
+        } catch (priceError) {
+          context.warn(`Subscription price could not be read from Stripe: ${priceError.message}`);
+        }
+        return {
+          jsonBody: {
+            subscribers,
+            monthlyPrice,
+            currency: "GBP",
+            totals: {
+              all: subscribers.length,
+              active: counted((row) => row.status === "active"),
+              pastDue: counted((row) => row.status === "past_due"),
+              cancelling: counted((row) => row.status === "active" && row.cancelAtPeriodEnd),
+              cancelled: counted((row) => ["canceled", "unpaid"].includes(row.status)),
+              pending: counted((row) => row.status === "checkout_pending"),
+              setupIncomplete: counted((row) => grantsAccess(row.status) && !row.onboardingComplete),
+            },
+          },
+        };
+      }
+
       if (request.method !== "POST") return { status: 405 };
       const stripe = stripeClient();
       const origin = process.env.APP_BASE_URL ?? new URL(request.url).origin;
@@ -124,6 +161,32 @@ app.http("billing", {
           return_url: `${origin}/#account`,
         });
         return { jsonBody: { url: session.url } };
+      }
+
+      // Everything the app knows about a subscription arrives by webhook. If one
+      // is missed - a misconfigured endpoint, an outage while Stripe gives up
+      // retrying - the local row silently stays out of date, and a cancelled
+      // customer keeps their access. This reads the subscription back from
+      // Stripe and repairs the row.
+      if (action === "reconcile") {
+        if (!admin) return { status: 403, jsonBody: { error: "An administrator account is required." } };
+        const body = await request.json();
+        const target = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+        if (!target) return { status: 400, jsonBody: { error: "An account email is required." } };
+        const stored = await getSubscriptionEntity(target);
+        if (!stored?.stripeSubscriptionId) {
+          return { status: 404, jsonBody: { error: "That account has no Stripe subscription to reconcile against." } };
+        }
+        const live = await stripe.subscriptions.retrieve(stored.stripeSubscriptionId);
+        const changed = stored.status !== live.status || stored.cancelAtPeriodEnd !== live.cancel_at_period_end;
+        await updateSubscriptionByAccountKey(accountKey(target), {
+          status: live.status,
+          cancelAtPeriodEnd: live.cancel_at_period_end,
+          currentPeriodEnd: live.current_period_end ? new Date(live.current_period_end * 1000).toISOString() : null,
+          stripeCustomerId: live.customer,
+          reconciledAt: new Date().toISOString(),
+        });
+        return { jsonBody: { email: target, status: live.status, cancelAtPeriodEnd: live.cancel_at_period_end, changed } };
       }
 
       return { status: 404, jsonBody: { error: "Billing action not found." } };
