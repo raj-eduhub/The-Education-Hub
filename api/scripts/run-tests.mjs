@@ -35,6 +35,8 @@ const suites = [
   // outcome leaves a worked example teaching the wrong sub-topic silently.
   { name: "content audit", script: "audit-content.mjs", needsApi: false },
   { name: "billing", script: "test-billing.mjs", needsApi: false },
+  { name: "failed payments", script: "test-failed-payments.mjs", needsApi: false },
+  { name: "support", script: "test-support.mjs", needsApi: false },
   { name: "safeguarding", script: "test-safeguarding.mjs", needsApi: false },
   // Every model call is money; this is the cap that keeps one learner from
   // spending more than they pay.

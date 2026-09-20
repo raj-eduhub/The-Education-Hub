@@ -119,8 +119,11 @@ record(earlyOnboarding.status === 402, "learner setup is refused before payment"
 console.log("\n--- 3. Checkout ---");
 const checkout = await call("/billing/checkout", json({}));
 record(checkout.status === 200, "checkout session is created", `HTTP ${checkout.status}`);
-record(typeof checkout.body?.url === "string" && checkout.body.url.includes("checkout=success"),
-  "Stripe returns a redirect URL", checkout.body?.url);
+// The embedded form mounts against the session, so the client secret comes
+// back rather than a URL to redirect to.
+record(typeof checkout.body?.client_secret === "string" && checkout.body.client_secret.length > 0,
+  "Stripe returns a client secret for the embedded form",
+  checkout.body?.client_secret ? "client_secret present" : JSON.stringify(checkout.body));
 
 // 4. The webhook Stripe would send -------------------------------------------
 console.log("\n--- 4. Stripe webhook ---");
@@ -162,8 +165,8 @@ record(afterPay.body?.subscription?.onboardingComplete === false, "learner setup
 console.log("\n--- 5. Learner setup ---");
 const details = {
   guardianName: "Test Guardian", guardianRelationship: "parent", guardianPhone: "07700 900321",
-  studentFirstName: "Aria", studentLastName: "Kumar", dateOfBirth: "2011-09-14",
-  year: 10, schoolName: "Test High", examBoards: { Maths: "AQA", Science: "Edexcel", English: "AQA" },
+  studentFirstName: "Aria", dateOfBirth: "2011-03-02",
+  year: 10, examBoards: { Maths: "AQA", Science: "Edexcel", English: "AQA" },
   examBoard: "AQA", tier: "Higher", parentalConsent: true,
 };
 const noConsent = await call("/onboarding", json({ ...details, parentalConsent: false }));
