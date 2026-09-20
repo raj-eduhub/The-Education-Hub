@@ -71,7 +71,7 @@ export function LearnerProfileSetup({ initialProfile, onSave, onCancel, yearLock
         <p className="eyebrow">Personal learning path</p>
         <h1>Set up the learner profile</h1>
         <p>We use the school year to show only the right curriculum and tune tutor explanations to the learner's level.</p>
-        <div className="profile-privacy"><ShieldCheck size={18} /><span>Profile details are protected in Azure and are never included in AI tutor prompts.</span></div>
+        <div className="profile-privacy"><ShieldCheck size={18} /><span>Profile details are protected in Azure and are never sent to Sonia, the AI tutor.</span></div>
       </section>
 
       <form className="profile-form" onSubmit={submit}>

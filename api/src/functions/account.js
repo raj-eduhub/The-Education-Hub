@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { developmentBypass, getPrincipal, isAdministrator, principalEmail } from "../lib/auth.js";
 import { deleteProgress } from "../lib/progressStore.js";
 import { deleteFlags } from "../lib/safeguardingStore.js";
+import { deleteTickets } from "../lib/supportStore.js";
 import { deleteCredentials } from "../lib/passwordAuth.js";
 import { deleteProfile } from "../lib/signupStore.js";
 import { deleteSubscription, getSubscriptionEntity } from "../lib/subscriptionStore.js";
@@ -36,6 +37,7 @@ app.http("account", {
         // An operator with a safeguarding policy that requires retention should
         // change this line and say so in the notice.
         deleteFlags(email),
+        deleteTickets(email),
         deleteCredentials(email),
         deleteProfile(email),
         deleteSubscription(email),

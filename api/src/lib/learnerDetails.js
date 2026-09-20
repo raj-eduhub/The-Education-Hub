@@ -25,19 +25,50 @@ function validBoards(value) {
     typeof subject === "string" && subject.length > 0 && subject.length <= 60 && boards.includes(board));
 }
 
+// Loose on purpose: enough digits to be a real number, and tolerant of spaces,
+// brackets and an international prefix. Refusing a valid number is worse than
+// accepting an odd-looking one.
+function validMobile(value) {
+  if (typeof value !== "string") return false;
+  const digits = value.replace(/[\s()\-.]/g, "");
+  return /^\+?\d{10,15}$/.test(digits);
+}
+
 function validDate(value) {
   const date = new Date(`${value}T00:00:00Z`);
   return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(date.getTime()) && date < new Date();
 }
 
+// The school year, worked out rather than asked for.
+//
+// In England the year group is fixed by a child's age on the 31st of August
+// before the academic year starts, so the date of birth already answers it.
+// Asking for the year as well would be a second piece of personal data that
+// tells us nothing the first one does not, and it would be the one a child
+// could quietly change to get easier work.
+export function yearFromDateOfBirth(dateOfBirth, on = new Date()) {
+  const birth = new Date(`${dateOfBirth}T00:00:00Z`);
+  if (Number.isNaN(birth.getTime())) return null;
+  // September onwards belongs to the academic year that has just started.
+  const academicStart = on.getUTCMonth() >= 8 ? on.getUTCFullYear() : on.getUTCFullYear() - 1;
+  const hadBirthdayByCutoff =
+    Date.UTC(academicStart, birth.getUTCMonth(), birth.getUTCDate()) <= Date.UTC(academicStart, 7, 31);
+  const ageAtCutoff = academicStart - birth.getUTCFullYear() - (hadBirthdayByCutoff ? 0 : 1);
+  // Reception is the year a child turns five, so the group runs four behind.
+  return ageAtCutoff - 4;
+}
+
 export function validateLearnerDetails(body) {
-  const year = Number(body?.year);
+  // Derived, never taken from the request: a year sent by the client would let
+  // the registered year be chosen rather than established.
+  const year = validDate(body?.dateOfBirth) ? yearFromDateOfBirth(body.dateOfBirth) : NaN;
   const valid =
     Boolean(body?.guardianName?.trim()) &&
     relationships.includes(body?.guardianRelationship) &&
-    Boolean(body?.guardianPhone?.trim()) &&
+    // The adult's own record: a name, an address we can reach them on, and a
+    // number. This is the account holder, not the child.
+    validMobile(body?.guardianPhone) &&
     Boolean(body?.studentFirstName?.trim()) &&
-    Boolean(body?.studentLastName?.trim()) &&
     validDate(body?.dateOfBirth) &&
     years.includes(year) &&
     body?.parentalConsent === true &&
@@ -46,6 +77,9 @@ export function validateLearnerDetails(body) {
     (year < 9 || (validBoards(body?.examBoards) && boards.includes(body?.examBoard))) &&
     (year < 10 || tiers.includes(body?.tier));
 
+  if (!valid && validDate(body?.dateOfBirth) && !years.includes(year)) {
+    return { valid: false, error: "Y7to11.AI covers Years 7 to 11. That date of birth falls outside those years." };
+  }
   if (!valid) return { valid: false, error: "Complete all required student and parent/guardian details." };
   return { valid: true, value: { ...body, year } };
 }

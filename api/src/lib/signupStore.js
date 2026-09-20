@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { TableClient } from "@azure/data-tables";
 import { DefaultAzureCredential } from "@azure/identity";
 import { accountKey } from "./subscriptionStore.js";
+import { yearFromDateOfBirth } from "./learnerDetails.js";
 
 const inviteTableName = process.env.AZURE_STORAGE_SIGNUP_INVITES_TABLE ?? "EducationHubSignupInvites";
 const profileTableName = process.env.AZURE_STORAGE_PROFILES_TABLE ?? "EducationHubProfiles";
@@ -61,7 +62,9 @@ async function writeProfile(key, email, input) {
     if (error.statusCode === 404) return null;
     throw error;
   });
-  const year = Number(input.year);
+  // Derived here as well as at validation, so the stored year can only ever be
+  // the one the date of birth gives. No caller can put a different one in.
+  const year = yearFromDateOfBirth(input.dateOfBirth);
   if (existing && Number(existing.year) !== year) {
     const error = new Error("The registered school year cannot be changed.");
     error.statusCode = 409;
@@ -72,14 +75,12 @@ async function writeProfile(key, email, input) {
     partitionKey: "profiles",
     rowKey: key,
     email,
-    guardianName: input.guardianName.trim(),
+    guardianName: (input.guardianName ?? "").trim(),
     guardianRelationship: input.guardianRelationship,
-    guardianPhone: input.guardianPhone.trim(),
+    guardianPhone: (input.guardianPhone ?? "").trim(),
     studentFirstName: input.studentFirstName.trim(),
-    studentLastName: input.studentLastName.trim(),
     dateOfBirth: input.dateOfBirth,
     year,
-    schoolName: input.schoolName?.trim() ?? "",
     examBoard: input.examBoard ?? "AQA",
     // Table Storage holds scalars, so the per-subject map travels as JSON.
     examBoards: JSON.stringify(input.examBoards ?? {}),
@@ -125,10 +126,8 @@ function publicProfile(profile) {
     guardianRelationship: profile.guardianRelationship,
     guardianPhone: profile.guardianPhone,
     studentFirstName: profile.studentFirstName,
-    studentLastName: profile.studentLastName,
     dateOfBirth: profile.dateOfBirth,
     year: Number(profile.year),
-    schoolName: profile.schoolName,
     examBoard: profile.examBoard,
     examBoards: parseBoards(profile.examBoards),
     tier: profile.tier,

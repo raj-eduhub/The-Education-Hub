@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ArrowRight, CalendarDays, CheckCircle2, GraduationCap, LockKeyhole, ShieldCheck, UserRound, UsersRound } from "lucide-react";
 import { apiFetch, authFetch, readJson } from "./auth.js";
 import { subjects } from "./curriculum.js";
+import { yearFromDateOfBirth } from "./schoolYear.js";
 
 const years = [7, 8, 9, 10, 11];
 // Exam boards are chosen per subject, because a school rarely enters every
@@ -29,10 +30,8 @@ export function SubscriberSignup({ preview = false, token, account, onComplete }
     guardianRelationship: "parent",
     guardianPhone: "",
     studentFirstName: "",
-    studentLastName: "",
     dateOfBirth: "",
     year: 7,
-    schoolName: "",
     examBoards: defaultBoards,
     tier: "Higher",
     parentalConsent: false,
@@ -56,8 +55,17 @@ export function SubscriberSignup({ preview = false, token, account, onComplete }
 
   // GCSE preparation begins in Year 9, so the board is chosen from then on.
   // Foundation and Higher entry is only decided for the exam years.
-  const choosesBoards = useMemo(() => Number(form.year) >= 9, [form.year]);
-  const isGcse = useMemo(() => Number(form.year) >= 10, [form.year]);
+  // Worked out from the date of birth rather than chosen, so it is one less
+  // thing to hold about a child and one less thing that can be set wrongly.
+  // The server derives it again and does not trust this value.
+  const derivedYear = useMemo(() => {
+    if (!form.dateOfBirth) return null;
+    const year = yearFromDateOfBirth(form.dateOfBirth);
+    return Number.isFinite(year) ? year : null;
+  }, [form.dateOfBirth]);
+  const inRange = derivedYear !== null && derivedYear >= 7 && derivedYear <= 11;
+  const choosesBoards = useMemo(() => Number(derivedYear) >= 9, [derivedYear]);
+  const isGcse = useMemo(() => Number(derivedYear) >= 10, [derivedYear]);
 
   function update(name, value) {
     setForm((current) => ({ ...current, [name]: value }));
@@ -118,7 +126,7 @@ export function SubscriberSignup({ preview = false, token, account, onComplete }
             <label>Full name<input autoComplete="name" onChange={(event) => update("guardianName", event.target.value)} required value={form.guardianName} /></label>
             <label>Relationship<select onChange={(event) => update("guardianRelationship", event.target.value)} value={form.guardianRelationship}><option value="parent">Parent</option><option value="legal-guardian">Legal guardian</option><option value="carer">Carer</option></select></label>
             <label>Email<input readOnly type="email" value={invite.email} /></label>
-            <label>Phone number<input autoComplete="tel" onChange={(event) => update("guardianPhone", event.target.value)} required type="tel" value={form.guardianPhone} /></label>
+            <label>Mobile number<input autoComplete="tel" inputMode="tel" onChange={(event) => update("guardianPhone", event.target.value)} placeholder="07700 900123" required type="tel" value={form.guardianPhone} /></label>
           </div>
         </section>
 
@@ -126,16 +134,18 @@ export function SubscriberSignup({ preview = false, token, account, onComplete }
           <div className="signup-section-heading"><UserRound size={20} /><div><h2>Student</h2><p>Details used to build the learning path</p></div></div>
           <div className="signup-fields two-columns">
             <label>First name<input autoComplete="given-name" onChange={(event) => update("studentFirstName", event.target.value)} required value={form.studentFirstName} /></label>
-            <label>Last name<input autoComplete="family-name" onChange={(event) => update("studentLastName", event.target.value)} required value={form.studentLastName} /></label>
             <label><span>Date of birth</span><div className="input-with-icon"><CalendarDays size={17} /><input max={new Date().toISOString().slice(0, 10)} onChange={(event) => update("dateOfBirth", event.target.value)} required type="date" value={form.dateOfBirth} /></div></label>
-            <label>School name <small>(optional)</small><input onChange={(event) => update("schoolName", event.target.value)} value={form.schoolName} /></label>
           </div>
         </section>
 
         <section>
-          <div className="signup-section-heading"><GraduationCap size={20} /><div><h2>Curriculum year</h2><p>This selection locks when the form is submitted</p></div></div>
-          <div className="signup-year-options">
-            {years.map((year) => <button className={Number(form.year) === year ? "active" : ""} key={year} onClick={() => update("year", year)} type="button"><strong>Year {year}</strong><span>{year <= 8 ? "KS3" : year === 9 ? "GCSE prep" : "GCSE"}</span></button>)}
+          <div className="signup-section-heading"><GraduationCap size={20} /><div><h2>Curriculum year</h2><p>Worked out from the date of birth above</p></div></div>
+          <div className="derived-year">
+            {!form.dateOfBirth
+              ? <p>Enter a date of birth and the school year will appear here.</p>
+              : inRange
+                ? <p><strong>Year {derivedYear}</strong><span>{derivedYear <= 8 ? "Key Stage 3" : derivedYear === 9 ? "GCSE preparation" : "GCSE"}</span></p>
+                : <p className="out-of-range">Y7to11.AI covers Years 7 to 11. That date of birth works out as {derivedYear !== null && derivedYear > 11 ? "older than Year 11" : "younger than Year 7"}.</p>}
           </div>
           {choosesBoards && <>
             <fieldset className="board-picker">
