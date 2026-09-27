@@ -12,7 +12,7 @@ app.http("progress", {
     try {
       const access = await getLearningAccess(request);
       const { allowed, email } = access;
-      if (!allowed) return { status: 403, jsonBody: { error: "Your Education Hub access is inactive." } };
+      if (!allowed) return { status: 403, jsonBody: { error: "Your Y7to11.AI access is inactive." } };
 
       if (request.method === "GET") {
         const yearValue = access.profile?.year ?? Number(request.query.get("year"));

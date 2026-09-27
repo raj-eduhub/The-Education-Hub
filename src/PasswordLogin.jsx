@@ -41,7 +41,7 @@ export function LoginScreen({ onAuthenticated, error, checking }) {
     {sent ? <div className="login-sent">
       <p role="status">{signup
         ? "Check your email. We have sent a link to confirm the address, which expires in 24 hours. The account cannot be used until it is confirmed."
-        : "If that email matches an Education Hub account, a reset link is on its way. The link expires in one hour and can be used once."}</p>
+        : "If that email matches a Y7to11.AI account, a reset link is on its way. The link expires in one hour and can be used once."}</p>
       <button type="button" className="login-link" onClick={() => show("login")}>Back to log in</button>
     </div> : <form className="password-form" key={view} onSubmit={submit}>
       {forgot ? <label>Account email<input name="email" type="email" autoComplete="email" required maxLength={254} /></label> : <>

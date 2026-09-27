@@ -1141,7 +1141,7 @@ Mark my answer.`,
           <div className="pending-icon"><ShieldCheck size={28} /></div>
           <p className="eyebrow">Account recognised</p>
           <h1>Access is awaiting approval</h1>
-          <p>Ask an Education Hub administrator to add <strong>{currentUser?.email}</strong> to the user dashboard.</p>
+          <p>Ask a Y7to11.AI administrator to add <strong>{currentUser?.email}</strong> to the user dashboard.</p>
           <button onClick={signOut} type="button"><LogOut size={18} /> Sign out</button>
         </div>
       </main>

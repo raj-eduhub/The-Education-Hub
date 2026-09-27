@@ -99,7 +99,7 @@ GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 - Payments screen listing every subscription with totals, monthly revenue read from Stripe, and a reconcile action that repairs a record when a webhook was missed
 - Access continues through a late payment while Stripe retries, and stops when Stripe gives up or the paid period ends
 - Safeguarding dashboard recording every message the tutor refused, with per-learner history, guardian contact details, and an email alert to administrators on a safety flag
-- One subscription at GBP 9.99 per month, with no free trial, through Stripe-hosted checkout
+- One subscription at £14.99 per month, with no free trial, through Stripe-hosted checkout
 - Welcome email after confirmed payment through Azure Communication Services, carrying no token and no deadline
 - Self-service billing portal, privacy notice, subscription terms, and permanent Education Hub account deletion
 - Azure Static Web Apps configuration in `staticwebapp.config.json`
@@ -146,7 +146,7 @@ Do not commit `.env`, `api/local.settings.json`, or real keys.
 
 ## Subscription setup
 
-Create one Stripe product with a single monthly recurring price of GBP 9.99 and no trial, then copy that price ID into `STRIPE_PRICE_MONTHLY` above. Configure a Stripe webhook for `https://your-static-web-app.azurestaticapps.net/api/billing/webhook` and subscribe it to `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, and `customer.subscription.deleted`.
+Create one Stripe product with a single monthly recurring price of £14.99 and no trial, then copy that price ID into `STRIPE_PRICE_MONTHLY` above. Configure a Stripe webhook for `https://your-static-web-app.azurestaticapps.net/api/billing/webhook` and subscribe it to `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, and `customer.subscription.deleted`.
 
 The frontend never handles card details. It creates an authenticated checkout request and redirects to Stripe Checkout. Configure the Stripe customer portal so account holders can update payment details and cancel.
 
@@ -195,7 +195,7 @@ all real in that run. Only Stripe and the email service are stubbed.
 ## Registration flow
 
 1. **Register or sign in** on the combined account screen, with a username and password or a Google account.
-2. **Subscribe** at GBP 9.99 per month through Stripe-hosted checkout. There is no free trial, so the first payment is taken immediately.
+2. **Subscribe** at £14.99 per month through Stripe-hosted checkout. There is no free trial, so the first payment is taken immediately.
 3. **Learner setup** opens in the app as soon as Stripe confirms the payment: parent or guardian contact details, the student's name, date of birth and school, the immutable Year 7-11 selection, and per-subject exam boards from Year 9.
 4. **Learning begins.**
 

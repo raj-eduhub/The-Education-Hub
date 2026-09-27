@@ -39,8 +39,8 @@ export async function sendWelcomeEmail({ email, appUrl, username = "" }) {
     : `<p>Sign in with the username and password you chose.</p>`;
   await send({
     email,
-    subject: "Your Education Hub subscription is active",
-    plainText: `Your Education Hub subscription is active.
+    subject: "Your Y7to11.AI subscription is active",
+    plainText: `Your Y7to11.AI subscription is active.
 
 ${signIn}
 
@@ -49,7 +49,7 @@ The first time you sign in you will be asked for the learner's details, includin
 We never include your password in an email. If you have forgotten it, use "Forgot your password?" on the sign-in page.
 
 You can cancel or change payment details at any time from Account and privacy.`,
-    html: `<h1>Your subscription is active</h1>${signInHtml}<p><a href="${appUrl}">Open Education Hub</a></p><p>The first time you sign in you will be asked for the learner's details, including the school year, which cannot be changed afterwards.</p><p>We never include your password in an email. If you have forgotten it, use "Forgot your password?" on the sign-in page.</p><p>You can cancel or change payment details at any time from Account and privacy.</p>`,
+    html: `<h1>Your subscription is active</h1>${signInHtml}<p><a href="${appUrl}">Open Y7to11.AI</a></p><p>The first time you sign in you will be asked for the learner's details, including the school year, which cannot be changed afterwards.</p><p>We never include your password in an email. If you have forgotten it, use "Forgot your password?" on the sign-in page.</p><p>You can cancel or change payment details at any time from Account and privacy.</p>`,
     undelivered: "The welcome email could not be delivered.",
   });
 }
@@ -64,7 +64,7 @@ export async function sendSetPasswordEmail({ email, username, setUrl }) {
   await send({
     email,
     subject: "Your subscription is active - set your password",
-    plainText: `Your Education Hub subscription is active.
+    plainText: `Your Y7to11.AI subscription is active.
 
 Set the password for your account "${username}" here: ${setUrl}
 
@@ -82,9 +82,9 @@ Once your password is set you will be asked for the learner's details, including
 export async function sendVerificationEmail({ email, username, verifyUrl }) {
   await send({
     email,
-    subject: "Confirm your Education Hub email address",
-    plainText: `An Education Hub account with the username "${username}" was created with this email address. Confirm the address to finish setting it up: ${verifyUrl}\n\nThis link expires in 24 hours and can be used once. If you did not create this account, ignore this email and nothing further will happen.`,
-    html: `<h1>Confirm your email address</h1><p>An Education Hub account with the username <strong>${username}</strong> was created with this email address.</p><p><a href="${verifyUrl}">Confirm this address</a></p><p>This link expires in 24 hours and can be used once. If you did not create this account, ignore this email and nothing further will happen.</p>`,
+    subject: "Confirm your Y7to11.AI email address",
+    plainText: `A Y7to11.AI account with the username "${username}" was created with this email address. Confirm the address to finish setting it up: ${verifyUrl}\n\nThis link expires in 24 hours and can be used once. If you did not create this account, ignore this email and nothing further will happen.`,
+    html: `<h1>Confirm your email address</h1><p>A Y7to11.AI account with the username <strong>${username}</strong> was created with this email address.</p><p><a href="${verifyUrl}">Confirm this address</a></p><p>This link expires in 24 hours and can be used once. If you did not create this account, ignore this email and nothing further will happen.</p>`,
     undelivered: "The confirmation email could not be delivered.",
   });
 }
@@ -99,13 +99,13 @@ export async function sendPaymentFailedEmail({ email, appUrl, attemptCount = 1, 
     : "We will try again shortly.";
   await send({
     email,
-    subject: "Your Education Hub payment did not go through",
-    plainText: `We could not take this month's Education Hub payment. ${retry}
+    subject: "Your Y7to11.AI payment did not go through",
+    plainText: `We could not take this month's Y7to11.AI payment. ${retry}
 
 Your child still has full access for now. To keep it, update the card in Account and privacy: ${appUrl}
 
 If the card is not updated before the retries run out, the subscription will be cancelled.`,
-    html: `<h1>Your payment did not go through</h1><p>We could not take this month's Education Hub payment${attemptCount > 1 ? ` (attempt ${attemptCount})` : ""}. ${retry}</p><p><strong>Your child still has full access for now.</strong> To keep it, update the card from Account and privacy.</p><p><a href="${appUrl}">Update payment details</a></p><p>If the card is not updated before the retries run out, the subscription will be cancelled.</p>`,
+    html: `<h1>Your payment did not go through</h1><p>We could not take this month's Y7to11.AI payment${attemptCount > 1 ? ` (attempt ${attemptCount})` : ""}. ${retry}</p><p><strong>Your child still has full access for now.</strong> To keep it, update the card from Account and privacy.</p><p><a href="${appUrl}">Update payment details</a></p><p>If the card is not updated before the retries run out, the subscription will be cancelled.</p>`,
     undelivered: "The payment failure email could not be delivered.",
   });
 }
@@ -168,8 +168,8 @@ export async function sendSafeguardingAlertEmail({ recipients, studentName, emai
   await send({
     to: recipients,
     subject: alertSubjects[reason] ?? "Safeguarding alert: a learner message was flagged",
-    plainText: `The Education Hub tutor blocked a message from ${studentName} (${email}) in ${where} at ${occurredAt}.\n\nRule: ${reason}.\n\nThe message itself is not included here. Sign in as an administrator and open Safeguarding to read it and record what you did: ${dashboardUrl}`,
-    html: `<h1>Safeguarding alert</h1><p>The Education Hub tutor blocked a message from <strong>${studentName}</strong> (${email}) in ${where} at ${occurredAt}.</p><p>Rule: <strong>${reason}</strong>.</p><p>The message itself is not included in this email. <a href="${dashboardUrl}">Open Safeguarding</a> to read it and record what you did.</p>`,
+    plainText: `The Y7to11.AI tutor blocked a message from ${studentName} (${email}) in ${where} at ${occurredAt}.\n\nRule: ${reason}.\n\nThe message itself is not included here. Sign in as an administrator and open Safeguarding to read it and record what you did: ${dashboardUrl}`,
+    html: `<h1>Safeguarding alert</h1><p>The Y7to11.AI tutor blocked a message from <strong>${studentName}</strong> (${email}) in ${where} at ${occurredAt}.</p><p>Rule: <strong>${reason}</strong>.</p><p>The message itself is not included in this email. <a href="${dashboardUrl}">Open Safeguarding</a> to read it and record what you did.</p>`,
     undelivered: "The safeguarding alert could not be delivered.",
   });
 }
@@ -177,9 +177,9 @@ export async function sendSafeguardingAlertEmail({ recipients, studentName, emai
 export async function sendPasswordResetEmail({ email, username, resetUrl }) {
   await send({
     email,
-    subject: "Reset your Education Hub password",
-    plainText: `A password reset was requested for the Education Hub account "${username}". Choose a new password within one hour: ${resetUrl}\n\nIf you did not request this, ignore this email. Your current password stays active.`,
-    html: `<h1>Reset your Education Hub password</h1><p>A password reset was requested for the account <strong>${username}</strong>.</p><p><a href="${resetUrl}">Choose a new password</a></p><p>This secure link expires in one hour and can be used once. Resetting signs out every device.</p><p>If you did not request this, ignore this email. Your current password stays active.</p>`,
+    subject: "Reset your Y7to11.AI password",
+    plainText: `A password reset was requested for the Y7to11.AI account "${username}". Choose a new password within one hour: ${resetUrl}\n\nIf you did not request this, ignore this email. Your current password stays active.`,
+    html: `<h1>Reset your Y7to11.AI password</h1><p>A password reset was requested for the account <strong>${username}</strong>.</p><p><a href="${resetUrl}">Choose a new password</a></p><p>This secure link expires in one hour and can be used once. Resetting signs out every device.</p><p>If you did not request this, ignore this email. Your current password stays active.</p>`,
     undelivered: "The password reset email could not be delivered.",
   });
 }

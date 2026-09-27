@@ -106,7 +106,7 @@ graph LR
 2. The student signs in with Google. Google returns a signed ID token to the frontend, which keeps it in session storage rather than persistent local storage.
 3. The frontend sends the token to `/api/session` in the `Authorization: Bearer` header.
 4. The Function verifies the token with Google's library and checks that the Gmail address is an administrator or has an active row in the access table.
-5. An approved non-admin account without an active subscription is shown the single GBP 9.99 monthly plan and redirected to Stripe Checkout. Payment is taken immediately; there is no trial.
+5. An approved non-admin account without an active subscription is shown the single £14.99 monthly plan and redirected to Stripe Checkout. Payment is taken immediately; there is no trial.
 6. Stripe sends a signed webhook. Only a completed checkout with `payment_status=paid` creates onboarding access.
 7. Azure Communication Services emails a welcome receipt. It carries no token and no deadline, because learner setup happens in the app and nothing about getting started depends on the email arriving.
 8. Learner setup opens in the app as soon as the subscription is active. The parent or guardian enters their contact details and the student's name, date of birth, school, curriculum year, and GCSE options, and `POST /api/onboarding` stores the profile against the signed-in account. Stripe returns the customer before its webhook necessarily has, so the app waits and re-checks rather than showing the paywall to someone who has just paid.
@@ -147,7 +147,7 @@ The API also supports `DefaultAzureCredential`. If `AZURE_AI_API_KEY` is absent,
 | `AZURE_STORAGE_PROFILES_TABLE` | Static Web Apps application settings | Non-secret table name |
 | `STRIPE_SECRET_KEY` | Static Web Apps application settings | Secret; server-side billing API only |
 | `STRIPE_WEBHOOK_SECRET` | Static Web Apps application settings | Secret; validates Stripe event signatures |
-| `STRIPE_PRICE_MONTHLY` | Static Web Apps application settings | Server-side Stripe price identifier for the single GBP 9.99 monthly plan |
+| `STRIPE_PRICE_MONTHLY` | Static Web Apps application settings | Server-side Stripe price identifier for the single £14.99 monthly plan |
 | `APP_BASE_URL` | Static Web Apps application settings | Public site URL used for billing redirects |
 | `AZURE_COMMUNICATION_EMAIL_CONNECTION_STRING` | Static Web Apps application settings | Secret; email service credential |
 | `AZURE_COMMUNICATION_EMAIL_SENDER` | Static Web Apps application settings | Verified sender address |
@@ -247,7 +247,7 @@ graph LR
 3. Create the Static Web App with app location `/`, API location `api`, and output location `dist`.
 4. Create a Google OAuth 2.0 Web client and authorise the local and deployed JavaScript origins.
 5. Provide `VITE_GOOGLE_CLIENT_ID` to the frontend build and configure the matching `GOOGLE_CLIENT_ID`, Foundry settings, Storage settings, and at least one `ADMIN_EMAILS` address in Static Web Apps application settings.
-6. Create a single Stripe monthly recurring price of GBP 9.99, configure the customer portal, add the Stripe server settings, and register the billing webhook URL.
+6. Create a single Stripe monthly recurring price of £14.99, configure the customer portal, add the Stripe server settings, and register the billing webhook URL.
 7. Create Azure Communication Services and an Email Communication Services domain, connect them, verify the sender, and add the email settings.
 8. Deploy the repository, sign in with the bootstrap administrator Gmail address, and add the first application users from the dashboard.
 9. Complete a Stripe test-mode payment, confirm receipt of the signup email, submit the profile, and verify that the school year derived from date of birth is locked.

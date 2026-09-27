@@ -89,7 +89,7 @@ app.http("tutor", {
       if (!allowed) {
         return {
           status: 403,
-          jsonBody: { error: "Your Education Hub access is inactive or has not been added yet." },
+          jsonBody: { error: "Your Y7to11.AI access is inactive or has not been added yet." },
         };
       }
 

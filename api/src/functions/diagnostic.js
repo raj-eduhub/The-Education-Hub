@@ -21,7 +21,7 @@ app.http("diagnostic", {
     try {
       const access = await getLearningAccess(request);
       const { allowed } = access;
-      if (!allowed) return { status: 403, jsonBody: { error: "Your Education Hub access is inactive." } };
+      if (!allowed) return { status: 403, jsonBody: { error: "Your Y7to11.AI access is inactive." } };
 
       const body = await request.json();
       const year = access.profile?.year ?? body.year;

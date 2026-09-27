@@ -41,7 +41,7 @@ export function SubscriptionPage({ checkoutState, currentUser, onCheckout, onPri
 
       <section className="subscription-content">
         <div className="subscription-intro">
-          <p className="eyebrow">Education Hub subscription</p>
+          <p className="eyebrow">Y7to11.AI subscription</p>
           <h1>A focused learning plan for Years 7 to 11</h1>
           <p>One subscription covering the complete curriculum, diagnostics, Sonia the AI tutor, and progress tracking. Learner setup takes a minute and happens right after payment.</p>
           <div className="subscription-benefits">
@@ -81,7 +81,7 @@ export function SubscriptionPage({ checkoutState, currentUser, onCheckout, onPri
           {!paying && <button className="subscribe-button" disabled={!terms || submitting} onClick={subscribe} type="button">
             <LockKeyhole size={17} /> {submitting ? "Opening secure payment..." : "Continue to secure payment"}
           </button>}
-          <p className="payment-note">Payment details are collected and stored by Stripe, not Education Hub.</p>
+          <p className="payment-note">Payment details are collected and stored by Stripe, not Y7to11.AI.</p>
         </section>
       </section>
     </main>

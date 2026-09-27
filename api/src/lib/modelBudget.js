@@ -4,7 +4,7 @@ import { authTable, digest, findAuth } from "./passwordAuth.js";
 //
 // Nothing limited them before. The tutor guard refuses abusive content and the
 // content routes serve storage first, but an authenticated subscriber could
-// still hold the send key down: every message is a paid call, and at £9.99 a
+// still hold the send key down: every message is a paid call, and at £14.99 a
 // month one determined learner could cost more than they pay. Worse, a leaked
 // session would have an uncapped meter attached to it.
 //

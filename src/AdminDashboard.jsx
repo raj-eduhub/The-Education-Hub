@@ -90,7 +90,7 @@ export function AdminDashboard({ request }) {
       if (!response.ok) throw new Error(data.error ?? "Unable to add the user.");
       setUsers((items) => [data.user, ...items.filter((item) => item.id !== data.user.id)]);
       setForm(emptyForm);
-      setMessage(`${data.user.email} can now access Education Hub.`);
+      setMessage(`${data.user.email} can now access Y7to11.AI.`);
     } catch (error) {
       setMessage(error.message);
     } finally {
@@ -116,7 +116,7 @@ export function AdminDashboard({ request }) {
   }
 
   async function removeUser(user) {
-    if (!window.confirm(`Remove ${user.email} from Education Hub?`)) return;
+    if (!window.confirm(`Remove ${user.email} from Y7to11.AI?`)) return;
     setMessage("");
     try {
       const response = await request(`/api/users/${user.id}`, { method: "DELETE" });

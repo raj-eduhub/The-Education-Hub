@@ -15,7 +15,7 @@ app.http("content", {
     try {
       const access = await getLearningAccess(request);
       if (!access.allowed) {
-        return { status: 403, jsonBody: { error: "Your Education Hub access is inactive or has not been added yet." } };
+        return { status: 403, jsonBody: { error: "Your Y7to11.AI access is inactive or has not been added yet." } };
       }
 
       const body = await request.json();

@@ -36,7 +36,7 @@ const unsafePatterns = [
 ];
 
 export const guardMessages = {
-  injection: "I can only work as your Education Hub tutor, so I will stay with the lesson. What would you like to go over in this topic?",
+  injection: "I can only work as your Y7to11.AI tutor, so I will stay with the lesson. What would you like to go over in this topic?",
   integrity: "I will not write the work for you, because that will not help you in the exam. I can explain the method, work through a similar question, or check an answer you have written. Which would help most?",
   unsafe: "That is not something I can help with here. If something is worrying you, please talk to a parent, carer, or a teacher you trust. When you are ready, we can carry on with the lesson.",
   offTopic: "That question looks like it is outside this topic. I can help with {topic}, or you can switch subject or topic and ask me there.",

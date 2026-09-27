@@ -43,7 +43,7 @@ export function AccountSettings({ currentUser, onDeleted, request, subscription 
   return <section className="account-settings">
     <header className="account-settings-header">
       <p className="eyebrow">Account & privacy</p>
-      <h2>Your Education Hub account</h2>
+      <h2>Your Y7to11.AI account</h2>
       <p>Manage billing, understand how data is used, or permanently close this account.</p>
     </header>
 

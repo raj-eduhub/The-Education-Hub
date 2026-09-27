@@ -201,7 +201,7 @@ export function SubscriberSignup({ preview = false, token, account, onComplete }
           </>}
         </section>
 
-        <label className="signup-consent"><input checked={form.parentalConsent} onChange={(event) => update("parentalConsent", event.target.checked)} type="checkbox" /><span>I confirm that I am the parent, legal guardian, or carer and consent to Education Hub processing these details to provide the learning service.</span></label>
+        <label className="signup-consent"><input checked={form.parentalConsent} onChange={(event) => update("parentalConsent", event.target.checked)} type="checkbox" /><span>I confirm that I am the parent, legal guardian, or carer and consent to Y7to11.AI processing these details to provide the learning service.</span></label>
         {error && <p className="signup-error" role="alert">{error}</p>}
         {missing.length > 0 && <p className="signup-missing">Still needed: {missing.join(", ")}.</p>}
         <button className="signup-submit" disabled={missing.length > 0 || status === "submitting"} type="submit">{status === "submitting" ? "Saving..." : "Start learning"}<ArrowRight size={18} /></button>

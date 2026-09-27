@@ -101,7 +101,7 @@ app.http("billing", {
           admin = false;
         }
       }
-      if (!allowed) return { status: 403, jsonBody: { error: "Your Education Hub access is inactive." } };
+      if (!allowed) return { status: 403, jsonBody: { error: "Your Y7to11.AI access is inactive." } };
 
       if (request.method === "GET" && action === "status") {
         if (admin) return { jsonBody: { subscription: { plan: "admin", status: "active" } } };
