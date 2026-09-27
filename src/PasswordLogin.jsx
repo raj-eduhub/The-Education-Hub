@@ -33,7 +33,7 @@ export function LoginScreen({ onAuthenticated, error, checking }) {
   }
   return <main className="password-login"><div className="login-box">
     <div className="password-brand"><GraduationCap size={30} /><strong>Education Hub</strong></div>
-    <p className="login-no-account">New here? Accounts are created at <strong>y7to11.ai</strong>, where you choose your plan. We email you a link to set your password once payment goes through.</p>
+    <p className="login-no-account">New here? Accounts are created at <strong>Y7to11.AI</strong>, where you choose your plan. We email you a link to set your password once payment goes through.</p>
     <h1>{forgot ? "Reset your password" : signup ? "Create your account" : "Welcome back"}</h1>
     {signup && <p>Parent or guardian account. We will email a link to confirm your address, and a paid subscription and learner setup are required before learning begins.</p>}
     {forgot && !sent && <p>Enter the email registered to the account. If it matches an account, we send the username and a reset link to that address.</p>}
@@ -190,7 +190,7 @@ export function SignupHandoff({ username, email }) {
   return <main className="password-login"><div className="login-box">
     <div className="password-brand"><GraduationCap size={30} /><strong>Education Hub</strong></div>
     <h1>Check your details</h1>
-    <p>These came across from y7to11.ai. Payment is next, and we email you a link to set your password as soon as it goes through.</p>
+    <p>These came across from Y7to11.AI. Payment is next, and we email you a link to set your password as soon as it goes through.</p>
     <form className="password-form" onSubmit={create}>
       <label>Username<input autoComplete="username" name="username" readOnly value={username} /></label>
       <label>Email<input autoComplete="email" name="email" readOnly type="email" value={email} /></label>
