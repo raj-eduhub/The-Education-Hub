@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { GraduationCap } from "lucide-react";
 import { apiFetch, readJson } from "./auth.js";
 import { mountCheckoutForm } from "./stripeCheckout.js";
+import { BrandLogo } from "./BrandLogo.jsx";
 
 // Log in, or ask for a reset. Creating an account is not offered here: that
 // happens on the website, where the plan is chosen and paid for, and the
@@ -33,7 +33,7 @@ export function LoginScreen({ onAuthenticated, error, checking }) {
     finally { setBusy(false); }
   }
   return <main className="password-login"><div className="login-box">
-    <div className="password-brand"><GraduationCap size={30} /><strong>Education Hub</strong></div>
+    <div className="password-brand"><BrandLogo /></div>
     <p className="login-no-account">New here? Accounts are created at <strong>Y7to11.AI</strong>, where you choose your plan. We email you a link to set your password once payment goes through.</p>
     <h1>{forgot ? "Reset your password" : signup ? "Create your account" : "Welcome back"}</h1>
     {signup && <p>Parent or guardian account. We will email a link to confirm your address, and a paid subscription and learner setup are required before learning begins.</p>}
@@ -80,7 +80,7 @@ export function EmailVerification({ token }) {
   }, [token]);
 
   return <main className="password-login"><div className="login-box">
-    <div className="password-brand"><GraduationCap size={30} /><strong>Education Hub</strong></div>
+    <div className="password-brand"><BrandLogo /></div>
     <h1>{status === "done" ? "Email confirmed" : status === "error" ? "Link unavailable" : "Confirming your email"}</h1>
     {status === "working" && <p role="status">One moment.</p>}
     {status === "done" && <div className="login-sent">
@@ -113,7 +113,7 @@ export function PasswordReset({ token }) {
     finally { setBusy(false); }
   }
   return <main className="password-login"><div className="login-box">
-    <div className="password-brand"><GraduationCap size={30} /><strong>Education Hub</strong></div>
+    <div className="password-brand"><BrandLogo /></div>
     <h1>Choose a new password</h1>
     {done ? <div className="login-sent">
       <p role="status">Your password is updated and every signed-in device was signed out. Log in with your new password.</p>
@@ -198,7 +198,7 @@ export function SignupHandoff({ username, email }) {
   }
 
   return <main className="password-login"><div className="login-box">
-    <div className="password-brand"><GraduationCap size={30} /><strong>Education Hub</strong></div>
+    <div className="password-brand"><BrandLogo /></div>
     <h1>Check your details</h1>
     <p>These came across from Y7to11.AI. Payment is next, and we email you a link to set your password as soon as it goes through.</p>
     <form className="password-form" onSubmit={create}>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { GraduationCap, LoaderCircle, LogOut } from "lucide-react";
+import { LoaderCircle, LogOut } from "lucide-react";
+import { BrandLogo } from "./BrandLogo.jsx";
 
 // Stripe sends the customer straight back, but the webhook that marks the
 // subscription active arrives separately and can be a few seconds behind.
@@ -25,7 +26,7 @@ export function CheckoutConfirming({ email, onRecheck, onSignOut }) {
   }, [onRecheck]);
 
   return <main className="signup-pending-page">
-    <header><span><GraduationCap size={22} /></span><strong>Education Hub</strong></header>
+    <header><BrandLogo height={36} /></header>
     <section>
       <LoaderCircle className="spin" size={34} />
       <p className="eyebrow">Payment received</p>

@@ -3,6 +3,7 @@ import { ArrowRight, CalendarDays, CheckCircle2, GraduationCap, LockKeyhole, Shi
 import { apiFetch, authFetch, readJson } from "./auth.js";
 import { subjects } from "./curriculum.js";
 import { yearFromDateOfBirth } from "./schoolYear.js";
+import { BrandLogo } from "./BrandLogo.jsx";
 
 const years = [7, 8, 9, 10, 11];
 // Exam boards are chosen per subject, because a school rarely enters every
@@ -133,7 +134,7 @@ export function SubscriberSignup({ preview = false, token, account, onComplete }
   </div></main>;
 
   return <main className="subscriber-signup-page">
-    <header className="signup-header"><span><GraduationCap size={22} /></span><strong>Education Hub</strong><small>Subscription active</small></header>
+    <header className="signup-header"><BrandLogo height={36} /><small>Subscription active</small></header>
     <div className="signup-layout">
       <section className="signup-intro">
         <p className="eyebrow">Secure account setup</p>

@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
-import { ArrowRight, BookOpen, CalendarDays, Check, GraduationCap, ShieldCheck, UserRound } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarDays, Check, ShieldCheck, UserRound } from "lucide-react";
 import { examBoards, subjects, tiers, topicsFor } from "./curriculum.js";
+import { BrandIcon } from "./BrandLogo.jsx";
 
 const schoolYears = [7, 8, 9, 10, 11];
 
@@ -67,7 +68,7 @@ export function LearnerProfileSetup({ initialProfile, onSave, onCancel, yearLock
   return (
     <main className="profile-page">
       <section className="profile-intro">
-        <div className="profile-mark"><GraduationCap size={28} /></div>
+        <BrandIcon className="profile-mark-icon" size={56} />
         <p className="eyebrow">Personal learning path</p>
         <h1>Set up the learner profile</h1>
         <p>We use the school year to show only the right curriculum and tune tutor explanations to the learner's level.</p>

@@ -6,6 +6,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Y7to11.AI</title>
+<link rel="icon" href="brand/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="32x32" href="brand/icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="brand/icon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="brand/apple-touch-icon.png">
+<meta name="theme-color" content="#0a1120">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap">
@@ -361,6 +366,10 @@
     font-size: 0.84em;
     letter-spacing: 0.01em;
   }
+  /* The logo artwork, lifted off its own background so it sits straight on
+     the bar. Drawn at three times this size for sharp screens. */
+  .wordmark img { display: block; height: 40px; width: auto; }
+  .wordmark.logo-foot img { height: 34px; }
 
   .masthead nav {
     margin-left: auto;
@@ -1142,7 +1151,7 @@
 
 <header class="masthead">
   <div class="wrap">
-    <a class="wordmark" href="#top">Y7to11<span class="dot-ai">.AI</span></a>
+    <a class="wordmark" href="#top"><img src="brand/logo-header.png" alt="Y7to11.AI" width="127" height="40"></a>
     <nav>
       <a href="#example">Worked example</a>
       <a href="#price">Price</a>
@@ -1882,7 +1891,7 @@
     </div>
     <div class="foot-grid">
       <div>
-        <a class="wordmark" href="#top" style="font-size:17px">Y7to11<span class="dot-ai">.AI</span></a>
+        <a class="wordmark logo-foot" href="#top"><img src="brand/logo-header.png" alt="Y7to11.AI" width="127" height="40"></a>
         <p style="margin:8px 0 0;max-width:48ch">
           Key Stage 3 and GCSE for Years 7 to 11. Written against the specification,
           checked before it's taught.

@@ -7229,3 +7229,33 @@ button { font-weight: 600; letter-spacing: 0.002em; }
   margin: 4px 0 14px;
   padding: 14px;
 }
+
+/* The Y7to11.AI logo (BrandLogo). Three classes on the span so it outranks
+   the header rules that still style every span there as the old orange tile. */
+span.brand-logo.brand-logo.brand-logo {
+  align-items: center;
+  background: none;
+  border-radius: 0;
+  display: inline-flex;
+  height: auto;
+  width: auto;
+}
+.brand-logo img { display: block; max-width: 100%; }
+.brand-logo .brand-logo-light { display: none; }
+/* The light artwork only inside the areas that really turn light - the same
+   list the light theme itself is scoped to. The sidebar and the sign-in pages
+   stay dark in both themes, so the logo there stays dark too. */
+[data-content-theme="light"] :is(.workspace, .profile-page, .signup-page, .admin-page, .progress-dashboard,
+  .diagnostic-page, .support-page, .review-body, .content-review, .account-settings) .brand-logo .brand-logo-light { display: block; }
+[data-content-theme="light"] :is(.workspace, .profile-page, .signup-page, .admin-page, .progress-dashboard,
+  .diagnostic-page, .support-page, .review-body, .content-review, .account-settings) .brand-logo .brand-logo-dark { display: none; }
+
+.brand h1 { line-height: 0; }
+.password-brand .brand-logo { margin: 0 auto; }
+.profile-mark-icon {
+  border-radius: 14px;
+  display: block;
+  margin-bottom: 28px;
+  box-shadow: 0 12px 28px -16px rgba(10, 17, 32, 0.8);
+}
+.admin-brand { align-items: center; display: inline-flex; gap: 12px; }

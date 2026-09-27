@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Terms and disclaimer — Y7to11.AI</title>
+<link rel="icon" href="brand/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="32x32" href="brand/icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="brand/icon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="brand/apple-touch-icon.png">
+<meta name="theme-color" content="#0a1120">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap">
@@ -209,6 +214,10 @@
     display: inline-flex; align-items: baseline; gap: 1px; text-decoration: none;
   }
   .wordmark .dot-ai { color: var(--ink-faint); font-weight: 600; font-size: 0.84em; letter-spacing: 0.01em; }
+  /* The logo artwork, lifted off its own background so it sits straight on
+     the bar. Drawn at three times this size for sharp screens. */
+  .wordmark img { display: block; height: 40px; width: auto; }
+  .wordmark.logo-foot img { height: 34px; }
   .back {
     margin-left: auto;
     font-size: 14.5px; color: var(--ink-soft); text-decoration: none;
@@ -414,7 +423,7 @@
 
 <header class="masthead">
   <div class="wrap">
-    <a class="wordmark" href="index.html">Y7to11<span class="dot-ai">.AI</span></a>
+    <a class="wordmark" href="index.html"><img src="brand/logo-header.png" alt="Y7to11.AI" width="127" height="40"></a>
     <a class="back" href="index.html">← Back to the site</a>
   </div>
 </header>
@@ -545,7 +554,7 @@
     </div>
     <div class="foot-grid">
       <div>
-        <a class="wordmark" href="index.html" style="font-size:17px">Y7to11<span class="dot-ai">.AI</span></a>
+        <a class="wordmark logo-foot" href="index.html"><img src="brand/logo-header.png" alt="Y7to11.AI" width="127" height="40"></a>
         <p style="margin:8px 0 0;max-width:48ch">
           Key Stage 3 and GCSE for Years 7 to 11. Written against the specification,
           checked before it's taught.

@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
-import { BadgeCheck, BookOpenCheck, Check, GraduationCap, LockKeyhole, LogOut, ShieldCheck } from "lucide-react";
+import { BadgeCheck, BookOpenCheck, Check, LockKeyhole, LogOut, ShieldCheck } from "lucide-react";
 import { mountCheckoutForm } from "./stripeCheckout.js";
+import { BrandLogo } from "./BrandLogo.jsx";
 
 // One plan, one price, billed monthly. There is no trial: the subscription
 // starts and is charged today, and it can be cancelled at any time.
@@ -34,7 +35,7 @@ export function SubscriptionPage({ checkoutState, currentUser, onCheckout, onPri
   return (
     <main className="subscription-page">
       <header className="subscription-nav">
-        <div><span><GraduationCap size={22} /></span><strong>Education Hub</strong></div>
+        <div><BrandLogo height={36} /></div>
         <div><small>{currentUser.email}</small><button onClick={onSignOut} type="button"><LogOut size={17} /> Sign out</button></div>
       </header>
 

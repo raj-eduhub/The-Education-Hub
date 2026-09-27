@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { BookMarked, BookOpen, Brain, Calculator, ChartNoAxesCombined, Check, CheckCircle2, ChevronRight, ClipboardCheck, ClipboardList, Cpu, CreditCard, DraftingCompass, FlaskConical, GraduationCap, Landmark, LayoutDashboard, LifeBuoy, ListFilter, LogOut, Map as MapIcon, MonitorPlay, PenLine, Play, Repeat2, RotateCcw, Send, Settings, ShieldAlert, ShieldCheck, Sparkles, Target, Timer, UserRound, Users, X } from "lucide-react";
+import { BookMarked, BookOpen, Brain, Calculator, ChartNoAxesCombined, Check, CheckCircle2, ChevronRight, ClipboardCheck, ClipboardList, Cpu, CreditCard, DraftingCompass, FlaskConical, Landmark, LayoutDashboard, LifeBuoy, ListFilter, LogOut, Map as MapIcon, MonitorPlay, PenLine, Play, Repeat2, RotateCcw, Send, Settings, ShieldAlert, ShieldCheck, Sparkles, Target, Timer, UserRound, Users, X } from "lucide-react";
 import { curriculum, subjects, topicsFor } from "./curriculum.js";
 import { exampleBeats, formulaBeats } from "./lessonBeats.js";
 import { AdminDashboard } from "./AdminDashboard.jsx";
@@ -36,6 +36,7 @@ import { PaymentsDashboard } from "./PaymentsDashboard.jsx";
 import { SupportTickets } from "./SupportTickets.jsx";
 import "katex/dist/katex.min.css";
 import "./styles.css";
+import { BrandLogo } from "./BrandLogo.jsx";
 
 const subjectIcons = {
   Maths: Calculator,
@@ -1104,7 +1105,7 @@ Mark my answer.`,
 
   if (authStatus === "signed-out" && checkoutState === "success") {
     return <main className="password-login"><div className="login-box">
-      <div className="password-brand"><GraduationCap size={30} /><strong>Education Hub</strong></div>
+      <div className="password-brand"><BrandLogo /></div>
       <h1>Payment received</h1>
       <p>Check your email. We have sent a link to set your password, and it works for seven days.</p>
       <p className="login-no-account">The link takes you to sign in once your password is set, and we then ask for the learner's details.</p>
@@ -1175,7 +1176,7 @@ Mark my answer.`,
   if (currentUser?.isAdmin && view === "admin") {
     return <main>
       <header className="admin-session-header">
-        <strong>Education Hub / Administration</strong>
+        <strong className="admin-brand"><BrandLogo height={32} /><span>Administration</span></strong>
         <span>{currentUser.name}</span>
         <button onClick={() => chooseView("learning")} type="button"><BookOpen size={18} /> Learning hub</button>
         <button onClick={signOut} type="button"><LogOut size={18} /> Log out</button>
@@ -1211,12 +1212,9 @@ Mark my answer.`,
     <main className="app-shell">
       <aside className="sidebar">
         <div className="brand">
-          <div className="brand-mark">
-            <GraduationCap size={24} />
-          </div>
           <div>
-            <h1>Education Hub</h1>
-            <p>KS3 to GCSE</p>
+            <h1><BrandLogo height={38} /></h1>
+            <p>Years 7 to 11 · KS3 to GCSE</p>
           </div>
         </div>
 
