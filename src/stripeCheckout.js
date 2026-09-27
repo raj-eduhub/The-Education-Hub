@@ -26,9 +26,12 @@ const appearance = {
   },
 };
 
-// The session has no return_url, so a confirmed payment stays on this page.
-// It is sent to the payment-received screen here instead, which is where the
-// app waits for Stripe's webhook to activate the subscription.
+// Where a confirmed payment lands: the payment-received screen, which is where
+// the app waits for Stripe's webhook to activate the subscription. The session
+// is created without a return_url, so Stripe needs it on confirm() instead and
+// refuses to confirm without one. It is used both for Stripe's own redirect
+// (3D Secure and other redirect-based methods) and for the move made here when
+// a card confirms without leaving the page.
 const paidDestination = "/?checkout=success";
 
 export async function mountCheckoutForm(clientSecret, target, { onError }) {
@@ -47,7 +50,8 @@ export async function mountCheckoutForm(clientSecret, target, { onError }) {
   }
   form.on("confirm", async (event) => {
     try {
-      const result = await loadActionsResult.actions.confirm({ formConfirmEvent: event });
+      const returnUrl = new URL(paidDestination, window.location.origin).href;
+      const result = await loadActionsResult.actions.confirm({ formConfirmEvent: event, returnUrl });
       if (result?.type === "error") {
         onError(result.error?.message ?? "The payment could not be confirmed.");
         return;
