@@ -49,6 +49,11 @@
     --computing: #8b7cf6;
     --dt:        #ff8a3d;
 
+    /* Sonia's own colour, kept apart from the seven subject hues so she does
+       not read as belonging to one of them. Warm amber: neutral, and the one
+       part of the wheel no subject uses. */
+    --sonia:     #f2b84b;
+
     --measure: 64ch;
     --gutter: clamp(20px, 5vw, 56px);
     --radius: 14px;
@@ -237,7 +242,7 @@
     border-top: 1px solid var(--hairline);
     margin: 28px 0 22px;
   }
-  .demo-sonia { border-left: 3px solid var(--english); }
+  .demo-sonia { border-left: 3px solid var(--sonia); }
   .demo-after { border-left: 3px solid var(--geography); }
 
   .demo-sonia-lede { color: var(--ink-soft); margin: 0 0 14px; }
@@ -249,7 +254,7 @@
   .sonia-btn {
     align-items: center;
     background: var(--ground-deep);
-    border: 1px solid color-mix(in srgb, var(--english) 45%, var(--hairline));
+    border: 1px solid color-mix(in srgb, var(--sonia) 45%, var(--hairline));
     border-radius: 8px;
     color: var(--ink-bright);
     display: inline-flex;
@@ -257,7 +262,7 @@
     gap: 9px;
     padding: 10px 16px;
   }
-  .sonia-btn svg { color: var(--english); flex: 0 0 auto; }
+  .sonia-btn svg { color: var(--sonia); flex: 0 0 auto; }
   @supports not (border: 1px solid color-mix(in srgb, red 50%, blue)) {
     .sonia-btn { border-color: var(--hairline); }
   }
@@ -368,15 +373,15 @@
   .masthead nav a:hover { color: var(--ink-bright); background: var(--tab-face); }
   .masthead nav a.nav-sonia {
     align-items: center;
-    border-color: color-mix(in srgb, var(--english) 45%, var(--hairline));
+    border-color: color-mix(in srgb, var(--sonia) 45%, var(--hairline));
     color: var(--ink-bright);
     display: inline-flex;
     gap: 7px;
   }
-  .masthead nav a.nav-sonia svg { color: var(--english); flex: 0 0 auto; }
+  .masthead nav a.nav-sonia svg { color: var(--sonia); flex: 0 0 auto; }
   .masthead nav a.nav-sonia:hover {
-    background: color-mix(in srgb, var(--english) 14%, transparent);
-    border-color: var(--english);
+    background: color-mix(in srgb, var(--sonia) 14%, transparent);
+    border-color: var(--sonia);
   }
   @supports not (border-color: color-mix(in srgb, red 50%, blue)) {
     .masthead nav a.nav-sonia { border-color: var(--hairline); }
