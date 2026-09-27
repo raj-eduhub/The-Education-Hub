@@ -26,10 +26,21 @@ function spokenMaths(expression) {
   text = text.replace(/\\%/g, " percent ");
   text = text.replace(/\^\{?\\circ\}?/g, " degrees ");
 
-  text = text.replace(/\\(?:d)?frac\{([^{}]*)\}\{([^{}]*)\}/g, " $1 over $2 ");
-  text = text.replace(/\\sqrt\[([^\]]*)\]\{([^{}]*)\}/g, " the $1 root of $2 ");
-  text = text.replace(/\\sqrt\{([^{}]*)\}/g, " the square root of $1 ");
+  // One level of nesting is allowed inside an argument. Almost every fraction
+  // in the authored content is \frac{\text{mass}}{\text{volume}} or has a
+  // subscript such as M_{r}, and a flat [^{}]* argument matched none of them,
+  // so 38 topics were narrated as "frac mass volume".
+  const arg = "((?:[^{}]|\\{[^{}]*\\})*)";
+  text = text.replace(new RegExp(`\\\\(?:d)?frac\\{${arg}\\}\\{${arg}\\}`, "g"), " $1 over $2 ");
+  text = text.replace(new RegExp(`\\\\sqrt\\[3\\]\\{${arg}\\}`, "g"), " the cube root of $1 ");
+  text = text.replace(new RegExp(`\\\\sqrt\\[([^\\]]*)\\]\\{${arg}\\}`, "g"), " the $1 root of $2 ");
+  text = text.replace(new RegExp(`\\\\sqrt\\{${arg}\\}`, "g"), " the square root of $1 ");
+  text = text.replace(/\\binom\{([^{}]*)\}\{([^{}]*)\}/g, " column vector $1, $2 ");
   text = text.replace(/\\overrightarrow\{([^{}]*)\}/g, " vector $1 ");
+  // Read before the general index rule, which would otherwise take the digit
+  // of Cu^{2+} as a power ("Cu squared plus") and f^{-1} as a reciprocal.
+  text = text.replace(/\^\{(\d*)([+-])\}/g, (match, charge, sign) => ` ${charge} ${sign === "+" ? "plus" : "minus"} `);
+  text = text.replace(/\b(f|g|h|sin|cos|tan)\^\{-1\}/g, " $1 inverse ");
   text = text.replace(/\\bar\{([^{}]*)\}/g, " $1 bar ");
 
   // Indices before the unit commands, because a unit such as \mathrm{CO_{2}}
@@ -79,6 +90,10 @@ function spokenMaths(expression) {
 export function toSpoken(text) {
   return String(text ?? "")
     .replace(/\$([^$]+)\$/g, (match, expression) => spokenMaths(expression))
+    // Pseudocode. Assignment is read the way it is taught, and an identifier
+    // such as RANDOM_INT is read as its words rather than "underscore".
+    .replace(/\s*←\s*/g, " becomes ")
+    .replace(/([A-Za-z0-9])_(?=[A-Za-z0-9])/g, "$1 ")
     .replace(/\s{2,}/g, " ")
     .trim();
 }

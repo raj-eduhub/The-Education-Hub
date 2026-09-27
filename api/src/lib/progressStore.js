@@ -4,6 +4,10 @@ import { DefaultAzureCredential } from "@azure/identity";
 
 const attemptsTableName = process.env.AZURE_STORAGE_ATTEMPTS_TABLE ?? "EducationHubAttempts";
 const masteryTableName = process.env.AZURE_STORAGE_MASTERY_TABLE ?? "EducationHubMastery";
+const lessonsTableName = process.env.AZURE_STORAGE_LESSONS_TABLE ?? "EducationHubLessons";
+// The modes whose answers count towards finishing a topic. Diagnostic and
+// review answers are recorded too, but they are not the topic's own work.
+const countedModes = ["practice", "exam"];
 const clients = new Map();
 const ready = new Map();
 
@@ -90,7 +94,33 @@ function publicMastery(entity) {
     lastPractised: entity.lastPractised,
     nextReviewAt: entity.nextReviewAt,
     reviewIntervalDays: entity.reviewIntervalDays,
+    practiceAnswered: entity.practiceAnswered ?? 0,
+    examAnswered: entity.examAnswered ?? 0,
   };
+}
+
+function publicLesson(entity) {
+  return {
+    year: entity.year,
+    subject: entity.subject,
+    topicId: entity.topicId,
+    index: entity.index,
+    completedAt: entity.completedAt,
+  };
+}
+
+// Answers per counted mode for one topic, read from the attempts themselves.
+// Used once for a mastery row written before the counts were kept, so work done
+// then still counts rather than every learner starting again from zero.
+async function countAnswers(attempts, partitionKey, { year, subject, topicId }) {
+  const counts = { practice: 0, exam: 0 };
+  for await (const entity of attempts.listEntities({
+    queryOptions: { filter: `PartitionKey eq '${partitionKey}'` },
+  })) {
+    if (entity.kind === "activity" || entity.year !== year || entity.subject !== subject || entity.topicId !== topicId) continue;
+    if (countedModes.includes(entity.mode)) counts[entity.mode] += 1;
+  }
+  return counts;
 }
 
 export async function recordAttempt(email, input) {
@@ -135,6 +165,14 @@ export async function recordAttempt(email, input) {
     throw error;
   });
   const attemptCount = (existing?.attempts ?? 0) + 1;
+  // The attempt above is already stored, so a recount includes it; a kept
+  // count has it added here.
+  const answered = existing && existing.practiceAnswered !== undefined
+    ? {
+      practice: existing.practiceAnswered + (input.mode === "practice" ? 1 : 0),
+      exam: (existing.examAnswered ?? 0) + (input.mode === "exam" ? 1 : 0),
+    }
+    : await countAnswers(attempts, partitionKey, input);
   const averageAccuracy = (((existing?.accuracy ?? 0) * (attemptCount - 1)) + accuracy) / attemptCount;
   // The confidence average is kept over the attempts that actually reported one.
   const previousSamples = existing?.confidenceSamples ?? (existing?.confidence ? existing.attempts ?? 0 : 0);
@@ -164,6 +202,8 @@ export async function recordAttempt(email, input) {
     lastPractised: completedAt,
     nextReviewAt: nextReview.toISOString(),
     reviewIntervalDays,
+    practiceAnswered: answered.practice,
+    examAnswered: answered.exam,
   };
   await mastery.upsertEntity(masteryEntity, "Replace");
   return { attempt: publicAttempt(attempt), mastery: publicMastery(masteryEntity) };
@@ -190,6 +230,31 @@ export async function recordActivity(email, input) {
   };
   await attempts.createEntity(entity);
   return { activity: publicAttempt(entity) };
+}
+
+// A sub-topic's lesson, marked finished. Kept apart from attempts and mastery:
+// reading a worked example is not an answer, so it must not move a score, the
+// review schedule or the daily goal. Marking it again changes nothing.
+export async function recordLesson(email, input) {
+  const lessons = await readyTable(lessonsTableName);
+  const partitionKey = learnerPartition(email);
+  const rowKey = hash(`${input.year}|${input.subject}|${input.topicId}|${input.index}`);
+  const existing = await lessons.getEntity(partitionKey, rowKey).catch((error) => {
+    if (error.statusCode === 404) return null;
+    throw error;
+  });
+  if (existing) return { lesson: publicLesson(existing) };
+  const entity = {
+    partitionKey,
+    rowKey,
+    year: input.year,
+    subject: input.subject,
+    topicId: input.topicId,
+    index: input.index,
+    completedAt: new Date().toISOString(),
+  };
+  await lessons.upsertEntity(entity, "Replace");
+  return { lesson: publicLesson(entity) };
 }
 
 // The review queue: questions the learner did not get right, ordered so the
@@ -247,8 +312,10 @@ export async function getProgress(email, year) {
   const partitionKey = learnerPartition(email);
   const attemptsClient = await readyTable(attemptsTableName);
   const masteryClient = await readyTable(masteryTableName);
+  const lessonsClient = await readyTable(lessonsTableName);
   const attempts = [];
   const mastery = [];
+  const lessons = [];
   for await (const entity of attemptsClient.listEntities({
     queryOptions: { filter: `PartitionKey eq '${partitionKey}'` },
   })) {
@@ -259,9 +326,14 @@ export async function getProgress(email, year) {
   })) {
     if (!year || entity.year === year) mastery.push(publicMastery(entity));
   }
+  for await (const entity of lessonsClient.listEntities({
+    queryOptions: { filter: `PartitionKey eq '${partitionKey}'` },
+  })) {
+    if (!year || entity.year === year) lessons.push(publicLesson(entity));
+  }
   attempts.sort((left, right) => right.completedAt.localeCompare(left.completedAt));
   mastery.sort((left, right) => (left.nextReviewAt ?? "").localeCompare(right.nextReviewAt ?? ""));
-  return { attempts: attempts.slice(0, 100), mastery };
+  return { attempts: attempts.slice(0, 100), mastery, lessons };
 }
 
 async function deletePartition(client, partitionKey) {
@@ -276,9 +348,11 @@ export async function deleteProgress(email) {
   const partitionKey = learnerPartition(email);
   const attemptsClient = await readyTable(attemptsTableName);
   const masteryClient = await readyTable(masteryTableName);
+  const lessonsClient = await readyTable(lessonsTableName);
   await Promise.all([
     deletePartition(attemptsClient, partitionKey),
     deletePartition(masteryClient, partitionKey),
+    deletePartition(lessonsClient, partitionKey),
   ]);
 }
 

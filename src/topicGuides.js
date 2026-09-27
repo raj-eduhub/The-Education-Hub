@@ -1,4 +1,5 @@
 import { contentFor } from "./data/topicContent/index.js";
+import { authoredWorkedExample } from "./data/authoredWorkedExamples.js";
 
 const mathsExamples = {
   "y7-maths-number": {
@@ -261,7 +262,7 @@ const subjectMethods = {
   History: ["Make a clear claim about the event, person, or interpretation.", "Support it with accurate evidence such as a date, action, or consequence.", "Explain why that evidence proves the claim and weigh its importance."],
   Geography: ["Name and locate the process, pattern, or place being discussed.", "Explain the links in the process using cause-and-effect language.", "Support the explanation with specific evidence and reach a justified conclusion."],
   Computing: ["Break the problem into small, ordered steps.", "Trace each step with a simple input and record how the data changes.", "Check the output and explain why the method works."],
-  "Design Technology": ["Identify the user's need and the design requirement.", "Choose a material, process, or mechanism and justify it using its properties.", "Evaluate the result against the requirement and suggest a measurable improvement."],
+  "Design & Technology": ["Identify the user's need and the design requirement.", "Choose a material, process, or mechanism and justify it using its properties.", "Evaluate the result against the requirement and suggest a measurable improvement."],
 };
 
 export function getTopicGuide(subject, topic) {
@@ -304,7 +305,13 @@ export function getTopicGuide(subject, topic) {
 // The authored worked example for a topic, when one exists. Kept separate from
 // getTopicGuide because that falls back to a generic template for subjects with
 // no authored example, and a template is not worth storing or showing.
-export function getAuthoredExample(subject, topic) {
+// An authored example for one sub-topic at one tier. The per-outcome examples
+// in authoredWorkedExamples.js are checked first; the older one-per-topic Maths
+// examples below only ever covered the first outcome.
+export function getAuthoredExample(subject, topic, index = 0, tier = null) {
+  const perOutcome = authoredWorkedExample(topic.id, index, tier);
+  if (perOutcome) return { formulae: perOutcome.formulae ?? [], question: perOutcome.question, steps: perOutcome.steps, answer: perOutcome.answer };
+  if (index !== 0) return null;
   const authored = subject === "Maths" ? mathsExamples[topic.id] : null;
   if (!authored?.question || !authored.steps?.length) return null;
   return { formulae: authored.formulae ?? [], question: authored.question, steps: authored.steps, answer: authored.answer };

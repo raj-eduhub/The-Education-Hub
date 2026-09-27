@@ -86,15 +86,25 @@ export async function completeEmailVerification(token) {
   return { accountId: pending.accountId, email: account.email, username: account.username, name: account.name };
 }
 
-export async function createPasswordReset(email) {
+export async function createPasswordReset(email, expiresInMs = 3600000) {
   const index = await findAuth(`email-${digest(email)}`);
   if (!index) return null;
   const account = await findAuth(index.accountId);
   if (!account) return null;
   const token = randomBytes(32).toString("base64url");
   await revokeAccountTokens(index.accountId, ["reset-"]);
-  await (await authTable()).createEntity({ partitionKey: "auth", rowKey: `reset-${digest(token)}`, accountId: index.accountId, expiresAt: Date.now() + 3600000 });
+  await (await authTable()).createEntity({ partitionKey: "auth", rowKey: `reset-${digest(token)}`, accountId: index.accountId, expiresAt: Date.now() + expiresInMs });
   return { token, username: account.username };
+}
+
+// An account created at sign-up has no password until the emailed link is
+// used. checkPassword already fails safely against a missing hash, so this is
+// only for telling the parent why they cannot sign in yet.
+export async function accountAwaitsPassword(email) {
+  const index = await findAuth(`email-${digest(email)}`);
+  if (!index) return false;
+  const account = await findAuth(index.accountId);
+  return Boolean(account) && !account.passwordHash;
 }
 export async function completePasswordReset(token, password) {
   if (!/^[\w-]{43}$/.test(token)) return false;
@@ -107,9 +117,28 @@ export async function completePasswordReset(token, password) {
   if (!claimed) return false;
   const account = await findAuth(reset.accountId);
   if (!account) return false;
-  await client.updateEntity({ ...account, ...await hashPassword(password) }, "Replace", { etag: account.etag });
+  // Using a link that was only ever sent to that address proves the address,
+  // so this confirms it too. For an account created at sign-up, where the
+  // password is set from the email that follows payment, this is the only
+  // thing that ever confirms it - without it a parent who has paid and set a
+  // password is still refused at the sign-in page. For an ordinary reset the
+  // address was already confirmed and this changes nothing.
+  await client.updateEntity({ ...account, ...await hashPassword(password), emailVerified: true }, "Replace", { etag: account.etag });
   await revokeAccountTokens(reset.accountId);
   return true;
+}
+// The username an address signs in with, for the receipt sent after payment.
+// Returns "" rather than throwing: a missing username must not stop a paid
+// account being activated, and the email is a receipt, not the way in.
+export async function usernameForEmail(email) {
+  try {
+    const index = await findAuth(`email-${digest(email)}`);
+    if (!index) return "";
+    const account = await findAuth(index.accountId);
+    return account?.username ?? "";
+  } catch {
+    return "";
+  }
 }
 export async function verifyPaidAccount(email, password) {
   const index = await findAuth(`email-${digest(email)}`);
@@ -119,6 +148,34 @@ export async function verifyPaidAccount(email, password) {
   await client.updateEntity({ ...account, ...await hashPassword(password), emailVerified: true }, "Replace", { etag: account.etag });
   await revokeAccountTokens(index.accountId);
 }
+// A grant that authorises one thing: starting a checkout for this address.
+//
+// Not a session. passwordPrincipal deliberately refuses any session whose
+// address is not proven, and an account created at sign-up has proven nothing
+// yet - paying, and then opening the link emailed to that address, is what
+// proves it. So the sign-up carries a token that can reach Stripe and nothing
+// else: it resolves to an email, never to a principal, and grants no access to
+// content, profiles or anyone else's data.
+export async function createCheckoutGrant(email, expiresInMs = 3600000) {
+  const token = randomBytes(32).toString("base64url");
+  await (await authTable()).createEntity({
+    partitionKey: "auth",
+    rowKey: `checkout-${digest(token)}`,
+    email,
+    expiresAt: Date.now() + expiresInMs,
+  });
+  return token;
+}
+
+// Left in place rather than consumed: a parent who abandons Stripe and comes
+// back should not be stranded, and the grant expires on its own.
+export async function emailForCheckoutGrant(token) {
+  if (!/^[\w-]{43}$/.test(token ?? "")) return "";
+  const grant = await findAuth(`checkout-${digest(token)}`);
+  if (!grant || grant.expiresAt <= Date.now()) return "";
+  return grant.email ?? "";
+}
+
 export async function createSession(accountId) {
   const token = randomBytes(32).toString("base64url");
   await (await authTable()).createEntity({ partitionKey: "auth", rowKey: `session-${digest(token)}`, accountId, expiresAt: Date.now() + 8 * 3600000 });

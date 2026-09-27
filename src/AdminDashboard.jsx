@@ -13,6 +13,19 @@ import { readJson } from "./auth.js";
 
 const emptyForm = { name: "", email: "", role: "student" };
 
+function when(value) {
+  if (!value) return "Not updated yet";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Not updated yet";
+  return date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export function AdminDashboard({ request }) {
   const [users, setUsers] = useState([]);
   const [form, setForm] = useState(emptyForm);
@@ -209,19 +222,20 @@ export function AdminDashboard({ request }) {
           {filteredUsers.length > 0 && (
             <div className="user-table-wrap">
               <table className="user-table">
-                <thead><tr><th>User</th><th>Type</th><th>Status</th><th><span className="sr-only">Actions</span></th></tr></thead>
+                <thead><tr><th>User</th><th>Type</th><th>Status</th><th>Last updated</th><th><span className="sr-only">Actions</span></th></tr></thead>
                 <tbody>
                   {filteredUsers.map((user) => (
                     <tr key={user.id}>
-                      <td><strong>{user.name}</strong><span>{user.email}</span></td>
+                      <td><div className="user-identity"><strong>{user.name}</strong><span>{user.email}</span></div></td>
                       <td><span className="role-label">{user.role}</span></td>
                       <td><span className={`status-label ${user.status}`}>{user.status}</span></td>
-                      <td className="row-actions">
-                        <button onClick={() => toggleUser(user)} title={user.status === "active" ? "Deactivate user" : "Activate user"} type="button">
-                          {user.status === "active" ? <CircleOff size={17} /> : <CheckCircle2 size={17} />}
-                        </button>
-                        <button className="danger" onClick={() => removeUser(user)} title="Remove user" type="button"><Trash2 size={17} /></button>
-                      </td>
+                      <td><span className="user-updated-at">{when(user.updatedAt)}</span></td>
+                      <td><div className="row-actions">
+                          <button onClick={() => toggleUser(user)} title={user.status === "active" ? "Deactivate user" : "Activate user"} type="button">
+                            {user.status === "active" ? <CircleOff size={17} /> : <CheckCircle2 size={17} />}
+                          </button>
+                          <button className="danger" onClick={() => removeUser(user)} title="Remove user" type="button"><Trash2 size={17} /></button>
+                        </div></td>
                     </tr>
                   ))}
                 </tbody>

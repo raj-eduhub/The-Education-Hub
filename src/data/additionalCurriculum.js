@@ -1,10 +1,10 @@
-export const additionalSubjects = ["History", "Geography", "Computing", "Design Technology"];
+export const additionalSubjects = ["History", "Geography", "Computing", "Design & Technology"];
 
 export const additionalQualifications = {
   History: { AQA: "8145", Edexcel: "1HI0" },
   Geography: { AQA: "8035", Edexcel: "1GB0" },
   Computing: { AQA: "8525", Edexcel: "1CP2" },
-  "Design Technology": { AQA: "8552", Edexcel: "1DT0" },
+  "Design & Technology": { AQA: "8552", Edexcel: "1DT0" },
 };
 
 // Kept in step with examBoards in curriculumCatalog.js.
@@ -71,6 +71,7 @@ const g = {
     ["UK Landscapes", "Britain's Physical Landscapes", "Explain how geology and processes shape UK landscapes.", ["Locate major regions", "Read relief maps", "Explain landscape formation"]],
     ["Weather and Climate", "UK Weather and Climate", "Interpret weather data and explain Britain's variable climate.", ["Measure weather", "Read climate graphs", "Explain air-mass effects"]],
     ["Tectonics", "Earthquakes and Volcanoes", "Explain tectonic hazards and how risk varies between places.", ["Describe plate movement", "Interpret hazard evidence", "Compare responses"]],
+    ["Physical Processes", "Geology, Rocks and Weathering", "Read a landscape back to the rock beneath it, and the weather working on that rock.", ["Compare igneous, sedimentary and metamorphic rocks", "Explain physical, chemical and biological weathering", "Explain how underlying geology shapes a landscape"]],
     ["Place Knowledge", "West Africa: A Regional Study", "Study the human and physical geography of a region within Africa.", ["Locate West Africa and describe its physical geography", "Explain the climate of the Sahel and the rainforest belt", "Describe how people make a living in the region", "Compare a rural and an urban place in West Africa", "Explain how trade links the region to the wider world", "Challenge single stories told about Africa"]],
   ],
   8: [
@@ -90,6 +91,7 @@ const g = {
     ["Physical Geography", "Natural Hazards", "Explain tectonic and weather hazards and evaluate risk management.", ["Use hazard models", "Compare named examples", "Evaluate responses"]],
     ["Physical Geography", "The Living World", "Analyse ecosystems, biodiversity, and management in contrasting biomes.", ["Explain ecosystem links", "Apply named examples", "Assess sustainable management"]],
     ["UK Physical Landscapes", "Coasts and Rivers", "Apply process knowledge to UK coastal and river landscapes.", ["Explain landform sequences", "Interpret maps and photos", "Evaluate management strategies"]],
+    ["UK Physical Landscapes", "Glaciated Upland Landscapes", "Explain how ice carved the uplands, and who uses them now.", ["Explain glacial erosion, transport and deposition", "Identify corries, aretes and U-shaped valleys", "Evaluate competing land uses in a glaciated upland"]],
     ["Human Geography", "Urban Issues and Challenges", "Compare urban change in contrasting economic contexts.", ["Explain urban growth", "Use place-specific evidence", "Evaluate regeneration and sustainability"]],
     ["Human Geography", "The Changing Economic World", "Explain uneven development and changing economic futures.", ["Interpret development measures", "Analyse global connections", "Evaluate development strategies"]],
     ["Geographical Skills", "Cartography, Data and GIS", "Apply quantitative, map, and GIS skills across GCSE contexts.", ["Calculate and graph accurately", "Interpret unfamiliar maps", "Draw evidence-led conclusions"]],
@@ -192,7 +194,7 @@ export const additionalCurriculumByYear = Object.fromEntries(
         History: buildTopics(year, "History", h[year], year >= 10),
         Geography: buildTopics(year, "Geography", g[year], year >= 10),
         Computing: buildTopics(year, "Computing", c[year], year >= 10),
-        "Design Technology": buildTopics(year, "Design Technology", d[year], year >= 10),
+        "Design & Technology": buildTopics(year, "Design & Technology", d[year], year >= 10),
       },
     },
   ])

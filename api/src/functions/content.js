@@ -3,7 +3,7 @@ import { callFoundry, deployment } from "../lib/foundry.js";
 import { checkModelBudget } from "../lib/modelBudget.js";
 import { getLearningAccess } from "../lib/learningAccess.js";
 import { contentKey, getContent, saveContent } from "../lib/contentStore.js";
-import { contentTypes, isQuestionBank, mayUseModel, routeFor, supportsQuestionBank, usesMathsNotation, variesByBoard, variesByTier } from "../lib/contentPolicy.js";
+import { allowsFormulae, contentTypes, isQuestionBank, mayUseModel, routeFor, supportsQuestionBank, usesMathsNotation, variesByBoard, variesByTier, warrantsWorkedExample } from "../lib/contentPolicy.js";
 import { parseQuestion, questionPrompt } from "../lib/questionBank.js";
 import { exampleSystemPrompt, parseWorkedExample, workedExamplePrompt } from "../lib/workedExample.js";
 
@@ -75,6 +75,18 @@ app.http("content", {
         };
       }
 
+      // Some sub-topics have no method to work through: naming, recognising and
+      // recalling are single steps, and analysing has no one right answer. Asked
+      // for an example anyway the model writes a question with no answer and
+      // steps that restate the outcome, so the route stops here rather than
+      // generating one and storing it.
+      if (type === contentTypes.EXAMPLE && !warrantsWorkedExample(topic.id, subtopic?.index)) {
+        return {
+          status: 404,
+          jsonBody: { error: "This sub-topic is learned through its explanation and practice rather than a worked example.", route, noWorkedExample: true },
+        };
+      }
+
       // Regenerating replaces content every learner sees, so it stays with administrators.
       if (refresh === true && !access.admin) {
         return { status: 403, jsonBody: { error: "Only an administrator can replace stored curriculum content." } };
@@ -130,18 +142,23 @@ app.http("content", {
       if (overBudget) return overBudget;
 
       const notation = usesMathsNotation(subject);
+      // Decided per outcome rather than per subject, so the few argued
+      // sub-topics with a real relationship behind them keep it.
+      const formulaeAllowed = type === contentTypes.EXAMPLE
+        ? allowsFormulae(subject, topic.id, subtopic?.index)
+        : null;
       const userPrompt = isQuestionBank(type)
         ? questionPrompt(type, topic, subtopic, { board: year >= 9 ? examBoard : null, tier: year >= 10 && variesByTier(subject) ? tier : null, year, notation, index: bankIndex })
         : workedExamplePrompt(topic, subtopic, { notation });
       const answer = await callFoundry({
         model: deployment,
         input: [
-          { role: "system", content: exampleSystemPrompt(year <= 9 ? "KS3" : "KS4", year, examBoard, tier, subject) },
+          { role: "system", content: exampleSystemPrompt(year <= 9 ? "KS3" : "KS4", year, examBoard, tier, subject, formulaeAllowed) },
           { role: "user", content: userPrompt },
         ],
       });
 
-      const parsed = isQuestionBank(type) ? parseQuestion(type, answer) : parseWorkedExample(answer);
+      const parsed = isQuestionBank(type) ? parseQuestion(type, answer) : parseWorkedExample(answer, subject, formulaeAllowed);
       if (isQuestionBank(type) && !parsed) {
         context.warn(`Unparsed ${type} question for ${topic.id}`);
         return { status: 503, jsonBody: { error: "That question could not be prepared. Please try again." } };

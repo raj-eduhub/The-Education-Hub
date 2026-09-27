@@ -150,13 +150,13 @@ button {
 
 .model-pill,
 .panel-heading,
-.chat-header,
-.outcome {
+.chat-header {
   align-items: center;
   display: flex;
 }
 
 .workspace {
+  align-content: start;
   display: grid;
   gap: 22px;
   grid-auto-rows: auto;
@@ -220,6 +220,34 @@ button {
   color: #d09994;
 }
 
+.exam-timer-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: 3px;
+}
+
+.exam-timer-control {
+  align-items: center;
+  background: var(--surface-raised, var(--surface));
+  border: 1px solid var(--hairline, #b9c8da);
+  border-radius: 50%;
+  color: var(--ink-bright);
+  display: inline-flex;
+  height: 30px;
+  justify-content: center;
+  padding: 0;
+  width: 30px;
+}
+
+.exam-timer-control:hover:not(:disabled) {
+  border-color: var(--subject, #4c8dff);
+}
+
+.exam-timer-control:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--subject, #4c8dff) 42%, transparent);
+  outline-offset: 2px;
+}
+
 .topbar {
   align-items: center;
   display: flex;
@@ -268,13 +296,47 @@ button {
 }
 
 .model-pill {
-  background: var(--recess-bg);
-  border: 1px solid #b9dcff;
-  border-radius: 999px;
+  --sonia-accent: #b69a64;
+  background:
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--sonia-accent) 26%, transparent),
+      color-mix(in srgb, var(--sonia-accent) 8%, transparent));
+  border: 1px solid var(--hairline);
+  border-left: 4px solid var(--sonia-accent);
+  border-radius: var(--radius-lg);
   color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
   gap: 8px;
-  min-height: 40px;
+  justify-content: center;
+  min-height: 38px;
   padding: 0 14px;
+  white-space: nowrap;
+}
+
+.model-pill:hover {
+  background:
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--sonia-accent) 40%, transparent),
+      color-mix(in srgb, var(--sonia-accent) 14%, transparent));
+  color: var(--ink-bright);
+}
+
+.model-pill svg { color: var(--sonia-accent); }
+
+.model-pill:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--sonia-accent) 48%, transparent);
+  outline-offset: 2px;
+}
+
+.model-pill[aria-expanded="true"] {
+  background:
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--sonia-accent) 42%, transparent),
+      color-mix(in srgb, var(--sonia-accent) 16%, transparent));
+  color: var(--ink-bright);
 }
 
 .topic-grid {
@@ -1235,27 +1297,16 @@ button {
   gap: 7px;
 }
 
+/* No colour here on purpose. The answer takes --ink-bright from the themed
+   rule further down the file, so it is dark on a light page and bright on a
+   dark one. This block previously forced a pale green with !important, which
+   beat that rule in both themes and left the answer near-invisible on a light
+   page: pale green ink on the pale green wash this background becomes over
+   white. The green background and left border still mark it as the answer. */
 .worked-answer {
   background: rgba(35, 69, 30, 0.18);
   border-left: 3px solid #4f8a3d;
-  color: #9cab9a !important;
   padding: 9px 11px;
-}
-
-.outcomes {
-  display: grid;
-  gap: 10px;
-  margin-top: 24px;
-}
-
-.outcome {
-  background: rgba(35, 69, 30, 0.18);
-  border: 1px solid #cfe7c3;
-  border-radius: 8px;
-  color: #9cab9a;
-  gap: 10px;
-  min-height: 46px;
-  padding: 10px 12px;
 }
 
 .tutor-panel {
@@ -1510,7 +1561,7 @@ button {
 
 .user-table {
   border-collapse: collapse;
-  min-width: 640px;
+  min-width: 780px;
   width: 100%;
 }
 
@@ -1519,6 +1570,7 @@ button {
   border-bottom: 1px solid #e7ecf2;
   padding: 14px 20px;
   text-align: left;
+  vertical-align: middle;
 }
 
 .user-table th {
@@ -1527,12 +1579,12 @@ button {
   text-transform: uppercase;
 }
 
-.user-table td:first-child {
+.user-identity {
   display: grid;
   gap: 3px;
 }
 
-.user-table td:first-child span {
+.user-identity span {
   color: var(--ink-soft);
   font-size: 0.84rem;
 }
@@ -1560,6 +1612,12 @@ button {
 .status-label.inactive {
   background: var(--recess-bg);
   color: var(--ink-soft);
+}
+
+.user-updated-at {
+  color: var(--ink-soft);
+  font-size: 0.84rem;
+  white-space: nowrap;
 }
 
 .row-actions {
@@ -2465,13 +2523,13 @@ button {
 
 .evidence-lock {
   align-items: flex-start;
-  border-top: 1px solid #dce3ed;
+  background: var(--recess-bg);
   color: var(--ink);
   display: flex;
   gap: 10px;
   line-height: 1.5;
   margin-top: 28px;
-  padding-top: 20px;
+  padding: 12px 14px;
 }
 
 .evidence-lock svg {
@@ -2943,13 +3001,13 @@ button {
 
 .profile-privacy {
   align-items: flex-start;
-  border-top: 1px solid #dce3ed;
+  background: var(--recess-bg);
   color: var(--ink);
   display: flex;
   gap: 10px;
   line-height: 1.5;
   margin-top: 28px;
-  padding-top: 20px;
+  padding: 12px 14px;
 }
 
 .profile-privacy svg {
@@ -4942,7 +5000,7 @@ ol.self-mark input:checked + * { color: var(--ink-bright); }
 [data-subject="History"]           { --subject: #ec4f5e; --subject-deep: #c72d3e; --subject-ink: #8d1d2a; }
 [data-subject="Geography"]         { --subject: #14b8c4; --subject-deep: #0d8f99; --subject-ink: #0a6167; }
 [data-subject="Computing"]         { --subject: #8b7cf6; --subject-deep: #6247e0; --subject-ink: #452fa8; }
-[data-subject="Design Technology"] { --subject: #ff8a3d; --subject-deep: #dd6212; --subject-ink: #93400a; }
+[data-subject="Design & Technology"] { --subject: #ff8a3d; --subject-deep: #dd6212; --subject-ink: #93400a; }
 
 /* The sidebar reads as a bound spine rather than a flat panel, so the tabs in
    it have something to sit against. */
@@ -5714,8 +5772,8 @@ td, .payments-table td { border-bottom-color: var(--hairline); }
 .worked-answer, .worked-answer strong { color: var(--ink-bright); }
 
 /* Lists of outcomes and key ideas. */
-.outcomes li, .guide-section ul li, .guide-section ol li { color: var(--ink); }
-.outcomes li::marker, .guide-section li::marker { color: var(--subject, #4c8dff); }
+.guide-section ul li, .guide-section ol li { color: var(--ink); }
+.guide-section li::marker { color: var(--subject, #4c8dff); }
 
 /* Dividers that were drawn as light grey lines. */
 .lesson-actions, .guide-section + .guide-section, .player-controls,
@@ -5999,7 +6057,9 @@ input:not([type="checkbox"]):not([type="radio"]), select, textarea {
 [data-content-theme="light"] .hint-button,
 [data-content-theme="light"] .attempt-actions button,
 [data-content-theme="light"] .attempt-outcomes button,
-[data-content-theme="light"] .admin-session-header button {
+[data-content-theme="light"] .admin-session-header button,
+[data-content-theme="light"] .evidence-lock,
+[data-content-theme="light"] .profile-privacy {
   background:
     linear-gradient(90deg,
       color-mix(in srgb, var(--subject, #4c8dff) 18%, #ffffff),
@@ -6078,6 +6138,86 @@ input:not([type="checkbox"]):not([type="radio"]), select, textarea {
 .review-summary .rejected, .safeguarding-summary .high,
 .payments-summary .rejected { border-left-color: #f2766b; }
 
+/* A finished sub-topic: its lesson read, and the topic's practice and exam
+   done. The spine turns to the approved green and a tick sits in the corner,
+   so a learner scanning the row sees what is behind them at a glance. */
+.subtopic-card { position: relative; }
+.subtopic-card.complete,
+.subtopic-card.complete:hover { border-left-color: #22c79a; }
+.subtopic-tick {
+  align-items: center;
+  background: #22c79a;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #22c79a 22%, transparent),
+    0 6px 14px -6px rgba(10, 80, 58, 0.8);
+  color: #ffffff;
+  display: flex;
+  height: 28px;
+  justify-content: center;
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  width: 28px;
+  animation: subtopic-tick-in 320ms var(--ease) both;
+}
+.subtopic-card.complete .subtopic-index { padding-right: 36px; }
+@keyframes subtopic-tick-in {
+  from { opacity: 0; transform: scale(0.4); }
+  70% { transform: scale(1.12); }
+  to { opacity: 1; transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .subtopic-tick { animation: none; }
+}
+
+/* The lesson's own finish line, at the foot of the guide. */
+.lesson-done-button {
+  align-items: center;
+  justify-self: start;
+  display: inline-flex;
+  gap: 8px;
+  margin: 16px 0 18px;
+  padding: 9px 14px;
+}
+.lesson-done {
+  align-items: center;
+  color: #1a9e79;
+  display: flex;
+  font-weight: 600;
+  gap: 8px;
+  margin: 16px 0 18px;
+}
+:root:not([data-content-theme="light"]) .lesson-done { color: #3fd6a8; }
+.example-end { display: block; height: 1px; }
+
+/* Lesson, practice and exam on each sub-topic card, green once done. */
+.subtopic-card small.subtopic-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.subtopic-steps span {
+  align-items: center;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  color: var(--ink-faint);
+  display: inline-flex;
+  font-size: 0.74rem;
+  font-weight: 600;
+  gap: 3px;
+  line-height: 1;
+  padding: 4px 8px;
+}
+.subtopic-steps span.done {
+  background: color-mix(in srgb, #22c79a 16%, transparent);
+  border-color: color-mix(in srgb, #22c79a 55%, transparent);
+  color: #3fd6a8;
+}
+[data-content-theme="light"] .subtopic-steps span.done { color: #13805f; }
+.lesson-done-action { display: grid; justify-items: start; }
+.lesson-done-action .lesson-done-button { margin-bottom: 8px; }
+.lesson-done-error { color: #f2766b; font-size: 0.86rem; margin: 0 0 18px; }
+
 /* Notes and callouts are one item of advice, so they take it too. */
 .note,
 .reveal-locked,
@@ -6089,6 +6229,23 @@ input:not([type="checkbox"]):not([type="radio"]), select, textarea {
 .payments-note {
   border-left: 4px solid color-mix(in srgb, var(--subject, #4c8dff) 55%, transparent);
   border-radius: var(--radius-md);
+}
+
+/* The reassurances beside a form wear the same face as the buttons under it,
+   so the page reads as one set of pieces; they have no hover, being inert. */
+.evidence-lock,
+.profile-privacy {
+  background:
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--subject, #4c8dff) 34%, transparent),
+      color-mix(in srgb, var(--subject, #4c8dff) 10%, transparent));
+  border: 1px solid var(--hairline);
+  border-left: 4px solid var(--subject, #4c8dff);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 10px 22px -16px color-mix(in srgb, var(--subject, #4c8dff) 85%, black);
+  color: var(--ink-bright);
 }
 
 @supports not (background: color-mix(in srgb, red 50%, transparent)) {
@@ -6206,6 +6363,69 @@ input:not([type="checkbox"]):not([type="radio"]), select, textarea {
 @media (max-width: 620px) {
   .panel-heading { align-items: flex-start; flex-wrap: wrap; }
   .play-lesson { margin-left: 0; width: 100%; justify-content: center; }
+}
+
+/* Where accounts are actually created ---------------------------------------
+   The application no longer offers a sign-up tab: accounts are made on the
+   website, where the plan is chosen and paid for. Someone who lands here
+   without one needs telling that, not a dead end. */
+.login-no-account {
+  background: var(--recess-bg);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  margin: 0 0 18px;
+  padding: 12px 14px;
+}
+.login-no-account strong { color: var(--ink-bright); }
+
+/* What is still outstanding on the learner setup form.
+   Every field is required, so a disabled button with no explanation is the
+   worst version of this: it says no without saying why. */
+.signup-missing {
+  background: color-mix(in srgb, #b8860b 16%, transparent);
+  border-left: 3px solid #b8860b;
+  border-radius: 4px;
+  color: var(--ink);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0 0 4px;
+  padding: 10px 12px;
+}
+@supports not (background: color-mix(in srgb, red 50%, transparent)) {
+  .signup-missing { background: rgba(184, 134, 11, 0.16); }
+}
+
+/* Play the worked example, beside the example it reads ----------------------
+   Laid out like "Play this as a lesson" and wearing the same face, because it
+   makes the same offer about a smaller piece of content. */
+.example-play {
+  flex: 0 0 auto;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* The line currently being spoken. A left marker and a lift off the page
+   rather than a colour change, so it reads the same in both themes and does
+   not fight the answer's own green. */
+.worked-example .speaking,
+.formula-guide .speaking {
+  background: color-mix(in srgb, var(--subject, #4c8dff) 14%, transparent);
+  border-radius: 4px;
+  box-shadow: -3px 0 0 0 var(--subject, #4c8dff);
+  transition: background 160ms ease;
+}
+@supports not (background: color-mix(in srgb, red 50%, transparent)) {
+  .worked-example .speaking, .formula-guide .speaking { background: rgba(76, 141, 255, 0.14); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .worked-example .speaking, .formula-guide .speaking { transition: none; }
+}
+
+@media (max-width: 620px) {
+  .example-play { margin-left: 0; width: 100%; justify-content: center; }
 }
 
 /* Take it again --------------------------------------------------------------
@@ -6652,6 +6872,12 @@ button { font-weight: 600; letter-spacing: 0.002em; }
 }
 .password-login .password-form input::placeholder { color: var(--ink-faint); }
 
+.password-login .password-form input[readonly] {
+  background: rgba(8, 15, 32, 0.2);
+  color: var(--ink-soft);
+  cursor: default;
+}
+
 .password-login .password-form input:focus {
   background: rgba(8, 15, 32, 0.22);
   border-color: var(--login-accent);
@@ -6716,11 +6942,23 @@ button { font-weight: 600; letter-spacing: 0.002em; }
   background: var(--recess-bg);
   border: 1px solid var(--hairline);
   border-radius: var(--radius-lg, 12px);
-  padding: 16px 18px;
+  display: grid;
+  gap: 18px;
+  padding: 18px 20px;
 }
-.derived-year p { align-items: baseline; display: flex; gap: 12px; margin: 0; }
-.derived-year strong { color: var(--ink-bright); font-family: var(--font-display); font-size: 20px; }
-.derived-year span { color: var(--ink-soft); font-size: 14px; }
+.derived-year > p { margin: 0; }
+.derived-year-summary { display: grid; gap: 5px; }
+.derived-year-summary strong { color: var(--ink-bright); font-family: var(--font-display); font-size: 22px; line-height: 1.15; }
+.derived-year-summary span { color: var(--ink-soft); font-size: 14px; line-height: 1.4; }
+.derived-year .year-locked-note {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  border-top: 1px solid var(--hairline);
+  display: block;
+  line-height: 1.6;
+  padding: 14px 0 0;
+}
 .derived-year .out-of-range { color: #fca5a5; display: block; font-size: 14.5px; }
 
 /* Tablet ---------------------------------------------------------------------

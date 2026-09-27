@@ -2,6 +2,29 @@
 
 An Azure-ready learning hub for KS3, KS4, and GCSE revision. The project includes a React frontend, an Azure Functions backend, and a server-side Azure AI Foundry model call.
 
+## Development handoff
+
+Last updated: 24 September 2026
+
+Keep this section current after each meaningful implementation session so work can resume without reconstructing the latest state from scratch. The entries describe files saved in the working tree; they do not imply that the changes have been committed to Git. Before continuing, run `git status --short` and inspect the relevant diff so existing work is preserved.
+
+Latest saved UI update:
+
+- **Sonia · Your AI Tutor** in the learning header now matches the compact rounded treatment of **Take the check**, with a distinct muted-bronze accent and icon so the two controls remain easy to distinguish.
+- The User management table keeps every `<td>` as a native table cell, with the user identity and action-button layouts moved into inner wrappers. This fixes the staggered, disconnected row separators visible when the table was rendered at desktop width.
+- The HTTP end-to-end test now follows the current checkout and learner setup contracts: it accepts either a hosted Stripe URL or embedded checkout secret, derives a Year 10 date of birth for the current academic year, and verifies that changing the date of birth to another school year is rejected. Run it with the local stubs and `E2E_BASE=http://127.0.0.1:7071/api npm run test:e2e` (PowerShell syntax is shown in the testing notes below).
+- Design & Technology now uses the same selected sidebar treatment as the other subjects. Its `data-subject` colour selector in `src/styles.css` now exactly matches the button value, so the active tab keeps its intended orange accent instead of falling back to blue.
+- Clicking Register on the website carries the entered parent or guardian email into a prefilled, read-only Email field in the registration handoff form; that displayed value is submitted to account reservation and later kept synchronized with learner setup. The handoff is in `src/main.jsx` and `src/PasswordLogin.jsx`, with learner setup synchronization in `src/SubscriberSignup.jsx`.
+- The learner setup **Curriculum year** result now stacks the stage beneath the year and separates both from the permanent-year warning with consistent spacing and a divider. The markup is in `src/SubscriberSignup.jsx` and the layout is in `src/styles.css`.
+- The four learning-mode controls stay in the same row position when Review is selected. `src/styles.css` now anchors the workspace grid rows to the top, preventing shorter Review content from stretching the header and dropping the mode menu.
+- The Exam-mode timer now has direct start and reset controls, so the learner can start it independently and use Reset to stop it and return to `00:00`. Reset opens an **Are you sure?** confirmation dialog before clearing elapsed time. The timer state and controls are in `src/main.jsx`, with responsive control styling in `src/styles.css`.
+- **Sonia · Your AI Tutor** in the learning header is now a button that opens the existing in-page chat, scrolls it into view, and focuses its message field. The implementation is in `src/main.jsx`, with its interactive styling in `src/styles.css`.
+- The administrator user table now displays each account's persisted `updatedAt` value in a **Last updated** column. The UI and date formatting are in `src/AdminDashboard.jsx`, with the table layout and timestamp styling in `src/styles.css`.
+- Local preview users in `src/main.jsx` receive `updatedAt` when created and whenever their status changes, matching the real API behaviour in `api/src/lib/userStore.js`.
+- Verification after this update: `npm test` passes all suites, and `npm run test:e2e` passes all 46 customer-journey checks against the local Stripe and email stubs. A real-browser pass also confirmed the registration email handoff, Sonia chat focus, Design & Technology selected styling, Exam timer start/reset confirmation, and Review menu alignment. `npm run build` passes with Vite's existing large-chunk size warning.
+
+When finishing future work, update the date, replace or extend the latest-change notes, and record the verification command that passed. Do not remove older project documentation or overwrite unrelated working-tree changes while doing so.
+
 ## Cheapest Azure shape
 
 Use this setup first:
@@ -54,18 +77,18 @@ GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 ## Features
 
 - KS3 and KS4/GCSE stage switcher
-- Maths, Science, English, History, Geography, Computing, and Design Technology topic paths
+- Maths, Science, English, History, Geography, Computing, and Design & Technology topic paths
 - Learning goals and outcome checklists
 - Register first, then subscribe: an account is created before payment, and learner setup happens in the app straight after checkout rather than through an emailed link
 - Per-subject GCSE exam board selection at signup, so a learner can sit AQA in one subject and Edexcel in another
 - Short initial diagnostic of up to five questions with topic-level strengths, development areas, and next steps
 - Personalised topic ordering that places priority areas first while retaining the complete curriculum
 - Evidence-gated grade predictions; no grade is displayed before at least 15 assessment checks
-- Broad curriculum catalogue with 235 modules and 1,439 outcomes across Years 7-11, validated against the DfE subject content and the AQA specifications
-- Authored explanations, key ideas and formulae for every one of the 235 topics, served from storage so the model is never asked to write the core teaching text
+- Broad curriculum catalogue with 240 modules and 1,510 outcomes across Years 7-11, validated against the DfE subject content and the AQA specifications
+- Authored explanations, key ideas and formulae for every one of the 240 topics, served from storage so the model is never asked to write the core teaching text
 - Automatic year, GCSE exam-board, tier, subject, and unit filtering, with tiering applied only to the tiered qualifications
 - `npm run validate:curriculum` enforcing catalogue structure, tiering, board coverage and authored-content coverage as part of `npm test`
-- Every subject except Geography audited both ways: the catalogue read against the specifications and against real school schemes of work, and each piece of required content searched for across every year; see [the curriculum model](docs/curriculum-model.md#coverage-audits)
+- Every subject audited both ways: the catalogue read against the specifications and against real school schemes of work, and each piece of required content searched for across every year; see [the curriculum model](docs/curriculum-model.md#coverage-audits)
 - AI tutor chat for explanations, original quiz questions, worked examples, and answer feedback
 - Learn, Practice, Exam, and Review modes with Socratic teaching, adaptive questions, timed mark-based work, and spaced retrieval
 - Azure Table Storage attempts and mastery records tracking accuracy, confidence, time, and last-practised dates
@@ -96,6 +119,7 @@ AZURE_STORAGE_CONNECTION_STRING=your-server-side-storage-connection-string
 AZURE_STORAGE_USERS_TABLE=EducationHubUsers
 AZURE_STORAGE_ATTEMPTS_TABLE=EducationHubAttempts
 AZURE_STORAGE_MASTERY_TABLE=EducationHubMastery
+AZURE_STORAGE_LESSONS_TABLE=EducationHubLessons
 AZURE_STORAGE_SUBSCRIPTIONS_TABLE=EducationHubSubscriptions
 AZURE_STORAGE_SIGNUP_INVITES_TABLE=EducationHubSignupInvites
 AZURE_STORAGE_PROFILES_TABLE=EducationHubProfiles
@@ -220,6 +244,26 @@ Topics, units, and outcomes stay in `src/data/curriculumCatalog.js`, where they 
 Content is stored once and shared by every learner, so model spend is proportional to the size of the curriculum rather than to learners or page views. Years 10 and 11 keep an example per tier, because Foundation and Higher differ in demand; Years 7 to 9 share one example per sub-topic.
 
 Maths worked examples are requested as LaTeX between single dollar signs and typeset in the browser with KaTeX, so working appears with real fractions, indices, and roots. Every other subject stays plain prose. Anything the typesetter cannot parse falls back to the original text rather than failing.
+
+#### What a worked example has to satisfy
+
+Steps that read perfectly well one at a time can still fail to answer the question. Reading a sample of stored examples found a defect in roughly a third of them, so [`api/src/lib/workedExample.js`](api/src/lib/workedExample.js) both instructs against each fault and refuses the content when the instruction does not hold:
+
+- the question carries everything needed to answer it — an example asking a learner to compare "Text A and Text B" without the texts is unanswerable however good its steps are
+- every number in a step is given in the question or worked out in an earlier step, so a method that subtracts an evapotranspiration nobody stated cannot be stored
+- the answer is the answer, not a description of what a student could do
+- no step promises its content will appear somewhere else
+- the question is one a learner can finish on paper, not a brief to build a model or run software
+
+These are refusals, not warnings: a refused example is logged and left unstored, so seeding writes it again rather than a learner being shown it.
+
+The rules are enforced ahead of generation; what was already stored had to be found by reading it. Rules alone were not enough: measured against a sample marked by hand, the deterministic checks and a model sweep each caught about half the faults, and between them missed the ones that matter most — a question that cannot be answered as posed, an answer that addresses a different question, a step inserted for no reason. The faults that reached stored content included a Year 7 lesson on using a Bunsen burner safely that told a pupil to hold a beaker near the flame, a Year 7 lesson on pollination in which bees fertilise the ovule, and an English example closing "Yours faithfully" to a named recipient. A model sweep also has no concept of "correct but above the specification": it wanted the bromohydrin that aqueous bromine really produces in a Year 10 example, where every UK specification teaches the dibromide. Nothing here replaces reading the content.
+
+One constraint is easy to miss: **every worked example is read aloud**, and the answer is spoken as "The answer is ...". So an answer can hold no markup, no code and no table — the narrator reads it character by character. Where a question would otherwise be answered with a file, ask instead for the rules or the elements that produce it.
+
+Not every sub-topic warrants a worked example at all. "Write a number as a product of its prime factors" has a method to show; "Identify prime numbers" is a single step, and "Analyse dramatic methods" has no one right answer. Which outcomes qualify is decided per outcome rather than per subject, because a maths topic can contain an outcome with nothing to calculate and a geography topic can contain one that is pure arithmetic. The decision lives in [`src/data/workedExampleOutcomes.js`](src/data/workedExampleOutcomes.js) — **512 of 1,510 outcomes** — and is consulted in three places, because all three have to agree or the decision undoes itself: seeding skips those outcomes, the content endpoint serves a 404 rather than generating one on a miss, and the narration script does not count them as gaps waiting to be seeded.
+
+A topic absent from that map keeps every outcome, so adding a topic to the catalogue never silently strips its examples before anyone has classified it.
 
 ### Seeding and coverage
 

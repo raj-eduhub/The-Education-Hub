@@ -197,6 +197,9 @@ const coreCurriculumByYear = {
         gcse("y11-maths-probability", "Probability", "Conditional Probability", "Represent and calculate dependent and conditional events.", ["Use tree diagrams", "Interpret Venn diagrams", "Calculate conditional probabilities"], ["Higher"]),
         gcse("y11-maths-statistics", "Statistics", "Histograms and Cumulative Frequency", "Interpret grouped continuous data and compare distributions.", ["Use frequency density", "Interpret cumulative frequency", "Compare box plots"], ["Higher"]),
         gcse("y11-maths-nonright", "Geometry", "Non-right-angled Trigonometry", "Solve general triangles using advanced trigonometry.", ["Apply sine and cosine rules", "Use triangle area formula", "Solve 3D problems"], ["Higher"]),
+        // G19 and G7 in their Higher form: Year 10 similarity is lengths only,
+        // because the area and volume relationships are Higher content.
+        gcse("y11-maths-similarity", "Geometry", "Similar Shapes and Enlargement", "Scale lengths, areas and volumes between similar shapes, and enlarge by any scale factor.", ["Use the length, area and volume scale factors of similar shapes", "Find the length scale factor from an area or volume ratio", "Enlarge a shape by a fractional or negative scale factor"], ["Higher"]),
       ],
       Science: [
         gcse("y11-science-homeostasis", "Biology", "Homeostasis and Response", "Explain how the body detects change and holds internal conditions steady.", ["Explain the reflex arc", "Describe hormonal control of blood glucose", "Interpret homeostasis data"]),
@@ -204,9 +207,19 @@ const coreCurriculumByYear = {
         gcse("y11-science-waves", "Physics", "Forces, Waves and Electromagnetism", "Use models and equations to solve physical problems.", ["Analyse forces", "Use wave equations", "Explain electromagnetism"]),
         gcse("y11-science-ecology", "Biology", "Ecology and Human Impact", "Analyse ecosystems, biodiversity, and human impacts.", ["Interpret abundance data", "Explain material cycles", "Evaluate strategies"]),
         gcse("y11-science-inheritance", "Biology", "Inheritance, Variation and Evolution", "Use genetic models and evidence to explain inheritance and evolution.", ["Use genetic diagrams", "Explain variation", "Evaluate selective breeding and engineering"]),
-        gcse("y11-science-quantitative", "Chemistry", "Quantitative Chemistry", "Calculate chemical quantities and interpret yields and concentrations.", ["Use relative formula mass", "Explain conservation of mass in reactions", "Explain mass changes when a gas is involved"]),
+        gcse("y11-science-quantitative", "Chemistry", "Quantitative Chemistry", "Calculate chemical quantities from formulae, equations and concentrations.", ["Use relative formula mass", "Explain conservation of mass in reactions", "Explain mass changes when a gas is involved"]),
         gcse("y11-science-analysis", "Chemistry", "Chemical Analysis and Using Resources", "Identify substances and evaluate sustainable chemical processes.", ["Interpret chromatography", "Use gas tests", "Explain potable water treatment"]),
-        gcse("y11-science-atomic", "Physics", "Atomic Physics", "Explain nuclear radiation, half-life, and associated risks.", ["Balance nuclear equations", "Interpret half-life", "Evaluate radiation uses"]),
+        // "Evaluate radiation uses" was reworded in place rather than removed, so
+        // no later outcome changes position. The uses of radiation, like fission
+        // and fusion, are separate Physics (8463 4.4.3-4.4.4); Combined Science
+        // asks only about the hazards of contamination and irradiation.
+        gcse("y11-science-atomic", "Physics", "Atomic Physics", "Explain nuclear radiation, half-life, and associated risks.", ["Balance nuclear equations", "Interpret half-life", "Evaluate the hazards of ionising radiation"]),
+        // Combined Science marks this content HT only, so it cannot sit in a
+        // topic a Foundation learner sees, and every other GCSE Science topic is
+        // open to both tiers. Before these two topics existed, a Higher learner
+        // was never taught moles, equilibrium shifts or momentum at all.
+        gcse("y11-science-moles", "Chemistry", "Moles, Equilibrium and Electrode Equations", "Count particles in moles, predict how an equilibrium responds, and write what happens at each electrode.", ["Calculate the number of moles in a given mass of substance", "Identify the limiting reactant in a reaction", "Apply Le Chatelier's principle to predict how an equilibrium shifts"], ["Higher"]),
+        gcse("y11-science-momentum", "Physics", "Momentum and the Motor Effect", "Use momentum to analyse collisions, and calculate the force on a wire in a magnetic field.", ["Calculate momentum from mass and velocity", "Apply conservation of momentum to collisions and explosions", "Use Fleming's left-hand rule to find the direction of a force"], ["Higher"]),
       ],
       English: [
         gcse("y11-english-lang-nonfiction", "English Language", "Non-fiction Reading and Comparison", "Compare viewpoints and methods across unseen texts.", ["Synthesise information", "Compare perspectives", "Evaluate methods"], untiered),

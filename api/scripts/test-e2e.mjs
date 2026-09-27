@@ -33,6 +33,10 @@ const email = process.env.E2E_EMAIL ?? "e2e@example.test";
 const username = `e2e_${randomBytes(3).toString("hex")}`;
 const password = "a-long-enough-test-password";
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET ?? "whsec_stub_secret";
+const now = new Date();
+const academicStart = now.getUTCMonth() >= 8 ? now.getUTCFullYear() : now.getUTCFullYear() - 1;
+const year10DateOfBirth = `${academicStart - 14}-03-02`;
+const year9DateOfBirth = `${academicStart - 13}-03-02`;
 
 let cookie = "";
 let failures = 0;
@@ -119,11 +123,12 @@ record(earlyOnboarding.status === 402, "learner setup is refused before payment"
 console.log("\n--- 3. Checkout ---");
 const checkout = await call("/billing/checkout", json({}));
 record(checkout.status === 200, "checkout session is created", `HTTP ${checkout.status}`);
-// The embedded form mounts against the session, so the client secret comes
-// back rather than a URL to redirect to.
-record(typeof checkout.body?.client_secret === "string" && checkout.body.client_secret.length > 0,
-  "Stripe returns a client secret for the embedded form",
-  checkout.body?.client_secret ? "client_secret present" : JSON.stringify(checkout.body));
+// Production can use an embedded form or a hosted checkout. The local Stripe
+// stand-in uses the hosted path so the browser can complete the whole flow.
+const checkoutDestination = checkout.body?.url ?? checkout.body?.client_secret;
+record(typeof checkoutDestination === "string" && checkoutDestination.length > 0,
+  "Stripe returns a checkout destination",
+  checkout.body?.url ? "hosted checkout URL present" : checkout.body?.client_secret ? "client_secret present" : JSON.stringify(checkout.body));
 
 // 4. The webhook Stripe would send -------------------------------------------
 console.log("\n--- 4. Stripe webhook ---");
@@ -165,7 +170,7 @@ record(afterPay.body?.subscription?.onboardingComplete === false, "learner setup
 console.log("\n--- 5. Learner setup ---");
 const details = {
   guardianName: "Test Guardian", guardianRelationship: "parent", guardianPhone: "07700 900321",
-  studentFirstName: "Aria", dateOfBirth: "2011-03-02",
+  studentFirstName: "Aria", dateOfBirth: year10DateOfBirth,
   year: 10, examBoards: { Maths: "AQA", Science: "Edexcel", English: "AQA" },
   examBoard: "AQA", tier: "Higher", parentalConsent: true,
 };
@@ -178,7 +183,7 @@ record(setup.body?.profile?.year === 10, "the year is stored", `year=${setup.bod
 record(setup.body?.profile?.examBoards?.Science === "Edexcel", "per-subject boards are stored",
   JSON.stringify(setup.body?.profile?.examBoards));
 
-const lockedYear = await call("/onboarding", json({ ...details, year: 8 }));
+const lockedYear = await call("/onboarding", json({ ...details, dateOfBirth: year9DateOfBirth, year: 9 }));
 record(lockedYear.status === 409, "the registered year cannot be changed", `HTTP ${lockedYear.status}`);
 
 const afterSetup = await call("/billing/status");

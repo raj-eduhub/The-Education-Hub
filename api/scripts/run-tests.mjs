@@ -31,6 +31,7 @@ const suites = [
   // The narrated lesson is built from the authored content at render time, so
   // the content has to survive being turned into speech and into beats.
   { name: "speech", script: "test-speech.mjs", needsApi: false },
+  { name: "playback", script: "test-playback.mjs", needsApi: false },
   // Stored content against the catalogue it was generated from: an edited
   // outcome leaves a worked example teaching the wrong sub-topic silently.
   { name: "content audit", script: "audit-content.mjs", needsApi: false },

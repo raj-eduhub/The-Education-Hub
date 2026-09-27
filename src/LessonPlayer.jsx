@@ -4,6 +4,7 @@ import { hasMaths, MathsText } from "./MathsText.jsx";
 import { currentVoice, listVoices, narrate, setVoice, speechSupported, stopSpeaking, toSpoken } from "./speech.js";
 import { beatSpeech, lessonBeats } from "./lessonBeats.js";
 import { loadNarration, playNarration, releaseNarration } from "./narration.js";
+import { claimPlayback, releasePlayback } from "./playback.js";
 import { visualsFor } from "./lessonVisuals/index.js";
 
 // A narrated lesson, built from the authored content rather than from a video
@@ -44,6 +45,8 @@ export function LessonPlayer({ topic, content, onFinish, request }) {
   const handle = useRef(null);
   const timer = useRef(null);
   const stageRef = useRef(null);
+  // Identity for the playback registry, stable for the life of the component.
+  const owner = useRef({});
 
   const canSpeak = speechSupported();
   const beat = beats[index] ?? beats[0];
@@ -95,11 +98,15 @@ export function LessonPlayer({ topic, content, onFinish, request }) {
     return () => window.speechSynthesis.removeEventListener?.("voiceschanged", refresh);
   }, [canSpeak]);
 
+  // Stops this lesson's own playback and gives up the floor. It never stops
+  // another player, so calling it from cleanup while the worked example is
+  // speaking leaves that alone.
   const halt = useCallback(() => {
     handle.current?.stop();
     handle.current = null;
     clearTimeout(timer.current);
     timer.current = null;
+    releasePlayback(owner.current);
   }, []);
 
   // Everything stops when the topic changes or the player unmounts: a lesson
@@ -118,10 +125,19 @@ export function LessonPlayer({ topic, content, onFinish, request }) {
   useEffect(() => {
     halt();
     if (!playing) return undefined;
-    // Only one voice at a time. The recorded path plays an audio element and
-    // the fallback uses speech synthesis: neither knows about the other, so a
-    // lesson could otherwise be narrated twice at once in two voices.
+    // Only one voice at a time. Stopping speech synthesis covers the fallback
+    // path, but not a recorded clip playing in another component's audio
+    // element, which is the case that happens once a topic has been voiced.
+    // Claiming the floor stops the key formulas or the worked example if either
+    // is speaking, and puts its button back to Play.
     stopSpeaking();
+    claimPlayback(owner.current, () => {
+      handle.current?.stop();
+      handle.current = null;
+      clearTimeout(timer.current);
+      timer.current = null;
+      setPlaying(false);
+    });
 
     if (muted || (!canSpeak && recorded.status !== "ready")) {
       // Silent mode still has to advance, or "play" does nothing for a learner
@@ -138,11 +154,12 @@ export function LessonPlayer({ topic, content, onFinish, request }) {
         }, estimatedMs(beats[position].text));
       };
       step(index);
-      return () => clearTimeout(timer.current);
+      return () => halt();
     }
 
     const finish = () => {
       setPlaying(false);
+      releasePlayback(owner.current);
       onFinish?.();
     };
 
@@ -155,7 +172,7 @@ export function LessonPlayer({ topic, content, onFinish, request }) {
         onBeat: (position) => setIndex(position),
         onEnd: finish,
       });
-      return () => { handle.current?.stop(); handle.current = null; };
+      return () => halt();
     }
 
     // Still checking. Waiting is better than starting in the wrong voice and
@@ -167,7 +184,7 @@ export function LessonPlayer({ topic, content, onFinish, request }) {
       onBeat: (position) => setIndex(position),
       onEnd: finish,
     });
-    return () => { handle.current?.stop(); handle.current = null; };
+    return () => halt();
     // `index` is intentionally absent: including it would restart the narration
     // on every beat it reports. Jumping is handled by goTo, which restarts.
     // eslint-disable-next-line react-hooks/exhaustive-deps

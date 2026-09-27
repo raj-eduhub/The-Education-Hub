@@ -13,6 +13,17 @@ import { visualNarrationFor } from "./lessonVisuals/narration.js";
 // drawing for a visual beat afterwards, by its id.
 export const closingBeat = "That is the whole topic. Try a practice question next.";
 
+// The formula beats, on their own.
+//
+// Shared rather than repeated, because the same formulae are voiced inside the
+// lesson and can be played on their own from the Key formulas section. Both
+// have to produce the identical string or the second one asks for clips that
+// were never recorded: the formula is shown as written and spoken as words, so
+// "\frac{u}{2}" reads as "u over 2" while the learner sees the fraction.
+export function formulaBeats(formulae) {
+  return (formulae ?? []).map((formula, position) => ({ kind: "formula", text: formula, position }));
+}
+
 export function lessonBeats(topic, content) {
   const beats = [
     {
@@ -37,13 +48,38 @@ export function lessonBeats(topic, content) {
     beats.push({ kind: "idea", text: idea, position });
   });
 
-  (content.formulae ?? []).forEach((formula, position) => {
-    // The formula is shown as written and spoken as words, so "\frac{u}{2}"
-    // reads as "u over 2" while the learner sees the fraction.
-    beats.push({ kind: "formula", text: formula, position });
-  });
+  beats.push(...formulaBeats(content.formulae));
 
   beats.push({ kind: "end", text: "That is the whole topic.", speech: closingBeat });
+  return beats;
+}
+
+// The beat sequence for a narrated worked example, and the same contract as
+// lessonBeats: whatever plays these must build them from here, because the
+// audio is keyed by a digest of the spoken text and a player asking for a beat
+// the script never produced gets silence rather than an error.
+//
+// The example is the stored row, not a regenerated one. Steps are voiced one
+// at a time so a learner can follow the working at their own pace, and so a
+// corrected step costs one beat to re-record rather than the whole example.
+export function exampleBeats(example, subtopic = "") {
+  const beats = [];
+  if (subtopic) beats.push({ kind: "title", text: subtopic, speech: `Worked example. ${subtopic}` });
+
+  // Formulae first, matching where they sit on the page and how the work is
+  // actually done: you are told the rule before you are asked to apply it.
+  beats.push(...formulaBeats(example.formulae));
+  for (const sentence of splitSentences(example.question ?? "")) {
+    beats.push({ kind: "question", text: sentence });
+  }
+  (example.steps ?? []).forEach((step, position) => {
+    for (const sentence of splitSentences(step)) {
+      beats.push({ kind: "step", text: sentence, position });
+    }
+  });
+  if (example.answer) {
+    beats.push({ kind: "answer", text: example.answer, speech: `The answer is ${example.answer}` });
+  }
   return beats;
 }
 

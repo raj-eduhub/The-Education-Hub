@@ -1,17 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { BookMarked, BookOpen, Brain, Calculator, ChartNoAxesCombined, CheckCircle2, ChevronRight, ClipboardCheck, ClipboardList, Cpu, CreditCard, DraftingCompass, FlaskConical, GraduationCap, Landmark, LayoutDashboard, LifeBuoy, ListFilter, LogOut, Map as MapIcon, MonitorPlay, PenLine, Play, Repeat2, Send, Settings, ShieldAlert, ShieldCheck, Sparkles, Target, Timer, UserRound, Users, X } from "lucide-react";
+import { BookMarked, BookOpen, Brain, Calculator, ChartNoAxesCombined, Check, CheckCircle2, ChevronRight, ClipboardCheck, ClipboardList, Cpu, CreditCard, DraftingCompass, FlaskConical, GraduationCap, Landmark, LayoutDashboard, LifeBuoy, ListFilter, LogOut, Map as MapIcon, MonitorPlay, PenLine, Play, Repeat2, RotateCcw, Send, Settings, ShieldAlert, ShieldCheck, Sparkles, Target, Timer, UserRound, Users, X } from "lucide-react";
 import { curriculum, subjects, topicsFor } from "./curriculum.js";
+import { exampleBeats, formulaBeats } from "./lessonBeats.js";
 import { AdminDashboard } from "./AdminDashboard.jsx";
 import { AccountSettings } from "./AccountSettings.jsx";
 import { AttemptRecorder } from "./AttemptRecorder.jsx";
 import { CurriculumProgress } from "./CurriculumProgress.jsx";
+import { BeatPlayer } from "./BeatPlayer.jsx";
 import { DailyGoal } from "./DailyGoal.jsx";
 import { ThemeToggle } from "./ThemeToggle.jsx";
 import { DiagnosticAssessment } from "./DiagnosticAssessment.jsx";
 import { LegalNotice } from "./LegalNotice.jsx";
 import { LearnerProfileSetup } from "./LearnerProfileSetup.jsx";
-import { EmailVerification, LoginScreen, PasswordReset } from "./PasswordLogin.jsx";
+import { EmailVerification, LoginScreen, PasswordReset, SignupHandoff } from "./PasswordLogin.jsx";
 import { ProgressDashboard } from "./ProgressDashboard.jsx";
 import { CheckoutConfirming } from "./CheckoutConfirming.jsx";
 import { SubscriberSignup } from "./SubscriberSignup.jsx";
@@ -21,8 +23,10 @@ import { loadDiagnostic, personaliseTopics, saveDiagnostic } from "./diagnostic.
 import { boardFor, loadLearnerProfile, saveLearnerProfile } from "./learnerProfile.js";
 import { formatTopicGuide, getTopicGuide } from "./topicGuides.js";
 import { subtopicsFor } from "./subtopics.js";
+import { warrantsWorkedExample } from "./data/workedExampleOutcomes.js";
 import { hasMaths, MathsText } from "./MathsText.jsx";
 import { stopSpeaking } from "./speech.js";
+import { stopPlayback } from "./playback.js";
 import { LessonPlayer } from "./LessonPlayer.jsx";
 import { QuestionPanel } from "./QuestionPanel.jsx";
 import { ReviewPanel } from "./ReviewPanel.jsx";
@@ -40,7 +44,7 @@ const subjectIcons = {
   History: Landmark,
   Geography: MapIcon,
   Computing: Cpu,
-  "Design Technology": DraftingCompass,
+  "Design & Technology": DraftingCompass,
 };
 
 // What the check said about a topic, in words a learner can act on. The stored
@@ -65,6 +69,13 @@ const learningModes = {
   review: { label: "Review", icon: Repeat2, action: "Start recall", prompt: "Test me with one short retrieval question on this weak topic. Wait for my answer before giving a hint." },
 };
 
+// A sub-topic is ticked once its lesson is finished and the topic has this
+// many answers in both practice and exam. Practice and exam are set on the
+// whole topic, so every sub-topic of it shares the same two counts.
+const answersToFinish = 10;
+// How long the end of a worked example must stay on screen to count as read.
+const exampleReadSeconds = 15;
+
 const previewMode = import.meta.env.DEV
   ? new URLSearchParams(window.location.search).get("preview")
   : null;
@@ -75,6 +86,17 @@ const localSession = import.meta.env.DEV && new URLSearchParams(window.location.
 const subscriptionPreview = previewMode === "subscription";
 const signupPreview = previewMode === "signup";
 const signupToken = new URLSearchParams(window.location.search).get("signup");
+// Handoff from the marketing site: it has collected an email and a username
+// and sends the visitor here to set a password and pay. Never a password -
+// that is not put in a URL.
+const registerHandoff = (() => {
+  const query = new URLSearchParams(window.location.search);
+  if (query.get("register") !== "1") return null;
+  return {
+    email: (query.get("email") ?? "").trim().toLowerCase(),
+    username: (query.get("username") ?? "").trim(),
+  };
+})();
 const resetToken = new URLSearchParams(window.location.search).get("reset");
 const verifyToken = new URLSearchParams(window.location.search).get("verify");
 const resetPreview = previewMode === "reset";
@@ -129,6 +151,7 @@ const previewProfile = {
 };
 const previewProgress = {
   attempts: [],
+  lessons: [],
   mastery: [
     { id: "preview-1", year: 7, subject: "Maths", topicId: "y7-maths-number", topicTitle: "Integers and Place Value", attempts: 4, accuracy: 0.88, confidence: 4.2, totalTimeSeconds: 2700, masteryScore: 86, lastPractised: "2026-09-08T16:00:00.000Z", nextReviewAt: "2026-09-18T16:00:00.000Z" },
     { id: "preview-2", year: 7, subject: "Maths", topicId: "y7-maths-fractions", topicTitle: "Fractions, Decimals and Percentages", attempts: 2, accuracy: 0.64, confidence: 3, totalTimeSeconds: 1500, masteryScore: 63, lastPractised: "2026-09-07T16:00:00.000Z", nextReviewAt: "2026-09-14T16:00:00.000Z" },
@@ -137,9 +160,9 @@ const previewProgress = {
   ],
 };
 let previewUsers = [
-  { id: "preview-parent", name: "Sam Patel", email: "parent@example.com", role: "parent", status: "active", createdAt: "2026-09-01T09:00:00.000Z" },
-  { id: "preview-student", name: "Maya Patel", email: "maya@example.com", role: "student", status: "active", createdAt: "2026-09-02T09:00:00.000Z" },
-  { id: "preview-teacher", name: "A. Teacher", email: "teacher@example.com", role: "teacher", status: "inactive", createdAt: "2026-09-03T09:00:00.000Z" },
+  { id: "preview-parent", name: "Sam Patel", email: "parent@example.com", role: "parent", status: "active", createdAt: "2026-09-01T09:00:00.000Z", updatedAt: "2026-09-01T09:00:00.000Z" },
+  { id: "preview-student", name: "Maya Patel", email: "maya@example.com", role: "student", status: "active", createdAt: "2026-09-02T09:00:00.000Z", updatedAt: "2026-09-02T09:00:00.000Z" },
+  { id: "preview-teacher", name: "A. Teacher", email: "teacher@example.com", role: "teacher", status: "inactive", createdAt: "2026-09-03T09:00:00.000Z", updatedAt: "2026-09-03T09:00:00.000Z" },
 ];
 
 function previewResponse(body, status = 200) {
@@ -166,6 +189,11 @@ async function previewApiRequest(url, options = {}) {
   }
   if (pathname === "/api/progress" && method === "POST") {
     const input = JSON.parse(options.body);
+    if (input.kind === "lesson") {
+      const lesson = { year: input.year, subject: input.subject, topicId: input.topicId, index: input.index, completedAt: new Date().toISOString() };
+      previewProgress.lessons = [lesson, ...previewProgress.lessons];
+      return previewResponse({ lesson }, 201);
+    }
     const mastery = { id: input.topicId, ...input, attempts: 1, masteryScore: Math.round(input.accuracy * 100), totalTimeSeconds: input.durationSeconds, lastPractised: new Date().toISOString(), nextReviewAt: new Date(Date.now() + 86400000).toISOString() };
     previewProgress.mastery = [mastery, ...previewProgress.mastery.filter((item) => item.topicId !== input.topicId)];
     return previewResponse({ mastery });
@@ -228,14 +256,15 @@ async function previewApiRequest(url, options = {}) {
   if (pathname === "/api/users" && method === "GET") return previewResponse({ users: previewUsers });
   if (pathname === "/api/users" && method === "POST") {
     const input = JSON.parse(options.body);
-    const user = { id: `preview-${Date.now()}`, ...input, status: "active", createdAt: new Date().toISOString() };
+    const now = new Date().toISOString();
+    const user = { id: `preview-${Date.now()}`, ...input, status: "active", createdAt: now, updatedAt: now };
     previewUsers = [user, ...previewUsers];
     return previewResponse({ user }, 201);
   }
   if (pathname.startsWith("/api/users/") && method === "PATCH") {
     const id = pathname.split("/").pop();
     const input = JSON.parse(options.body);
-    previewUsers = previewUsers.map((user) => user.id === id ? { ...user, status: input.status } : user);
+    previewUsers = previewUsers.map((user) => user.id === id ? { ...user, status: input.status, updatedAt: new Date().toISOString() } : user);
     return previewResponse({ user: previewUsers.find((user) => user.id === id) });
   }
   if (pathname.startsWith("/api/users/") && method === "DELETE") {
@@ -271,6 +300,14 @@ function App() {
   const [selectedSubtopicId, setSelectedSubtopicId] = useState("");
   const [explanation, setExplanation] = useState({ status: "idle" });
   const [workedExample, setWorkedExample] = useState({ status: "idle" });
+  // Sub-topic lessons finished, by sub-topic id ("topicId::index").
+  const [lessonsDone, setLessonsDone] = useState(() => new Set());
+  const [lessonSaveError, setLessonSaveError] = useState("");
+  const exampleEnd = useRef(null);
+  // The beat being read aloud in each section, so the line being spoken can
+  // be marked. Two of them: the formulas play separately from the example.
+  const [exampleBeat, setExampleBeat] = useState(null);
+  const [formulaBeat, setFormulaBeat] = useState(null);
   const [bankItem, setBankItem] = useState({ status: "idle" });
   const [bankIndex, setBankIndex] = useState(0);
   const [marking, setMarking] = useState(false);
@@ -286,6 +323,8 @@ function App() {
   // The tutor is a chat the learner opens, not a panel competing with the
   // lesson for space. It appears once they ask for it, below the explanation.
   const [tutorOpen, setTutorOpen] = useState(false);
+  const tutorPanelRef = useRef(null);
+  const tutorInputRef = useRef(null);
   // The narrated lesson is opened on request rather than shown by default:
   // a learner who only wants to read should not meet a player first.
 
@@ -308,6 +347,20 @@ function App() {
   const [attemptOpen, setAttemptOpen] = useState(false);
   const [savingAttempt, setSavingAttempt] = useState(false);
   const [attemptMessage, setAttemptMessage] = useState("");
+
+  function openTutor() {
+    setTutorOpen(true);
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        tutorPanelRef.current?.scrollIntoView({
+          behavior: reducedMotion ? "auto" : "smooth",
+          block: "start",
+        });
+        tutorInputRef.current?.focus({ preventScroll: true });
+      });
+    });
+  }
   const [mastery, setMastery] = useState([]);
   const [subscription, setSubscription] = useState(subscriptionPreview ? null : previewMode ? { plan: "admin", status: "active" } : null);
   const [billingChecked, setBillingChecked] = useState(Boolean(previewMode));
@@ -368,6 +421,20 @@ function App() {
   const subtopics = useMemo(() => subtopicsFor(selectedTopic), [selectedTopic]);
   const selectedSubtopic =
     subtopics.find((subtopic) => subtopic.id === selectedSubtopicId) ?? subtopics[0];
+
+  // Memoised: a fresh array on every render would look like a new sequence
+  // to the player and stop the audio each time anything else on the page
+  // changed.
+  const workedExampleBeats = useMemo(
+    () => (workedExample.status === "ready" && workedExample.question
+      ? exampleBeats(workedExample, selectedSubtopic?.title ?? selectedTopic?.title ?? "")
+      : []),
+    [workedExample, selectedSubtopic, selectedTopic]
+  );
+  const keyFormulaBeats = useMemo(
+    () => formulaBeats(explanation.formulae),
+    [explanation.formulae]
+  );
   // Only Maths content is typeset, and only when the stored row was written for it.
   // Maths always typesets; every other subject typesets whatever carries LaTeX,
   // which is most of the science, computing, geography and DT formulae.
@@ -376,6 +443,10 @@ function App() {
 
   useEffect(() => {
     // A voice carrying on about the previous topic is worse than no voice.
+    // Both halves are needed: stopPlayback() stops whichever player holds the
+    // floor, including a recorded clip in its own audio element, and
+    // stopSpeaking() catches any device utterance no player owns.
+    stopPlayback();
     stopSpeaking();
   }, [selectedTopicId, learningMode, subject, view]);
 
@@ -458,7 +529,10 @@ function App() {
     if (!learnerProfile || previewMode) return;
     appRequest(`/api/progress?year=${learnerYear}`)
       .then(async (response) => response.ok ? readJson(response) : Promise.reject())
-      .then((data) => setMastery(data.mastery ?? []))
+      .then((data) => {
+        setMastery(data.mastery ?? []);
+        setLessonsDone(new Set((data.lessons ?? []).map((lesson) => `${lesson.topicId}::${lesson.index}`)));
+      })
       .catch(() => {});
   }, [learnerProfile, learnerYear]);
 
@@ -598,7 +672,11 @@ function App() {
       }),
     });
     const data = await readJson(response);
-    if (!response.ok) throw new Error(data.error ?? "That part of the lesson could not be loaded right now.");
+    if (!response.ok) {
+      const failure = new Error(data.error ?? "That part of the lesson could not be loaded right now.");
+      failure.noWorkedExample = data.noWorkedExample === true;
+      throw failure;
+    }
     return data;
   }, [appRequest, learnerProfile, learnerYear, subject]);
 
@@ -691,17 +769,73 @@ function App() {
     loadReviewQuestion(reviewItem);
   }, [learningMode, loadReviewQuestion, reviewItem]);
 
+  // Shown straight away, and taken back if it could not be saved, so the tick
+  // never claims a lesson the server does not have.
+  const markLessonDone = useCallback((subtopic) => {
+    if (!subtopic || lessonsDone.has(subtopic.id)) return;
+    const forget = () => {
+      setLessonsDone((done) => {
+        const next = new Set(done);
+        next.delete(subtopic.id);
+        return next;
+      });
+      setLessonSaveError("That could not be saved just now. Please try again.");
+    };
+    setLessonSaveError("");
+    setLessonsDone((done) => new Set(done).add(subtopic.id));
+    appRequest("/api/progress", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kind: "lesson", year: learnerYear, subject, topicId: subtopic.topicId, index: subtopic.index }),
+    }).then((response) => { if (!response.ok) forget(); }).catch(forget);
+  }, [appRequest, learnerYear, lessonsDone, subject]);
+
+  // A failed save belongs to the sub-topic it was for.
+  useEffect(() => setLessonSaveError(""), [selectedSubtopic?.id]);
+
+  const topicAnswers = useCallback((topicId) => {
+    const item = mastery.find((entry) => entry.topicId === topicId);
+    return { practice: item?.practiceAnswered ?? 0, exam: item?.examAnswered ?? 0 };
+  }, [mastery]);
+
+  // Reading to the end counts as finishing the lesson: the end of the worked
+  // example has to stay on screen for a while, so scrolling past it does not.
+  useEffect(() => {
+    const end = exampleEnd.current;
+    if (!end || workedExample.status !== "ready" || !selectedSubtopic || lessonsDone.has(selectedSubtopic.id)) return undefined;
+    if (typeof IntersectionObserver === "undefined") return undefined;
+    let timer = null;
+    const observer = new IntersectionObserver(([entry]) => {
+      window.clearTimeout(timer);
+      if (entry.isIntersecting) timer = window.setTimeout(() => markLessonDone(selectedSubtopic), exampleReadSeconds * 1000);
+    });
+    observer.observe(end);
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(timer);
+    };
+  }, [lessonsDone, markLessonDone, selectedSubtopic, workedExample.status]);
+
   const loadWorkedExample = useCallback(async (topic, subtopic, { refresh = false } = {}) => {
     if (!topic || !subtopic) return;
     const ticket = exampleTicket.current + 1;
     exampleTicket.current = ticket;
+    // Outcomes with no method to work through have no example at all, so the
+    // section is left out rather than asked for and shown as a failure. The
+    // server applies the same list; its answer is honoured too, in case the
+    // two ever disagree.
+    if (!warrantsWorkedExample(topic.id, subtopic.index)) {
+      setWorkedExample({ status: "none" });
+      return;
+    }
     setWorkedExample({ status: "loading" });
     activity.current.examplesOpened += 1;
     try {
       const data = await requestContent("example", topic, subtopic, refresh);
       if (exampleTicket.current === ticket) setWorkedExample({ status: "ready", ...data.content });
     } catch (failure) {
-      if (exampleTicket.current === ticket) setWorkedExample({ status: "error", error: failure.message });
+      if (exampleTicket.current !== ticket) return;
+      setWorkedExample(failure.noWorkedExample ? { status: "none" } : { status: "error", error: failure.message });
     }
   }, [requestContent]);
 
@@ -888,6 +1022,16 @@ Mark my answer.`,
     sendTutorPrompt(learningModes[learningMode].prompt);
   }
 
+  function startExamTimer() {
+    setExamRunning(true);
+  }
+
+  function resetExamTimer() {
+    if (!window.confirm("Are you sure you want to reset the timer? Your elapsed time will return to 00:00.")) return;
+    setExamRunning(false);
+    setExamSeconds(0);
+  }
+
   async function saveAttempt(details) {
     setSavingAttempt(true);
     setAttemptMessage("");
@@ -956,6 +1100,27 @@ Mark my answer.`,
 
   if (resetToken || resetPreview) {
     return <PasswordReset token={resetToken} />;
+  }
+
+  if (authStatus === "signed-out" && checkoutState === "success") {
+    return <main className="password-login"><div className="login-box">
+      <div className="password-brand"><GraduationCap size={30} /><strong>Education Hub</strong></div>
+      <h1>Payment received</h1>
+      <p>Check your email. We have sent a link to set your password, and it works for seven days.</p>
+      <p className="login-no-account">The link takes you to sign in once your password is set, and we then ask for the learner's details.</p>
+      {/* No sign-in button here: there is no password yet, so signing in can
+          only fail. What can go wrong at this point is the email not arriving. */}
+      <button type="button" className="login-link" onClick={() => window.location.assign("/?forgot=1")}>Didn't get the email? Send another link</button>
+    </div></main>;
+  }
+
+  if (authStatus === "signed-out" && registerHandoff?.email && registerHandoff?.username) {
+    return (
+      <SignupHandoff
+        email={registerHandoff.email}
+        username={registerHandoff.username}
+      />
+    );
   }
 
   if (authStatus === "signed-out" || authStatus === "checking") {
@@ -1171,10 +1336,16 @@ Mark my answer.`,
               <Target size={15} />
               <span>{activeDiagnostic ? "Retake check" : "Take the check"}</span>
             </button>
-            <div className="model-pill">
+            <button
+              aria-controls="sonia-chat"
+              aria-expanded={tutorOpen}
+              className="model-pill"
+              onClick={openTutor}
+              type="button"
+            >
               <Sparkles size={16} />
               <span>Sonia · Your AI Tutor</span>
-            </div>
+            </button>
           </div>
         </header>
 
@@ -1190,7 +1361,32 @@ Mark my answer.`,
               </button>;
             })}
           </section>
-          {learningMode === "exam" && <div className={`exam-timer ${examRunning ? "running" : ""}`}><Timer size={16} /><strong>{String(Math.floor(examSeconds / 60)).padStart(2, "0")}:{String(examSeconds % 60).padStart(2, "0")}</strong></div>}
+          {learningMode === "exam" && <div className={`exam-timer ${examRunning ? "running" : ""}`}>
+            <Timer size={16} />
+            <strong>{String(Math.floor(examSeconds / 60)).padStart(2, "0")}:{String(examSeconds % 60).padStart(2, "0")}</strong>
+            <div className="exam-timer-actions">
+              <button
+                aria-label="Start exam timer"
+                className="exam-timer-control"
+                disabled={examRunning}
+                onClick={startExamTimer}
+                title="Start timer"
+                type="button"
+              >
+                <Play size={15} />
+              </button>
+              <button
+                aria-label="Reset exam timer"
+                className="exam-timer-control"
+                disabled={examSeconds === 0}
+                onClick={resetExamTimer}
+                title="Reset timer"
+                type="button"
+              >
+                <RotateCcw size={15} />
+              </button>
+            </div>
+          </div>}
         </div>
 
         <DailyGoal refreshKey={habitKey} request={appRequest} />
@@ -1223,19 +1419,31 @@ Mark my answer.`,
             </select>
           </label>
           {learningMode === "learn" && <div className="subtopic-grid" aria-label="Sub-topics">
-            {subtopics.map((subtopic) => (
-              <button
+            {subtopics.map((subtopic) => {
+              const answers = topicAnswers(subtopic.topicId);
+              const lessonDone = lessonsDone.has(subtopic.id);
+              const complete = lessonDone && answers.practice >= answersToFinish && answers.exam >= answersToFinish;
+              const summary = `Lesson ${lessonDone ? "done" : "not done"}. Practice ${Math.min(answers.practice, answersToFinish)} of ${answersToFinish}. Exam ${Math.min(answers.exam, answersToFinish)} of ${answersToFinish}.`;
+              return <button
                 aria-pressed={subtopic.id === selectedSubtopic?.id}
-                className={subtopic.id === selectedSubtopic?.id ? "subtopic-card active" : "subtopic-card"}
+                className={`subtopic-card${subtopic.id === selectedSubtopic?.id ? " active" : ""}${complete ? " complete" : ""}`}
                 key={subtopic.id}
                 onClick={() => setSelectedSubtopicId(subtopic.id)}
+                title={complete ? "Completed: lesson, practice and exam all done" : summary}
                 type="button"
               >
+                {complete && <span className="subtopic-tick" aria-label="Completed" role="img"><CheckCircle2 size={20} strokeWidth={2.4} /></span>}
                 <span className="subtopic-index">Sub-topic {subtopic.index + 1}</span>
                 <strong>{subtopic.title}</strong>
-                <small>Worked example</small>
-              </button>
-            ))}
+                {/* The three things that finish a sub-topic, each ticked as it is
+                    done, so progress shows before the whole card is. */}
+                <small className="subtopic-steps">
+                  <span className={lessonDone ? "done" : undefined}>{lessonDone && <Check size={12} strokeWidth={3} />}Lesson</span>
+                  <span className={answers.practice >= answersToFinish ? "done" : undefined}>{answers.practice >= answersToFinish && <Check size={12} strokeWidth={3} />}Practice {Math.min(answers.practice, answersToFinish)}/{answersToFinish}</span>
+                  <span className={answers.exam >= answersToFinish ? "done" : undefined}>{answers.exam >= answersToFinish && <Check size={12} strokeWidth={3} />}Exam {Math.min(answers.exam, answersToFinish)}/{answersToFinish}</span>
+                </small>
+              </button>;
+            })}
           </div>}
         </section>
 
@@ -1276,6 +1484,9 @@ Mark my answer.`,
                 <h3>{selectedTopic.title}</h3>
               </div>
               {explanation.status === "ready" && <button className="ask-tutor play-lesson" onClick={() => {
+                // Opening the lesson player is the learner asking for the
+                // lesson, so anything else speaking gives way to it.
+                stopPlayback();
                 stopSpeaking();
                 setPlayerOpen((open) => !open);
               }} type="button">
@@ -1305,14 +1516,40 @@ Mark my answer.`,
                 </section>
                 {explanation.status === "ready" && (explanation.formulae ?? []).length > 0 && (
                   <section className="guide-section formula-guide">
-                    <h4>Key formulas</h4>
-                    {explanation.formulae.map((formula) => <code className={typeset(formula) ? "typeset" : ""} key={formula}><MathsText enabled={typeset(formula)}>{formula}</MathsText></code>)}
+                    <div className="worked-example-heading">
+                      <h4>Key formulas</h4>
+                      <BeatPlayer
+                        beats={keyFormulaBeats}
+                        label="Play the key formulas"
+                        onBeat={setFormulaBeat}
+                        request={appRequest}
+                        topic={selectedTopic}
+                      />
+                    </div>
+                    {explanation.formulae.map((formula, index) => (
+                      <code
+                        className={`${typeset(formula) ? "typeset" : ""}${formulaBeat?.position === index ? " speaking" : ""}`.trim()}
+                        key={formula}
+                      >
+                        <MathsText enabled={typeset(formula)}>{formula}</MathsText>
+                      </code>
+                    ))}
                   </section>
                 )}
               </>}
-              <section className="guide-section worked-example">
+              {workedExample.status !== "none" && <section className="guide-section worked-example">
                 <div className="worked-example-heading">
                   <h4>Worked example: {selectedSubtopic?.title ?? selectedTopic.title}</h4>
+                  {workedExample.status === "ready" && workedExample.question && (
+                    <BeatPlayer
+                      beats={workedExampleBeats}
+                      label="Play the worked example"
+                      onBeat={setExampleBeat}
+                      onComplete={() => markLessonDone(selectedSubtopic)}
+                      request={appRequest}
+                      topic={selectedTopic}
+                    />
+                  )}
                   {workedExample.status === "ready" && currentUser?.isAdmin && (
                     <button
                       className="example-refresh"
@@ -1336,17 +1573,45 @@ Mark my answer.`,
                   <>
                     {workedExample.formulae?.length > 0 && (
                       <div className="example-formulae">
-                        {workedExample.formulae.map((formula) => <code className={typeset(formula) ? "typeset" : ""} key={formula}><MathsText enabled={typeset(formula)}>{formula}</MathsText></code>)}
+                        {workedExample.formulae.map((formula, index) => (
+                          <code
+                            className={`${typeset(formula) ? "typeset" : ""}${exampleBeat?.kind === "formula" && exampleBeat.position === index ? " speaking" : ""}`.trim()}
+                            key={formula}
+                          >
+                            <MathsText enabled={typeset(formula)}>{formula}</MathsText>
+                          </code>
+                        ))}
                       </div>
                     )}
-                    <p><strong>Question:</strong> <MathsText enabled={typeset(workedExample.question)}>{workedExample.question}</MathsText></p>
+                    {/* While it is being read aloud, the line being spoken is
+                        marked, so a learner following along knows where they
+                        are without having to guess from the voice. */}
+                    <p className={exampleBeat?.kind === "question" ? "speaking" : undefined}><strong>Question:</strong> <MathsText enabled={typeset(workedExample.question)}>{workedExample.question}</MathsText></p>
                     <ol>
-                      {workedExample.steps.map((step, index) => <li key={`${index}-${step}`}><MathsText enabled={typeset(step)}>{step}</MathsText></li>)}
+                      {workedExample.steps.map((step, index) => (
+                        <li
+                          className={exampleBeat?.kind === "step" && exampleBeat.position === index ? "speaking" : undefined}
+                          key={`${index}-${step}`}
+                        >
+                          <MathsText enabled={typeset(step)}>{step}</MathsText>
+                        </li>
+                      ))}
                     </ol>
-                    {workedExample.answer && <p className="worked-answer"><strong>Answer:</strong> <MathsText enabled={typeset(workedExample.answer)}>{workedExample.answer}</MathsText></p>}
+                    {workedExample.answer && <p className={`worked-answer${exampleBeat?.kind === "answer" ? " speaking" : ""}`}><strong>Answer:</strong> <MathsText enabled={typeset(workedExample.answer)}>{workedExample.answer}</MathsText></p>}
                   </>
                 ) : <p className="example-raw">{workedExample.raw}</p>)}
-              </section>
+                {workedExample.status === "ready" && <span aria-hidden="true" className="example-end" ref={exampleEnd} />}
+              </section>}
+              {selectedSubtopic && (lessonsDone.has(selectedSubtopic.id) ? (
+                <p className="lesson-done" role="status"><CheckCircle2 size={17} /> Lesson finished for this sub-topic</p>
+              ) : (
+                <div className="lesson-done-action">
+                  <button className="secondary-button lesson-done-button" onClick={() => markLessonDone(selectedSubtopic)} type="button">
+                    <CheckCircle2 size={16} /> Mark this lesson as done
+                  </button>
+                  {lessonSaveError && <p className="lesson-done-error" role="alert">{lessonSaveError}</p>}
+                </div>
+              ))}
             </div>
             {selectedEvidence && (
               <div className={`topic-evidence ${selectedEvidence.classification}`}>
@@ -1355,19 +1620,11 @@ Mark my answer.`,
                 <span>Next step: {selectedEvidence.nextStep}</span>
               </div>
             )}
-            <div className="outcomes">
-              {selectedTopic.outcomes.map((outcome) => (
-                <div className="outcome" key={outcome}>
-                  <CheckCircle2 size={16} />
-                  <span>{outcome}</span>
-                </div>
-              ))}
-            </div>
             <div className="lesson-actions">
               {learningMode !== "learn" && <button className="start-activity" disabled={isThinking} onClick={startActivity} type="button">
                 <Play size={15} /> {learningModes[learningMode].action}
               </button>}
-              {!tutorOpen && <button className="ask-tutor" onClick={() => setTutorOpen(true)} type="button">
+              {!tutorOpen && <button className="ask-tutor" onClick={openTutor} type="button">
                 <Sparkles size={16} /> Ask Sonia (Your AI Tutor)
               </button>}
             </div>
@@ -1385,7 +1642,7 @@ Mark my answer.`,
             />}
           </article>}
 
-          {tutorOpen && <section className="tutor-panel" aria-label="Chat with Sonia, your AI tutor">
+          {tutorOpen && <section className="tutor-panel" aria-label="Chat with Sonia, your AI tutor" id="sonia-chat" ref={tutorPanelRef}>
             <div className="chat-header">
               <Sparkles size={20} />
               <div>
@@ -1413,6 +1670,7 @@ Mark my answer.`,
                 aria-label="Ask Sonia"
                 onChange={(event) => setPrompt(event.target.value)}
                 placeholder={`${learningModes[learningMode].label}: ask or submit an answer...`}
+                ref={tutorInputRef}
                 value={prompt}
               />
               <button aria-label="Send" disabled={isThinking} type="submit">

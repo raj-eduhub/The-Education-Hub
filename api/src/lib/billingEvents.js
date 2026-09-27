@@ -1,7 +1,12 @@
 // The money path: what a Stripe event does to a learner's access. Kept out of the
 // HTTP handler so it can be tested directly with synthetic events, without a
 // signing secret, a server, or a live Stripe account.
-import { sendPaymentFailedEmail, sendWelcomeEmail } from "./email.js";
+import { sendPaymentFailedEmail, sendSetPasswordEmail, sendWelcomeEmail } from "./email.js";
+import { accountAwaitsPassword, createPasswordReset, usernameForEmail } from "./passwordAuth.js";
+import { saveUser } from "./userStore.js";
+
+// Long enough that the link is still good that evening, or the next day.
+const setPasswordWindowMs = 7 * 24 * 3600000;
 import {
   accountKey,
   findSubscriptionByCustomerId,
@@ -51,6 +56,7 @@ function periodEnd(subscription) {
 export async function handleStripeEvent(event, {
   appUrl,
   sendEmail = sendWelcomeEmail,
+  sendSetPassword = sendSetPasswordEmail,
   notifyPaymentFailed = sendPaymentFailedEmail,
   log = () => {},
 } = {}) {
@@ -91,7 +97,33 @@ export async function handleStripeEvent(event, {
     let welcomeSent = false;
     let deliveryError = "";
     try {
-      await sendEmail({ email, appUrl });
+      // Looked up rather than carried on the Stripe event: a payment made
+      // through a Payment Link knows the address but nothing about the
+      // account behind it.
+      const username = await usernameForEmail(email);
+      // The roster entry is what userCanAccess() reads, and without it a parent
+      // who has paid and set their password is told the account is inactive.
+      // It used to be created when the address was confirmed by email; paying
+      // and then opening the emailed link proves the same thing, so it is
+      // created here instead. saveUser upserts, so replaying this event or
+      // resubscribing simply refreshes the row.
+      await saveUser({ name: username || email, email, role: "parent" });
+      // An account created at sign-up has no password yet: the way in is the
+      // emailed link, so that is what gets sent instead of a receipt. Anyone
+      // who already has a password - resubscribing, or paying by link - gets
+      // the receipt, because sending them a set-password link would invite
+      // them to change a password that is working.
+      const awaiting = await accountAwaitsPassword(email);
+      const reset = awaiting ? await createPasswordReset(email, setPasswordWindowMs) : null;
+      if (reset) {
+        await sendSetPassword({
+          email,
+          username: reset.username || username,
+          setUrl: `${appUrl}/?reset=${encodeURIComponent(reset.token)}`,
+        });
+      } else {
+        await sendEmail({ email, appUrl, username });
+      }
       welcomeSent = true;
     } catch (failure) {
       // Recorded rather than thrown, so a failed receipt can be resent without

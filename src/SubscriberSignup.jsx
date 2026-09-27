@@ -8,7 +8,7 @@ const years = [7, 8, 9, 10, 11];
 // Exam boards are chosen per subject, because a school rarely enters every
 // subject with the same board.
 const signupBoards = ["AQA", "Edexcel"];
-const defaultBoards = Object.fromEntries(subjects.map((subject) => [subject, signupBoards[0]]));
+const noBoards = Object.fromEntries(subjects.map((subject) => [subject, ""]));
 
 // Collects the student and guardian details. Two ways in:
 //
@@ -20,8 +20,9 @@ const defaultBoards = Object.fromEntries(subjects.map((subject) => [subject, sig
 // person filling this in is already authenticated.
 export function SubscriberSignup({ preview = false, token, account, onComplete }) {
   const byLink = Boolean(token);
+  const accountEmail = (account?.email ?? "").trim().toLowerCase();
   const [invite, setInvite] = useState(
-    preview ? { email: "parent@example.com" } : byLink ? null : { email: account?.email ?? "" }
+    preview ? { email: accountEmail || "parent@example.com" } : byLink ? null : { email: accountEmail }
   );
   const [status, setStatus] = useState(preview || !byLink ? "ready" : "loading");
   const [error, setError] = useState("");
@@ -32,8 +33,8 @@ export function SubscriberSignup({ preview = false, token, account, onComplete }
     studentFirstName: "",
     dateOfBirth: "",
     year: 7,
-    examBoards: defaultBoards,
-    tier: "Higher",
+    examBoards: noBoards,
+    tier: "",
     parentalConsent: false,
     password: "",
   });
@@ -53,6 +54,14 @@ export function SubscriberSignup({ preview = false, token, account, onComplete }
       });
   }, [byLink, preview, token]);
 
+  // The website email becomes the account identity during reservation. Keep
+  // the setup form aligned with that account if session data hydrates after
+  // this component's first render; the address remains read-only here.
+  useEffect(() => {
+    if (byLink || !accountEmail) return;
+    setInvite((current) => current?.email === accountEmail ? current : { ...current, email: accountEmail });
+  }, [accountEmail, byLink]);
+
   // GCSE preparation begins in Year 9, so the board is chosen from then on.
   // Foundation and Higher entry is only decided for the exam years.
   // Worked out from the date of birth rather than chosen, so it is one less
@@ -66,6 +75,21 @@ export function SubscriberSignup({ preview = false, token, account, onComplete }
   const inRange = derivedYear !== null && derivedYear >= 7 && derivedYear <= 11;
   const choosesBoards = useMemo(() => Number(derivedYear) >= 9, [derivedYear]);
   const isGcse = useMemo(() => Number(derivedYear) >= 10, [derivedYear]);
+
+  // Everything on this form is required. Boards are only asked for from Year 9
+  // and the tier only from Year 10, so what "complete" means depends on the
+  // year the date of birth works out to.
+  const missing = useMemo(() => {
+    const gaps = [];
+    if (!form.guardianName.trim()) gaps.push("the parent or guardian's full name");
+    if (!form.guardianPhone.trim()) gaps.push("a mobile number");
+    if (!form.studentFirstName.trim()) gaps.push("the student's first name");
+    if (!inRange) gaps.push("a date of birth that works out as Year 7 to Year 11");
+    if (choosesBoards && subjects.some((subject) => !form.examBoards[subject])) gaps.push("an exam board for every subject");
+    if (isGcse && !form.tier) gaps.push("a tier for maths and science");
+    if (!form.parentalConsent) gaps.push("your confirmation below");
+    return gaps;
+  }, [form, inRange, choosesBoards, isGcse]);
 
   function update(name, value) {
     setForm((current) => ({ ...current, [name]: value }));
@@ -125,7 +149,7 @@ export function SubscriberSignup({ preview = false, token, account, onComplete }
           <div className="signup-fields two-columns">
             <label>Full name<input autoComplete="name" onChange={(event) => update("guardianName", event.target.value)} required value={form.guardianName} /></label>
             <label>Relationship<select onChange={(event) => update("guardianRelationship", event.target.value)} value={form.guardianRelationship}><option value="parent">Parent</option><option value="legal-guardian">Legal guardian</option><option value="carer">Carer</option></select></label>
-            <label>Email<input readOnly type="email" value={invite.email} /></label>
+            <label>Email<input autoComplete="email" readOnly type="email" value={invite.email} /></label>
             <label>Mobile number<input autoComplete="tel" inputMode="tel" onChange={(event) => update("guardianPhone", event.target.value)} placeholder="07700 900123" required type="tel" value={form.guardianPhone} /></label>
           </div>
         </section>
@@ -144,7 +168,8 @@ export function SubscriberSignup({ preview = false, token, account, onComplete }
             {!form.dateOfBirth
               ? <p>Enter a date of birth and the school year will appear here.</p>
               : inRange
-                ? <p><strong>Year {derivedYear}</strong><span>{derivedYear <= 8 ? "Key Stage 3" : derivedYear === 9 ? "GCSE preparation" : "GCSE"}</span></p>
+                ? <><div className="derived-year-summary"><strong>Year {derivedYear}</strong><span>{derivedYear <= 8 ? "Key Stage 3" : derivedYear === 9 ? "GCSE preparation" : "GCSE"}</span></div>
+                  <p className="year-locked-note">Check this is right. The school year cannot be changed once you continue, and it decides the whole curriculum.</p></>
                 : <p className="out-of-range">Y7to11.AI covers Years 7 to 11. That date of birth works out as {derivedYear !== null && derivedYear > 11 ? "older than Year 11" : "younger than Year 7"}.</p>}
           </div>
           {choosesBoards && <>
@@ -171,13 +196,14 @@ export function SubscriberSignup({ preview = false, token, account, onComplete }
                 </div>
               ))}
             </fieldset>
-            {isGcse && <div className="signup-fields gcse-signup-fields"><label>Maths and Science tier<select onChange={(event) => update("tier", event.target.value)} value={form.tier}><option>Foundation</option><option>Higher</option></select></label></div>}
+            {isGcse && <div className="signup-fields gcse-signup-fields"><label>Maths and Science tier<select onChange={(event) => update("tier", event.target.value)} required value={form.tier}><option disabled value="">Choose a tier</option><option>Foundation</option><option>Higher</option></select></label></div>}
           </>}
         </section>
 
         <label className="signup-consent"><input checked={form.parentalConsent} onChange={(event) => update("parentalConsent", event.target.checked)} type="checkbox" /><span>I confirm that I am the parent, legal guardian, or carer and consent to Education Hub processing these details to provide the learning service.</span></label>
         {error && <p className="signup-error" role="alert">{error}</p>}
-        <button className="signup-submit" disabled={!form.parentalConsent || status === "submitting"} type="submit">{status === "submitting" ? "Saving..." : "Start learning"}<ArrowRight size={18} /></button>
+        {missing.length > 0 && <p className="signup-missing">Still needed: {missing.join(", ")}.</p>}
+        <button className="signup-submit" disabled={missing.length > 0 || status === "submitting"} type="submit">{status === "submitting" ? "Saving..." : "Start learning"}<ArrowRight size={18} /></button>
       </form>
     </div>
   </main>;

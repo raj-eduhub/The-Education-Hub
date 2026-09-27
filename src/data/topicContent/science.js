@@ -267,12 +267,15 @@ export const scienceContent = {
   // ---- Year 10 (GCSE) ----------------------------------------------------
   "y10-science-cell-biology": {
     explanation:
-      "Eukaryotic cells, including plant and animal cells, have a nucleus holding the genetic material; prokaryotic cells such as bacteria are much smaller, have no nucleus, and carry their DNA as a single loop plus plasmids. A light microscope magnifies enough to see cells and nuclei; an electron microscope has far higher magnification and resolution and reveals sub-cellular structures. Magnification calculations connect the image size, the real size and the magnification, and answers usually need converting between millimetres and micrometres. Substances move in and out of cells by diffusion down a concentration gradient, by osmosis when water moves across a partially permeable membrane, and by active transport against the gradient, which requires energy from respiration.",
+      "Eukaryotic cells, including plant and animal cells, have a nucleus holding the genetic material; prokaryotic cells such as bacteria are much smaller, have no nucleus, and carry their DNA as a single loop plus plasmids. A light microscope magnifies enough to see cells and nuclei; an electron microscope has far higher magnification and resolution and reveals sub-cellular structures. Magnification calculations connect the image size, the real size and the magnification, and answers usually need converting between millimetres and micrometres. Substances move in and out of cells by diffusion down a concentration gradient, by osmosis when water moves across a partially permeable membrane, and by active transport against the gradient, which requires energy from respiration. As an organism develops, most cells differentiate, gaining the sub-cellular structures their job needs; most animal cells differentiate early in life, while many plant cells can differentiate throughout it. Stem cells are undifferentiated cells that can become other types: embryonic stem cells can become almost any cell, adult stem cells in bone marrow form only some types such as blood cells, and meristem tissue at plant root and shoot tips can form any plant cell, which is why plants can be cloned quickly from cuttings. Stem cells may one day treat conditions such as diabetes and paralysis, and therapeutic cloning would give cells the patient's body does not reject, but that benefit is weighed against the risk of transferring viral infection and against ethical and religious objections to using embryos.",
     keyIdeas: [
       "Prokaryotic cells have no nucleus; eukaryotic cells do.",
       "Electron microscopes give higher magnification and higher resolution.",
       "Osmosis is the movement of water across a partially permeable membrane.",
       "Active transport works against the gradient and needs energy.",
+      "Stem cells are undifferentiated and can become other cell types.",
+      "Embryonic stem cells are more versatile than adult bone marrow stem cells.",
+      "Meristems let plants differentiate throughout life, so they clone easily.",
     ],
     formulae: [
       "Magnification $= \\frac{\\text{image size}}{\\text{real size}}$",
@@ -281,37 +284,49 @@ export const scienceContent = {
   },
   "y10-science-organisation": {
     explanation:
-      "Cells of one type form tissues, tissues form organs, and organs work together as organ systems. Enzymes are proteins that catalyse reactions, each with an active site shaped to fit one substrate, which is why raising the temperature too far or changing the pH denatures the enzyme and stops it working. The digestive system uses enzymes to break carbohydrates into simple sugars, proteins into amino acids and lipids into fatty acids and glycerol, with bile emulsifying fat to increase the surface area for lipase. The circulatory system carries the absorbed products: the heart pumps blood through arteries, capillaries and veins, and the blood carries red cells, white cells, platelets and plasma.",
+      "Cells of one type form tissues, tissues form organs, and organs work together as organ systems. Enzymes are proteins that catalyse reactions, each with an active site shaped to fit one substrate, which is why raising the temperature too far or changing the pH denatures the enzyme and stops it working. The digestive system uses enzymes to break carbohydrates into simple sugars, proteins into amino acids and lipids into fatty acids and glycerol, with bile emulsifying fat to increase the surface area for lipase. The circulatory system carries the absorbed products: the heart pumps blood through arteries, capillaries and veins, and the blood carries red cells, white cells, platelets and plasma. A leaf is a plant organ: the upper epidermis is transparent, the palisade mesophyll is packed with chloroplasts for photosynthesis, the spongy mesophyll has air spaces for gas exchange, and guard cells open and close the stomata. Xylem is made of hollow dead cells strengthened by lignin and carries water and mineral ions up from the roots; phloem is living tissue that carries dissolved sugars both up and down the plant, which is called translocation. Transpiration is the loss of water vapour from the leaves through the stomata, which draws water up the xylem, and it is faster when it is hotter, drier, windier or brighter, because each of those speeds evaporation or opens the stomata.",
     keyIdeas: [
       "An enzyme's active site fits one substrate; heat and pH can denature it.",
       "Carbohydrase, protease and lipase break down the three food groups.",
       "Bile emulsifies fat, increasing surface area rather than digesting it.",
       "Arteries carry blood away from the heart, veins return it.",
+      "Xylem carries water and minerals upward; phloem carries sugars both ways.",
+      "Transpiration is water vapour lost through stomata, pulling water up the xylem.",
+      "Heat, light, wind and dry air all increase the rate of transpiration.",
     ],
     formulae: [
       "Rate of reaction $= \\frac{1000}{\\text{time in seconds}}$ (s$^{-1}$)",
       "Food tests: Benedict's for sugars, iodine for starch, Biuret for protein",
+      "Rate of transpiration $= \\frac{\\text{volume of water taken up}}{\\text{time}}$",
     ],
   },
   "y10-science-atomic": {
     explanation:
-      "Electrons occupy shells, and it is the outer shell that determines bonding. Ionic bonding transfers electrons from a metal to a non-metal, producing oppositely charged ions held by strong electrostatic attraction in a giant lattice, which gives high melting points and conduction only when molten or dissolved. Covalent bonding shares pairs of electrons between non-metal atoms; simple molecular substances have strong bonds inside the molecule but weak forces between molecules, so they melt easily and do not conduct. Giant covalent structures such as diamond and graphite, and metallic bonding with its sea of delocalised electrons, explain hardness, conductivity and malleability from structure alone.",
+      "Electrons occupy shells, and it is the outer shell that determines bonding. Ionic bonding transfers electrons from a metal to a non-metal, producing oppositely charged ions held by strong electrostatic attraction in a giant lattice, which gives high melting points and conduction only when molten or dissolved. Covalent bonding shares pairs of electrons between non-metal atoms; simple molecular substances have strong bonds inside the molecule but weak forces between molecules, so they melt easily and do not conduct. Giant covalent structures such as diamond and graphite, and metallic bonding with its sea of delocalised electrons, explain hardness, conductivity and malleability from structure alone. An atom has a nucleus of protons and neutrons with electrons around it, and because the atom is neutral the number of electrons equals the number of protons. The atomic number is the number of protons, which fixes the element; the mass number is protons plus neutrons, so the number of neutrons is the mass number minus the atomic number. Isotopes are atoms of the same element with different numbers of neutrons, so they react identically but differ in mass, which is why the relative atomic mass on the periodic table is an average rather than a whole number.",
     keyIdeas: [
       "Ionic: electrons transferred, giant lattice, conducts when molten or dissolved.",
       "Simple molecular: weak forces between molecules, so low melting points.",
       "Graphite conducts because each carbon has a delocalised electron.",
       "Metals are malleable because layers of ions can slide over each other.",
+      "Atomic number is the number of protons; mass number is protons plus neutrons.",
+      "Isotopes have the same number of protons but different numbers of neutrons.",
     ],
-    formulae: ["Electron shells fill 2, 8, 8 for the first twenty elements"],
+    formulae: [
+      "Electron shells fill 2, 8, 8 for the first twenty elements",
+      "Neutrons $=$ mass number $-$ atomic number",
+    ],
   },
   "y10-science-energy": {
     explanation:
-      "Energy is transferred between stores, and calculations at GCSE use kinetic energy, gravitational potential energy and the energy needed to raise the temperature of a material. Power is the rate of transfer, measured in watts, and efficiency compares the useful output with the total input. In electrical circuits, potential difference, current and resistance are linked by $V = IR$, and electrical power can be calculated from current and potential difference. The National Grid uses transformers to raise the potential difference for transmission, which reduces the current and therefore the energy wasted as heat in the cables.",
+      "Energy is transferred between stores, and calculations at GCSE use kinetic energy, gravitational potential energy and the energy needed to raise the temperature of a material. Power is the rate of transfer, measured in watts, and efficiency compares the useful output with the total input. In electrical circuits, potential difference, current and resistance are linked by $V = IR$, and electrical power can be calculated from current and potential difference. The National Grid uses transformers to raise the potential difference for transmission, which reduces the current and therefore the energy wasted as heat in the cables. A resistor at constant temperature has a fixed resistance, so its I-V graph is a straight line through the origin. A filament lamp's graph curves because the filament heats up as the current rises and its resistance increases, and a diode lets current flow in one direction only, having a very high resistance the other way. The resistance of a thermistor falls as its temperature rises, and that of a light-dependent resistor falls as the light gets brighter, which is why they are the sensors in thermostats and automatic lights.",
     keyIdeas: [
       "Power is energy transferred per second, measured in watts.",
       "Efficiency compares useful output with total input.",
       "$V = IR$ links the three circuit quantities.",
       "High transmission voltage means low current and less wasted heating.",
+      "A resistor at constant temperature gives a straight-line I-V graph.",
+      "A filament lamp's resistance rises as it heats; a diode conducts one way only.",
+      "Thermistor resistance falls as it warms; LDR resistance falls as light increases.",
     ],
     formulae: [
       "$E_{k} = \\frac{1}{2}mv^{2}$",
@@ -319,6 +334,7 @@ export const scienceContent = {
       "$E = mc\\Delta\\theta$",
       "$P = VI$ and $P = I^{2}R$",
       "Efficiency $= \\frac{\\text{useful output}}{\\text{total input}}$",
+      "$R = \\frac{V}{I}$",
     ],
   },
   "y10-science-motion": {
@@ -365,12 +381,13 @@ export const scienceContent = {
   },
   "y10-science-bioenergetics": {
     explanation:
-      "Photosynthesis is endothermic: light energy transferred to chloroplasts converts carbon dioxide and water into glucose and oxygen. Its rate depends on light intensity, carbon dioxide concentration, temperature and the amount of chlorophyll, and at any moment one of these is the limiting factor holding the rate back. The glucose made is used for respiration, converted to starch for storage, used to make cellulose and proteins, or stored as oils. Respiration is exothermic and continuous; aerobic respiration releases much more energy per glucose molecule than anaerobic, and during hard exercise anaerobic respiration in muscle produces lactic acid and creates an oxygen debt.",
+      "Photosynthesis is endothermic: light energy transferred to chloroplasts converts carbon dioxide and water into glucose and oxygen. Its rate depends on light intensity, carbon dioxide concentration, temperature and the amount of chlorophyll, and at any moment one of these is the limiting factor holding the rate back. The glucose made is used for respiration, converted to starch for storage, used to make cellulose and proteins, or stored as oils. Respiration is exothermic and continuous; aerobic respiration releases much more energy per glucose molecule than anaerobic, and during hard exercise anaerobic respiration in muscle produces lactic acid and creates an oxygen debt. Metabolism is the sum of all the reactions in a cell or the body, and the energy transferred by respiration drives it: joining glucose into starch, glycogen and cellulose, making lipids from fatty acids and glycerol, building amino acids into proteins, and breaking excess protein down into urea for excretion.",
     keyIdeas: [
       "Photosynthesis is endothermic; respiration is exothermic.",
       "The limiting factor is whichever requirement is in shortest supply.",
       "Light intensity follows an inverse square relationship with distance.",
       "Anaerobic respiration in muscle produces lactic acid and an oxygen debt.",
+      "Metabolism is the sum of all the reactions in a cell or the body, powered by respiration.",
     ],
     formulae: [
       "$6\\mathrm{CO_{2}} + 6\\mathrm{H_{2}O} \\rightarrow \\mathrm{C_{6}H_{12}O_{6}} + 6\\mathrm{O_{2}}$",
@@ -457,9 +474,11 @@ export const scienceContent = {
   },
   "y11-science-waves": {
     explanation:
-      "Forces are vectors, so a free-body diagram and a resultant are the starting point for any force problem; Newton's laws then connect the resultant force to acceleration. Stopping distance is the sum of thinking distance, which depends on reaction time and speed, and braking distance, which depends on speed, brakes, tyres and road conditions. Waves are described by frequency, wavelength, amplitude and speed, with the wave equation linking three of them, and the electromagnetic spectrum runs from radio waves to gamma rays in order of increasing frequency. A current in a magnetic field experiences a force, which is the motor effect, and moving a conductor in a field induces a potential difference.",
+      "Forces are vectors, so a free-body diagram and a resultant are the starting point for any force problem: forces along the same line add if they act the same way and subtract if they oppose, and Newton's laws then connect the resultant force to acceleration. When a force moves an object, work is done and energy is transferred, one joule for every newton moved through one metre. A force can also stretch or compress an object, and for a spring the extension is directly proportional to the force up to the limit of proportionality, which is Hooke's law and the basis of a required practical; the work done stretching the spring is stored as elastic potential energy. Stopping distance is the sum of thinking distance, which depends on reaction time and speed, and braking distance, which depends on speed, brakes, tyres and road conditions. Waves are described by frequency, wavelength, amplitude and speed, with the wave equation linking three of them, and the electromagnetic spectrum runs from radio waves to gamma rays in order of increasing frequency. A current in a magnetic field experiences a force, which is the motor effect.",
     keyIdeas: [
       "Resolve forces to a resultant before applying $F = ma$.",
+      "Work done is force multiplied by distance moved along the line of the force.",
+      "Extension is proportional to force up to the limit of proportionality.",
       "Stopping distance is thinking distance plus braking distance.",
       "The wave equation links speed, frequency and wavelength.",
       "The motor effect: a current in a magnetic field feels a force.",
@@ -467,8 +486,10 @@ export const scienceContent = {
     formulae: [
       "$F = ma$",
       "$v = f\\lambda$",
-      "Momentum $p = mv$",
       "Weight $W = mg$",
+      "Work done $W = Fs$",
+      "Hooke's law $F = ke$",
+      "Elastic potential energy $E_{e} = \\frac{1}{2}ke^{2}$",
     ],
   },
   "y11-science-ecology": {
@@ -486,28 +507,32 @@ export const scienceContent = {
   },
   "y11-science-inheritance": {
     explanation:
-      "Sexual reproduction involves meiosis, producing gametes with half the chromosome number and genetically varied, while asexual reproduction uses mitosis and produces genetically identical offspring. An allele is a version of a gene; a dominant allele is expressed if one copy is present, a recessive allele needs two. A Punnett square predicts the proportions of genotypes in the offspring, and the phenotype is the characteristic that results. Variation arises from the combination of alleles at fertilisation and from mutation, and selective breeding, genetic engineering and cloning all apply this understanding, each with benefits and risks worth weighing.",
+      "Sexual reproduction involves meiosis, producing gametes with half the chromosome number and genetically varied, while asexual reproduction uses mitosis and produces genetically identical offspring. An allele is a version of a gene; a dominant allele is expressed if one copy is present, a recessive allele needs two. A Punnett square predicts the proportions of genotypes in the offspring, and the phenotype is the characteristic that results. Variation arises from the combination of alleles at fertilisation and from mutation, and selective breeding, genetic engineering and cloning all apply this understanding, each with benefits and risks worth weighing. Living things are classified into groups. Linnaeus sorted them by structure into kingdom, phylum, class, order, family, genus and species, and named each species with two words, its genus then its species, as in Homo sapiens. Microscopes and chemical analysis later showed that some organisms that looked alike were not closely related, so Carl Woese proposed three domains: archaea, primitive bacteria often found in extreme conditions; bacteria; and eukaryota, which includes animals, plants, fungi and protists. Evolutionary trees show how closely organisms are related, built from current classification data and, for extinct species, from fossils.",
     keyIdeas: [
       "Meiosis halves the chromosome number and produces variation.",
       "A recessive characteristic needs two copies of the allele.",
       "A Punnett square gives expected proportions, not guaranteed outcomes.",
       "Selective breeding reduces variation within a population.",
+      "Linnaeus: kingdom, phylum, class, order, family, genus, species.",
+      "A binomial name is the genus followed by the species.",
+      "The three domains are archaea, bacteria and eukaryota.",
     ],
-    formulae: ["Genotype: homozygous (BB or bb) or heterozygous (Bb)"],
+    formulae: [
+      "Genotype: homozygous (BB or bb) or heterozygous (Bb)",
+    ],
   },
   "y11-science-quantitative": {
     explanation:
-      "The relative formula mass of a compound is the total of the relative atomic masses of all the atoms in its formula, and it is the bridge between masses and amounts. Conservation of mass means the total mass of the products equals the total mass of the reactants, and an apparent change in mass in an open container is explained by a gas entering or escaping. Concentration of a solution is mass of solute per volume of solvent. Percentage yield compares the actual yield with the theoretical maximum, and atom economy compares the mass of the desired product with the total mass of the products, which is why a reaction with a high yield may still be wasteful.",
+      "The relative formula mass of a compound is the total of the relative atomic masses of all the atoms in its formula, and it is the bridge between masses and amounts. A balanced symbol equation has the same number of each kind of atom on both sides, which is what conservation of mass means at the level of atoms: the total mass of the products equals the total mass of the reactants. An apparent change in mass in an open container is explained by a gas entering or escaping, so magnesium burning in air gains mass as it combines with oxygen, while a metal carbonate that gives off carbon dioxide loses it. The concentration of a solution is the mass of solute dissolved in each cubic decimetre of solution. Every measurement carries some uncertainty, and a calculated answer should be given to no more significant figures than the least precise measurement that went into it.",
     keyIdeas: [
       "Relative formula mass is the total of the relative atomic masses in the formula.",
-      "Mass is conserved; a change in an open vessel means a gas moved.",
-      "Percentage yield measures how much you actually obtained.",
-      "Atom economy measures how much of the product mass is the substance you wanted.",
+      "A balanced equation has the same atoms on each side, so mass is conserved.",
+      "A mass change in an open vessel means a gas moved in or out.",
+      "Concentration is the mass of solute in each cubic decimetre of solution.",
     ],
     formulae: [
-      "Percentage yield $= \\frac{\\text{actual}}{\\text{theoretical}} \\times 100$",
-      "Atom economy $= \\frac{M_{r}\\text{ of desired product}}{M_{r}\\text{ of all products}} \\times 100$",
       "Concentration $= \\frac{\\text{mass of solute}}{\\text{volume}}$ (g/dm$^{3}$)",
+      "$1\\,\\text{dm}^{3} = 1000\\,\\text{cm}^{3}$",
     ],
   },
   "y11-science-analysis": {
@@ -525,16 +550,52 @@ export const scienceContent = {
   },
   "y11-science-atomic": {
     explanation:
-      "An unstable nucleus decays at random, emitting alpha particles, beta particles or gamma radiation. An alpha particle is two protons and two neutrons, so it reduces the mass number by four and the atomic number by two; a beta particle is a fast electron from a neutron turning into a proton, so the mass number is unchanged and the atomic number rises by one; gamma radiation is energy alone and changes neither. The three types differ in penetration and ionising power: alpha is the most ionising and least penetrating, gamma the reverse. Half-life is the time taken for the activity of a source to halve, which makes decay predictable in bulk even though each individual decay is random.",
+      "An unstable nucleus decays at random, emitting alpha particles, beta particles or gamma radiation. An alpha particle is two protons and two neutrons, so it reduces the mass number by four and the atomic number by two; a beta particle is a fast electron from a neutron turning into a proton, so the mass number is unchanged and the atomic number rises by one; gamma radiation is energy alone and changes neither. The three types differ in penetration and ionising power: alpha is the most ionising and least penetrating, gamma the reverse. Half-life is the time taken for the activity of a source to halve, which makes decay predictable in bulk even though each individual decay is random. Radiation is hazardous because it ionises atoms in living cells, which can kill them or damage their DNA and cause cancer. Irradiation is exposure to radiation from a source outside the object; it stops when the source is removed or shielded, and the object does not become radioactive. Contamination is the unwanted presence of radioactive atoms on or inside something, and it is more dangerous because the exposure carries on, so an alpha source is the most harmful inside the body and the least harmful outside it. Protection means limiting the time, keeping your distance, shielding the source and handling it with tongs, and findings about the effects of radiation are trusted only once other scientists have checked them through peer review.",
     keyIdeas: [
       "Alpha: mass number $-4$, atomic number $-2$.",
       "Beta: mass number unchanged, atomic number $+1$.",
       "Alpha ionises most and penetrates least; gamma is the opposite.",
       "Half-life is the time for activity to halve, and each decay is random.",
+      "Irradiation stops when the source is removed; contamination carries on.",
+      "Inside the body alpha is the most dangerous radiation; outside it, the least.",
     ],
     formulae: [
       "Alpha decay: $^{A}_{Z}X \\rightarrow\\ ^{A-4}_{Z-2}Y + ^{4}_{2}\\alpha$",
       "Beta decay: $^{A}_{Z}X \\rightarrow\\ ^{A}_{Z+1}Y + ^{0}_{-1}\\beta$",
+    ],
+  },
+  "y11-science-moles": {
+    explanation:
+      "Chemists count particles in moles. One mole of any substance contains $6.02 \\times 10^{23}$ particles, the Avogadro constant, and has a mass in grams equal to its relative formula mass, so 44 g of carbon dioxide is one mole and contains that many molecules. Dividing a mass by the relative formula mass gives the number of moles, and the balancing numbers in an equation are mole ratios, which is how the mass of product from a given mass of reactant is calculated, and how an equation is balanced from measured reacting masses. In most reactions one reactant runs out first: it is the limiting reactant, it alone fixes how much product forms, and the others are in excess. In a closed system a reversible reaction reaches equilibrium, where the forward and backward reactions go at the same rate, and Le Chatelier's principle predicts the response to a change: the equilibrium shifts to counteract it, so raising the temperature favours the endothermic direction and raising the pressure favours the side with fewer molecules of gas. In electrolysis, half equations show what happens at each electrode: positive ions gain electrons at the cathode, which is reduction, and negative ions lose electrons at the anode, which is oxidation. On a curved graph of amount against time, the rate at one moment is the gradient of the tangent drawn at that time.",
+    keyIdeas: [
+      "Moles $=$ mass $\\div M_{r}$, and one mole contains $6.02 \\times 10^{23}$ particles.",
+      "The balancing numbers in an equation are mole ratios.",
+      "The limiting reactant is used up first and sets the amount of product.",
+      "An equilibrium shifts to oppose any change in its conditions.",
+      "Oxidation is loss of electrons; reduction is gain.",
+    ],
+    formulae: [
+      "$n = \\frac{m}{M_{r}}$",
+      "Avogadro constant $= 6.02 \\times 10^{23}$ per mole",
+      "Cathode: $\\mathrm{Cu^{2+}} + 2e^{-} \\rightarrow \\mathrm{Cu}$",
+      "Anode: $2\\mathrm{Cl^{-}} \\rightarrow \\mathrm{Cl_{2}} + 2e^{-}$",
+    ],
+  },
+  "y11-science-momentum": {
+    explanation:
+      "Momentum is a property of every moving object, equal to its mass multiplied by its velocity, and because velocity has a direction, so does momentum. In a closed system the total momentum before an event equals the total momentum after it, so in a collision the momentum lost by one object is gained by the other, and in an explosion that starts from rest the pieces fly apart with equal and opposite momenta that total zero. Inertia is the tendency of an object to stay at rest or keep moving at a steady velocity, and inertial mass measures how hard that velocity is to change: it is the force applied divided by the acceleration produced. A wire carrying a current at right angles to a magnetic field feels a force, and Fleming's left-hand rule gives its direction, with the first finger along the field, the second finger along the current and the thumb giving the motion; its size is the magnetic flux density multiplied by the current and the length of wire in the field. In a motor the current flows in opposite directions along the two sides of a coil, so one side is pushed up and the other down, and a split-ring commutator reverses the current every half turn so the coil keeps turning the same way. Refraction can be explained with wave fronts: when a wave front meets a slower medium at an angle, the part that enters first slows first, so the wave front swings round and the wave changes direction.",
+    keyIdeas: [
+      "Momentum $= mv$, and it has a direction.",
+      "Total momentum is conserved in collisions and explosions.",
+      "Inertial mass is force divided by acceleration.",
+      "Fleming's left-hand rule: first finger field, second finger current, thumb motion.",
+      "A commutator reverses the current every half turn, so a motor keeps turning.",
+    ],
+    formulae: [
+      "$p = mv$",
+      "Total momentum before $=$ total momentum after",
+      "$F = B \\times I \\times l$, flux density times current times length",
+      "Inertial mass $= \\frac{F}{a}$",
     ],
   },
 };

@@ -22,7 +22,7 @@ export const mathsContent = {
   },
   "y7-maths-primes": {
     explanation:
-      "A prime number has exactly two factors: itself and 1. That is why 1 is not prime, and why 2 is the only even prime. Every other whole number above 1 can be broken into primes multiplied together, and there is only one way to do it however you start, so $60 = 2 \times 2 \times 3 \times 5$ whether you split off the 6 first or the 10. Writing two numbers as products of primes is what makes the rest easy to see. The highest common factor is built from the primes they share, and it is the largest number that divides into both. The lowest common multiple is built from every prime either of them needs, and it is the smallest number they both divide into, which is what you want when two repeating events line up again.",
+      "A prime number has exactly two factors: itself and 1. That is why 1 is not prime, and why 2 is the only even prime. Every other whole number above 1 can be broken into primes multiplied together, and there is only one way to do it however you start, so $60 = 2 \\times 2 \\times 3 \\times 5$ whether you split off the 6 first or the 10. Writing two numbers as products of primes is what makes the rest easy to see. The highest common factor is built from the primes they share, and it is the largest number that divides into both. The lowest common multiple is built from every prime either of them needs, and it is the smallest number they both divide into, which is what you want when two repeating events line up again.",
     keyIdeas: [
       "A prime has exactly two factors, so 1 is not prime and 2 is the only even one.",
       "Every whole number above 1 is a product of primes in exactly one way.",
@@ -30,8 +30,8 @@ export const mathsContent = {
       "The lowest common multiple takes every prime either number needs, at its higher power.",
     ],
     formulae: [
-      "Product of primes: $60 = 2^{2} \times 3 \times 5$",
-      "Linking the two: $\text{HCF} \times \text{LCM} = a \times b$",
+      "Product of primes: $60 = 2^{2} \\times 3 \\times 5$",
+      "Linking the two: $\\text{HCF} \\times \\text{LCM} = a \\times b$",
     ],
   },
   "y7-maths-fractions": {
@@ -165,17 +165,17 @@ export const mathsContent = {
   },
   "y8-maths-probability": {
     explanation:
-      "Probability measures how likely something is on a scale from 0, meaning impossible, to 1, meaning certain. When every outcome is equally likely, the probability of an event is the number of outcomes you want divided by the total number of outcomes, so one head from two equally likely faces is $\frac{1}{2}$. Because one of the outcomes must happen, all the probabilities add to 1, which is why the chance of an event not happening is 1 minus the chance that it does. Listing outcomes systematically rather than at random is what stops you missing one. Probability does not promise what will happen in any single trial; over many trials it predicts roughly how often, so 60 throws of a fair die should give about 10 sixes, not exactly 10.",
+      "Probability measures how likely something is on a scale from 0, meaning impossible, to 1, meaning certain. When every outcome is equally likely, the probability of an event is the number of outcomes you want divided by the total number of outcomes, so one head from two equally likely faces is $\\frac{1}{2}$. Because one of the outcomes must happen, all the probabilities add to 1, which is why the chance of an event not happening is 1 minus the chance that it does. Listing outcomes systematically rather than at random is what stops you missing one. Probability does not promise what will happen in any single trial; over many trials it predicts roughly how often, so 60 throws of a fair die should give about 10 sixes, not exactly 10.",
     keyIdeas: [
       "Probability runs from 0 for impossible to 1 for certain.",
       "With equally likely outcomes, probability is wanted outcomes over total outcomes.",
-      "All the probabilities of an event add to 1, so $P(\text{not } A) = 1 - P(A)$.",
+      "All the probabilities of an event add to 1, so $P(\\text{not } A) = 1 - P(A)$.",
       "Expected results are what a long run should give roughly, not exactly.",
     ],
     formulae: [
-      "Equally likely outcomes: $P(A) = \dfrac{\text{outcomes in } A}{\text{total outcomes}}$",
-      "The complement: $P(\text{not } A) = 1 - P(A)$",
-      "Expected number: $\text{trials} \times P(A)$",
+      "Equally likely outcomes: $P(A) = \\dfrac{\\text{outcomes in } A}{\\text{total outcomes}}$",
+      "The complement: $P(\\text{not } A) = 1 - P(A)$",
+      "Expected number: $\\text{trials} \\times P(A)$",
     ],
   },
   "y8-maths-transformations": {
@@ -318,12 +318,13 @@ export const mathsContent = {
   },
   "y10-maths-statistics": {
     explanation:
-      "A sample is used to say something about a population that is too large to measure, and the conclusion is only as good as the sample: if the way people were chosen makes some groups more likely to appear, the estimate is biased however many were asked. A larger sample reduces the effect of chance, but it does not fix bias. Comparing two distributions means comparing a measure of centre and a measure of spread, and writing the comparison in the context of the data rather than as bare numbers. A scatter graph shows whether two variables are related; a line of best fit lets you estimate between known points, though predicting beyond the data is unreliable.",
+      "A sample is used to say something about a population that is too large to measure, and the conclusion is only as good as the sample: if the way people were chosen makes some groups more likely to appear, the estimate is biased however many were asked. A larger sample reduces the effect of chance, but it does not fix bias. Comparing two distributions means comparing a measure of centre and a measure of spread, and writing the comparison in the context of the data rather than as bare numbers. A scatter graph shows whether two variables are related; a line of best fit lets you estimate between known points, though predicting beyond the data is unreliable. A time series graph plots a quantity against time with the points joined, and it is read for its overall trend and for any pattern that repeats, such as sales that rise every December; a claim about the trend should compare like seasons, not one season with another.",
     keyIdeas: [
       "A sample must not systematically exclude part of the population.",
       "A bigger sample reduces chance variation but never removes bias.",
       "Compare distributions with one measure of centre and one of spread, in context.",
       "Interpolating within the data is safer than extrapolating beyond it.",
+      "A time series is read for its trend and for any repeating seasonal pattern.",
     ],
     formulae: [
       "Mean $= \\frac{\\sum x}{n}$",
@@ -333,18 +334,20 @@ export const mathsContent = {
   },
   "y10-maths-ratio": {
     explanation:
-      "A compound unit combines two measures, such as kilometres per hour or grams per cubic centimetre, and the word 'per' tells you which quantity is divided by which. Converting a compound unit means converting both parts, so changing m/s to km/h requires work on the length and on the time. Direct proportion can be written as $y = kx$, where $k$ is found from a known pair of values and then used for any other. Repeated percentage change is repeated multiplication by the same multiplier, which is how growth, depreciation and compound interest all behave.",
+      "A compound unit combines two measures, such as kilometres per hour or grams per cubic centimetre, and the word 'per' tells you which quantity is divided by which. Converting a compound unit means converting both parts, so changing m/s to km/h requires work on the length and on the time. Direct proportion can be written as $y = kx$, where $k$ is found from a known pair of values and then used for any other. Repeated percentage change is repeated multiplication by the same multiplier, which is how growth, depreciation and compound interest all behave. A best-buy comparison puts two offers on the same basis, usually the price of one unit or the amount you get for each pound, because comparing the headline prices of packs of different sizes says nothing about value.",
     keyIdeas: [
       "'Per' means divide: km per hour is distance divided by time.",
       "Converting a compound unit means converting both of its parts.",
       "Direct proportion is $y = kx$; find $k$ from a known pair.",
       "Repeated change multiplies: $n$ years means the multiplier to the power $n$.",
+      "Compare value by finding the cost of one unit, or the amount per pound.",
     ],
     formulae: [
       "Speed $= \\frac{\\text{distance}}{\\text{time}}$",
       "Density $= \\frac{\\text{mass}}{\\text{volume}}$",
       "Pressure $= \\frac{\\text{force}}{\\text{area}}$",
       "Repeated change: $N = N_{0} \\times k^{n}$",
+      "Unit price $= \\frac{\\text{price}}{\\text{quantity}}$",
     ],
   },
   "y10-maths-graphs": {
@@ -364,17 +367,19 @@ export const mathsContent = {
   },
   "y10-maths-probability": {
     explanation:
-      "A Venn diagram sorts outcomes into overlapping sets, and the notation names the regions: $A \\cap B$ is the overlap, $A \\cup B$ is everything in either set, and $A'$ is everything outside $A$. A tree diagram is better for events in stages, with the probabilities on each set of branches totalling 1; multiply along a path and add the paths that satisfy the question. If events are independent, the first outcome does not change the second; if the object is not replaced, the second set of probabilities changes and the denominator drops by one. Relative frequency estimates a probability from trials, and is the only tool available when outcomes are not equally likely.",
+      "A Venn diagram sorts outcomes into overlapping sets, and the notation names the regions: $A \\cap B$ is the overlap, $A \\cup B$ is everything in either set, and $A'$ is everything outside $A$. A tree diagram is better for events in stages, with the probabilities on each set of branches totalling 1; multiply along a path and add the paths that satisfy the question. If events are independent, the first outcome does not change the second; if the object is not replaced, the second set of probabilities changes and the denominator drops by one. Relative frequency estimates a probability from trials, and is the only tool available when outcomes are not equally likely. When outcomes are counted rather than listed, the product rule says that if one choice can be made in $m$ ways and a second in $n$ ways, the two together can be made in $m \\times n$ ways, so a three-digit code using the digits 0 to 9 has $10 \\times 10 \\times 10 = 1000$ possibilities.",
     keyIdeas: [
       "$A \\cap B$ is the intersection; $A \\cup B$ is the union; $A'$ is the complement.",
       "Each set of branches on a tree totals 1.",
       "Multiply along branches, add between paths.",
       "Without replacement, the second probability changes.",
+      "Product rule: $m$ ways then $n$ ways gives $m \\times n$ ways together.",
     ],
     formulae: [
       "$P(A \\cup B) = P(A) + P(B) - P(A \\cap B)$",
       "Independent events: $P(A \\text{ and } B) = P(A) \\times P(B)$",
       "Expected number $= n \\times P(\\text{event})$",
+      "Product rule: $m \\times n$ combined outcomes",
     ],
   },
   "y10-maths-mensuration": {
@@ -424,32 +429,41 @@ export const mathsContent = {
   },
   "y11-maths-graphs": {
     explanation:
-      "Solving graphically means reading where two graphs cross, because at that point both equations are satisfied. The gradient of a curve changes from point to point and is estimated by drawing a tangent, which on a distance-time graph gives speed at an instant and on a speed-time graph gives acceleration; the area under a speed-time graph is the distance travelled. Function notation $f(x)$ names a rule, $f(3)$ means substitute 3, and $f^{-1}(x)$ reverses the rule. Transformations move a graph in predictable ways: $f(x) + a$ moves it up, $f(x + a)$ moves it left, $-f(x)$ reflects it in the $x$-axis.",
+      "Solving graphically means reading where two graphs cross, because at that point both equations are satisfied. The gradient of a curve changes from point to point and is estimated by drawing a tangent, which on a distance-time graph gives speed at an instant and on a speed-time graph gives acceleration; the area under a speed-time graph is the distance travelled. Function notation $f(x)$ names a rule, $f(3)$ means substitute 3, and $f^{-1}(x)$ reverses the rule. Transformations move a graph in predictable ways: $f(x) + a$ moves it up, $f(x + a)$ moves it left, $-f(x)$ reflects it in the $x$-axis. An exponential graph $y = k^{x}$ with $k > 1$ passes through $(0, 1)$, rises ever more steeply and never touches the $x$-axis, which is why it models growth; with $0 < k < 1$ it is the mirror image and models decay. The graphs of $y = \\sin x$ and $y = \\cos x$ repeat every $360^\\circ$ and stay between $-1$ and $1$, with the cosine graph being the sine graph moved $90^\\circ$ to the left, while $y = \\tan x$ repeats every $180^\\circ$ and has asymptotes at $90^\\circ$, $270^\\circ$ and so on; their symmetry is why a trigonometric equation has more than one solution in a range. The gradient at a point is a rate of change in the units of the two axes, and the area under a curve is estimated by splitting it into trapezia, whose answer is an over- or under-estimate depending on which way the curve bends.",
     keyIdeas: [
       "Solutions are where the graphs intersect.",
       "A tangent gives the gradient of a curve at a point.",
       "The area under a speed-time graph is distance.",
       "$f(x + a)$ shifts left; $f(x) + a$ shifts up.",
+      "$y = k^{x}$ passes through $(0, 1)$ and never meets the $x$-axis.",
+      "$\\sin x$ and $\\cos x$ repeat every $360^\\circ$; $\\tan x$ repeats every $180^\\circ$.",
+      "Estimate the area under a curve with trapezia, and say whether it is an over- or under-estimate.",
     ],
     formulae: [
       "$y = f(x) + a$: translation $\\binom{0}{a}$",
       "$y = f(x + a)$: translation $\\binom{-a}{0}$",
       "$y = -f(x)$: reflection in the $x$-axis",
+      "$\\sin x = \\sin(180^\\circ - x)$",
+      "Trapezium strip area $= \\frac{1}{2}(a + b)h$",
     ],
   },
   "y11-maths-circle": {
     explanation:
-      "The circle theorems all follow from symmetry, and each one must be quoted by name when used as a reason. The angle at the centre is twice the angle at the circumference on the same arc; angles in the same segment are equal; the angle in a semicircle is a right angle; opposite angles of a cyclic quadrilateral total $180^\\circ$; and a tangent meets a radius at a right angle. A vector has magnitude and direction, written as a column or as $\\overrightarrow{AB}$, and vectors are added nose to tail. A geometric proof states each step with its reason and ends with the statement it set out to show.",
+      "The circle theorems all follow from symmetry, and each one must be quoted by name when used as a reason. The angle at the centre is twice the angle at the circumference on the same arc; angles in the same segment are equal; the angle in a semicircle is a right angle; opposite angles of a cyclic quadrilateral total $180^\\circ$; and a tangent meets a radius at a right angle. A vector has magnitude and direction, written as a column or as $\\overrightarrow{AB}$, and vectors are added nose to tail. A geometric proof states each step with its reason and ends with the statement it set out to show. A circle centred at the origin with radius $r$ has the equation $x^{2} + y^{2} = r^{2}$, which is Pythagoras applied to every point on it. The tangent at a point on the circle is perpendicular to the radius there, so its gradient is the negative reciprocal of the radius's gradient, and substituting the point into $y = mx + c$ gives the tangent's equation.",
     keyIdeas: [
       "Name the theorem you use: an unnamed reason earns no marks.",
       "Angle at the centre is twice the angle at the circumference.",
       "A tangent and the radius at the point of contact are perpendicular.",
       "Parallel vectors are multiples of each other, which is how collinearity is proved.",
+      "$x^{2} + y^{2} = r^{2}$ is a circle of radius $r$ centred at the origin.",
+      "A tangent's gradient is the negative reciprocal of the radius's gradient.",
     ],
     formulae: [
       "Angle at centre $= 2 \\times$ angle at circumference",
       "Cyclic quadrilateral: opposite angles total $180^\\circ$",
       "$\\overrightarrow{AB} = \\overrightarrow{AO} + \\overrightarrow{OB}$",
+      "$x^{2} + y^{2} = r^{2}$",
+      "Perpendicular gradients: $m_{1} \\times m_{2} = -1$",
     ],
   },
   "y11-maths-foundation": {
@@ -490,17 +504,19 @@ export const mathsContent = {
   },
   "y11-maths-found-geometry": {
     explanation:
-      "Angle problems are solved by quoting facts: angles on a line total $180^\\circ$, in a triangle $180^\\circ$, in a quadrilateral $360^\\circ$, and parallel lines give equal alternate and corresponding angles. The interior angles of a polygon follow from splitting it into triangles, and the exterior angles of any polygon total $360^\\circ$. Area and volume formulae must be matched to the shape, using the perpendicular height. Right-angled triangles are handled with Pythagoras when no angle is involved and with sine, cosine or tangent when one is.",
+      "Angle problems are solved by quoting facts: angles on a line total $180^\\circ$, in a triangle $180^\\circ$, in a quadrilateral $360^\\circ$, and parallel lines give equal alternate and corresponding angles. The interior angles of a polygon follow from splitting it into triangles, and the exterior angles of any polygon total $360^\\circ$. Area and volume formulae must be matched to the shape, using the perpendicular height. Right-angled triangles are handled with Pythagoras when no angle is involved and with sine, cosine or tangent when one is. An enlargement with a scale factor between 0 and 1 makes the shape smaller, and every distance from the centre of enlargement is multiplied by the scale factor as well as every length, so a factor of $\\frac{1}{2}$ puts each image point halfway to the centre.",
     keyIdeas: [
       "Quote the angle fact you use as your reason.",
       "Exterior angles of any polygon total $360^\\circ$.",
       "Use the perpendicular height in every area formula.",
       "Pythagoras for three sides; trigonometry when an angle appears.",
+      "A scale factor between 0 and 1 makes the image smaller.",
     ],
     formulae: [
       "Interior angle sum $= (n - 2) \\times 180^\\circ$",
       "Exterior angle of a regular polygon $= \\frac{360^\\circ}{n}$",
       "$a^{2} + b^{2} = c^{2}$",
+      "Image length $=$ scale factor $\\times$ object length",
     ],
   },
   "y11-maths-found-probability": {
@@ -564,17 +580,21 @@ export const mathsContent = {
   },
   "y11-maths-algebra": {
     explanation:
-      "Completing the square rewrites $x^{2} + bx + c$ as $(x + \\frac{b}{2})^{2} + \\left(c - \\frac{b^{2}}{4}\\right)$, which solves the equation and also reveals the turning point of the graph directly. A quadratic inequality is solved by finding the roots and then deciding, from the shape of the parabola, which region satisfies the inequality; a sketch is the safest way to get the direction right. Iteration finds approximate solutions by rearranging the equation into the form $x = g(x)$ and feeding each answer back in until the values settle. Algebraic fractions are handled exactly like numerical ones, with factorising used to cancel common factors.",
+      "Completing the square rewrites $x^{2} + bx + c$ as $(x + \\frac{b}{2})^{2} + \\left(c - \\frac{b^{2}}{4}\\right)$, which solves the equation and also reveals the turning point of the graph directly. A quadratic inequality is solved by finding the roots and then deciding, from the shape of the parabola, which region satisfies the inequality; a sketch is the safest way to get the direction right. Iteration finds approximate solutions by rearranging the equation into the form $x = g(x)$ and feeding each answer back in until the values settle. Algebraic fractions are handled exactly like numerical ones, with factorising used to cancel common factors. A composite function applies one function to the output of another, and the order matters: $fg(x)$ means apply $g$ first and then $f$. The inverse $f^{-1}(x)$ undoes $f$, and it is found by writing $y = f(x)$, rearranging to make $x$ the subject, and then writing the result in terms of $x$.",
     keyIdeas: [
       "Completing the square gives both the solutions and the turning point.",
       "Sketch the parabola to decide which region an inequality describes.",
       "Iteration repeats $x_{n+1} = g(x_{n})$ until the values converge.",
       "Factorise before cancelling an algebraic fraction.",
+      "$fg(x)$ means do $g$ first, then $f$.",
+      "Find $f^{-1}$ by making $x$ the subject of $y = f(x)$.",
     ],
     formulae: [
       "$x^{2} + bx + c = \\left(x + \\frac{b}{2}\\right)^{2} + c - \\frac{b^{2}}{4}$",
       "Turning point of $(x + p)^{2} + q$ is $(-p, q)$",
       "Iteration: $x_{n+1} = g(x_{n})$",
+      "$fg(x) = f(g(x))$",
+      "$f^{-1}(f(x)) = x$",
     ],
   },
   "y11-maths-probability": {
@@ -620,6 +640,22 @@ export const mathsContent = {
       "Sine rule: $\\frac{a}{\\sin A} = \\frac{b}{\\sin B} = \\frac{c}{\\sin C}$",
       "Cosine rule: $a^{2} = b^{2} + c^{2} - 2bc\\cos A$",
       "Area $= \\frac{1}{2}ab\\sin C$",
+    ],
+  },
+  "y11-maths-similarity": {
+    explanation:
+      "Two shapes are similar when one is an enlargement of the other, so every pair of corresponding angles is equal and every pair of corresponding lengths is in the same ratio. If the length scale factor is $k$, areas scale by $k^{2}$ and volumes by $k^{3}$, because an area is the product of two lengths and a volume of three; a tin twice as tall and twice as wide therefore holds eight times as much, not twice as much. Working backwards, an area ratio of $9 : 25$ means a length ratio of $3 : 5$, found by square-rooting, and a volume ratio is cube-rooted in the same way. An enlargement is described fully by its scale factor and its centre, and the centre is found by drawing lines through corresponding points of the object and the image until they meet. A fractional scale factor makes the image smaller, and a negative scale factor puts the image on the opposite side of the centre and turned upside down, each point the same multiple of its distance from the centre but in the opposite direction.",
+    keyIdeas: [
+      "Similar shapes have equal angles, and corresponding lengths in one ratio.",
+      "Lengths scale by $k$, areas by $k^{2}$ and volumes by $k^{3}$.",
+      "Square-root an area ratio, or cube-root a volume ratio, to get the length ratio.",
+      "The centre of enlargement is where lines through corresponding points meet.",
+      "A negative scale factor puts the image on the other side of the centre, inverted.",
+    ],
+    formulae: [
+      "Area scale factor $= k^{2}$",
+      "Volume scale factor $= k^{3}$",
+      "$k = \\sqrt{\\text{area ratio}} = \\sqrt[3]{\\text{volume ratio}}$",
     ],
   },
 };

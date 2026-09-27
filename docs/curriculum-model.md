@@ -2,15 +2,15 @@
 
 ## Scope
 
-Education Hub contains a broad curriculum map for Years 7-11 across Maths, Science, English, History, Geography, Computing, and Design Technology. The catalogue currently contains 235 modules and 1,439 measurable outcomes, with unit names, learning goals, GCSE tier applicability, and exam-board mappings.
+Education Hub contains a broad curriculum map for Years 7-11 across Maths, Science, English, History, Geography, Computing, and Design & Technology. The catalogue currently contains 240 modules and 1,510 measurable outcomes, with unit names, learning goals, GCSE tier applicability, and exam-board mappings.
 
 | Year | Modules | Stage |
 | --- | ---: | --- |
-| 7 | 34 | KS3 |
-| 8 | 34 | KS3 |
-| 9 | 34 | KS3 |
-| 10 | 52 | KS4 / GCSE |
-| 11 | 56 | KS4 / GCSE and revision |
+| 7 | 45 | KS3 |
+| 8 | 40 | KS3 |
+| 9 | 36 | KS3 |
+| 10 | 58 | KS4 / GCSE |
+| 11 | 61 | KS4 / GCSE and revision |
 
 The catalogue is a product curriculum map, not an awarding-body endorsement. It should be reviewed by qualified UK teachers before it is used for high-stakes assessment or claims of complete specification coverage.
 
@@ -37,7 +37,7 @@ Years 10-11 use GCSE-oriented units and support:
 
 - Exam boards: AQA, Edexcel, and OCR
 - Maths and Combined Science tiers: Foundation and Higher
-- English, History, Geography, Computing, and Design Technology, which are not tiered
+- English, History, Geography, Computing, and Design & Technology, which are not tiered
 
 History options and named geographical case studies vary substantially between specifications and schools. The catalogue therefore describes common study types and skills; a future question bank must attach content to an exact board, option, and specification statement before presenting it as board-specific material.
 
@@ -88,7 +88,7 @@ OCR remains in the catalogue and in the qualification code table, but is not off
 
 ## Sub-topics and worked examples
 
-The learning hub lists every topic for the learner's year in one dropdown grouped by unit, and presents that topic's curriculum outcomes as sub-topic cards. Outcomes are reused as sub-topics deliberately: the catalogue stays the single source of truth, and no parallel content tree has to be maintained alongside it. The catalogue currently holds 235 topics and 1,439 outcomes across Years 7 to 11.
+The learning hub lists every topic for the learner's year in one dropdown grouped by unit, and presents that topic's curriculum outcomes as sub-topic cards. Outcomes are reused as sub-topics deliberately: the catalogue stays the single source of truth, and no parallel content tree has to be maintained alongside it. The catalogue currently holds 240 topics and 1,510 outcomes across Years 7 to 11.
 
 Topic explanations and worked examples are held in the `EducationHubContent` table, and a routing policy decides where each request is answered from. Explanations are authored curriculum text and are served from storage only, so the model is never asked to invent them. Worked examples are served from storage and reach the model only when nothing has been seeded, after which the result is persisted for every later learner. Maths examples are stored as LaTeX and typeset in the browser. Content quality is the open risk. Examples are not reviewed before a learner sees them, and pitch varies: a Year 10 microscopy example came back correctly pitched at GCSE, while a Year 10 sampling example used t-distributions, finite population correction, and confidence intervals, none of which is GCSE content. Seeding a year ahead of time and reviewing the stored rows is the current mitigation; a teacher review state on each row is the missing piece.
 
@@ -310,10 +310,78 @@ rechargeable batteries.
 
 All 40 units in the schemes now resolve in Years 7 to 11.
 
+#### Geography
+
+Checked against the same school's Year 7 to Year 11 schemes of work. Two gaps:
+
+| Gap | Resolution |
+| --- | --- |
+| Geology, rocks and weathering appeared nowhere, although "rocks, weathering and soils" is named in the programme of study and the whole subject rests on it: the coasts topic already explained that harder rock forms headlands without ever saying what makes a rock harder | New Year 7 topic "Geology, Rocks and Weathering", including the distinction between weathering and erosion. |
+| UK physical landscapes covered coasts and rivers only, although glaciated uplands are Edexcel A topic 1C and an AQA option, and much of upland Britain is the shape the ice left | New Year 10 topic "Glaciated Upland Landscapes". |
+
+Settlement site and situation was appended to the Year 8 population topic,
+which the school's Year 7 fieldwork depends on, and cold environments to the
+Year 7 UK landscapes topic so the Year 10 glaciation work has something to
+build on.
+
+All 29 specification units in the schemes now resolve in Years 7 to 11. One
+further entry, "Extreme Geographies", is that school's own enrichment rather
+than specification content and was not added.
+
+One thing is reported rather than changed. They sit Pearson Edexcel Geography
+A, and the qualification map records Edexcel Geography as 1GB0, which is
+Specification B: the same board, a different specification. Because the topics
+are written to the shared subject content they fit either, but the
+qualification code shown to that learner would be wrong. Changing it would
+simply make it wrong for every Specification B school instead, so the real fix
+is per-specification codes rather than one per board.
+
+#### Specification sweep, September 2026
+
+The audits above started from one school's schemes of work, so they could only
+find what that school happened to teach. This pass started from the
+specifications instead: about 260 required statements across all seven
+subjects were searched for in every topic's outcomes, and each miss was then
+checked by reading the Year 10 and 11 outcomes by hand. A statement mentioned
+only in an explanation counted as a gap, because an outcome is what becomes a
+sub-topic card, a worked example and a question-bank target.
+
+The largest gap was structural, not a missing line. Every GCSE Science topic was
+open to both tiers, and the validator correctly refuses Higher-only content in
+a topic a Foundation learner sees. Between them, those two facts left Higher-only
+Combined Science content with nowhere to go. A Higher learner was never taught moles, limiting
+reactants, Le Chatelier's principle, half equations or momentum. Maths had
+never had the problem because Year 11 Maths already splits into Foundation and
+Higher topics.
+
+| Gap | Resolution |
+| --- | --- |
+| No Higher-only Science topic existed, so HT content was taught nowhere | Two Year 11 Higher topics: "Moles, Equilibrium and Electrode Equations" and "Momentum and the Motor Effect". |
+| Stem cells, plant tissues and transpiration, metabolism, classification, isotopes, I-V characteristics, work done, and forces and elasticity were absent. Two of those carry required practicals | Appended to the Year 10 and 11 topics they belong to. |
+| Year 11 Atomic Physics taught fission, fusion and the uses of radiation, which are separate Physics (8463) only | Reworded in place to the hazards of ionising radiation and contamination against irradiation, which Combined Science does ask about. |
+| The Quantitative Chemistry explanation taught percentage yield and atom economy, and the forces explanation taught induction. The validator never read the teaching text, only the outcomes | Rewritten; a new rule checks authored Science text for separate-science content. |
+| Higher Maths had no exponential or trigonometric graphs (A12), equation of a circle (A16), gradients and areas under curves (A15), composite and inverse functions (A7), similar areas and volumes (G19) or negative enlargement (G7) | New Year 11 Higher topic "Similar Shapes and Enlargement"; the rest appended to the Year 11 Higher topics. |
+| Time series, the product rule for counting, best buys and fractional enlargement were missing at both tiers | Appended to shared Year 10 topics, and to Foundation geometry. |
+| Random number generation and units of data (Computing), the changing UK economy (Geography), and papers and boards and scales of production (D&T) were in explanations only | Appended as outcomes. |
+
+The 47 worked-example slots these outcomes opened were written by hand, not
+generated, in `src/data/authoredWorkedExamples.js`, with a separate Foundation
+and Higher example wherever a topic is offered at both tiers. The seeder stores
+them as it stores the other authored examples, with no model call, so seeding
+production with `--type example` puts them there too, and the validator fails
+if one is keyed to an outcome that has moved or been reclassified.
+
+English and History needed nothing. The Cold War looked like a History gap,
+but it is one GCSE option among several and is not named at key stage 3.
+
 `npm run validate:curriculum` enforces these as rules rather than as a one-off
 clean-up: it fails on a duplicate title, on an untiered subject carrying tiers,
 on a topic with no authored content, and on authored content that uses
-vocabulary from above the specification. It runs as part of `npm test`.
+vocabulary from above the specification. Since this sweep it also fails when a
+statement on its required-content list is taught nowhere for the tier that
+needs it. Run against the catalogue as it stood before the sweep, that rule and
+the new Combined Science rules report exactly the 41 problems listed above. It
+runs as part of `npm test`.
 
 ## Authored content
 
@@ -323,7 +391,7 @@ keep explanations on the stored-only route: the model is never asked to invent
 the core teaching text, and a learner never waits on a model call to read it.
 
 Before this existed, `getTopicGuide` returned the topic's one-line goal as its
-explanation for all 235 topics. Every stored explanation was therefore a
+explanation for all 237 topics. Every stored explanation was therefore a
 restatement of intent - a median of 61 characters - and Learn mode had no
 teaching content in it at all. The authored explanations run to a median of
 around 580 characters with four key ideas each, and 93 topics carry formulae.

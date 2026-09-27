@@ -42,6 +42,20 @@ export function usesMathsNotation(subject) {
   return subject === "Maths";
 }
 
+// English and History are argued, not calculated. Asking for a formula in them
+// invites the model to invent one, and it does: it has produced "Critical
+// evaluation score = (C + L + S) - B" and scored Lady Macbeth 2.33 out of 3 as
+// the answer to a question about how her character changes. A learner shown
+// that is being taught something that does not exist, so a worked example in
+// these subjects carries no formula and does not end in a number.
+//
+// Every other subject is left alone: density, binary, gear ratios and Pythagoras
+// are all real formulae that belong in their worked examples.
+const argued = ["English", "History"];
+export function usesFormulae(subject) {
+  return !argued.includes(subject);
+}
+
 // Practice and exam questions are stored per board because exam style and demand
 // differ between boards. Worked examples and explanations do not vary by board.
 export function variesByBoard(type) {
@@ -74,4 +88,31 @@ const practicalTopics = new Set([
 
 export function supportsQuestionBank(topicId) {
   return !practicalTopics.has(topicId);
+}
+
+// Not every sub-topic warrants a worked example. Where there is no method to
+// show, asking for one produces a question with no right answer and steps that
+// restate the outcome, so the decision is held per outcome alongside the rest
+// of the routing policy and consulted before any example is generated, served
+// or voiced. Without it a seeding run recreates every example ever deleted.
+export { warrantsFormulae, warrantsWorkedExample } from "../../../src/data/workedExampleOutcomes.js";
+import { classifiedOutcomes } from "../../../src/data/workedExampleOutcomes.js";
+
+// Whether this particular sub-topic may carry a formula.
+//
+// usesFormulae() is a rule about subjects, and it exists because asking for a
+// formula in English produced "Character development = (Actions + Language +
+// Relationships) / 3". But a blanket rule is wrong at the edges: "Compare rates
+// of change" is a History outcome with a real formula behind it, and refusing
+// it left that sub-topic with no worked example at all. Where an outcome has
+// been judged on its own wording, that judgement wins over the subject rule.
+//
+// Calculated subjects are unaffected: the classification says which outcomes
+// warrant a formula, not which are allowed one, so it must not be used to
+// forbid formulae in maths.
+export function allowsFormulae(subject, topicId, index) {
+  if (usesFormulae(subject)) return true;
+  const entry = classifiedOutcomes(topicId);
+  if (!entry) return false;
+  return entry.formulae.includes(Number(index));
 }

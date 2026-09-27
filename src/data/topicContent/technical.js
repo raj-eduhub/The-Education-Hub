@@ -179,28 +179,35 @@ export const technicalContent = {
   },
   "y10-computing-programming-techniques": {
     explanation:
-      "The three programming constructs are sequence, selection and iteration, and every program is built from them. Iteration is either count-controlled with FOR, when the number of repetitions is known, or condition-controlled with WHILE, when it is not. Arrays store multiple values under one identifier accessed by index, and strings are manipulated by length, position, substring and concatenation operations. Subprograms with parameters and return values keep code reusable and readable, and a well-named subprogram documents itself.",
+      "The three programming constructs are sequence, selection and iteration, and every program is built from them. Iteration is either count-controlled with FOR, when the number of repetitions is known, or condition-controlled with WHILE, when it is not. Arrays store multiple values under one identifier accessed by index, and strings are manipulated by length, position, substring and concatenation operations. Subprograms with parameters and return values keep code reusable and readable, and a well-named subprogram documents itself. Most languages provide a function that generates a pseudo-random whole number within a range, used for dice, games and test data; because the result differs on every run, a program that uses one is tested by checking its results stay inside the range, not by predicting a value.",
     keyIdeas: [
       "Sequence, selection and iteration build every program.",
       "FOR when the count is known; WHILE when it is not.",
       "Arrays are indexed, usually from zero.",
       "Subprograms make code reusable and self-documenting.",
+      "Random numbers are generated within a range; test that results stay inside it.",
     ],
-    formulae: ["WHILE condition ... ENDWHILE", "array[index] accesses one element"],
+    formulae: [
+      "WHILE condition ... ENDWHILE",
+      "array[index] accesses one element",
+      "RANDOM_INT(1, 6) gives a whole number from 1 to 6",
+    ],
   },
   "y10-computing-data-representation": {
     explanation:
-      "Binary is base 2 and hexadecimal is base 16, and hexadecimal is used because one hex digit represents exactly four bits, so a byte is two hex digits and long binary strings become readable. Converting between them goes through the four-bit groups rather than through denary. File sizes are calculated from the components: an image from width, height and colour depth, and a sound file from sample rate, bit depth and duration. Compression reduces file size, either losslessly, so the original can be restored exactly, or lossily, which discards detail permanently to achieve a much smaller file.",
+      "Binary is base 2 and hexadecimal is base 16, and hexadecimal is used because one hex digit represents exactly four bits, so a byte is two hex digits and long binary strings become readable. Converting between them goes through the four-bit groups rather than through denary. File sizes are calculated from the components: an image from width, height and colour depth, and a sound file from sample rate, bit depth and duration. Compression reduces file size, either losslessly, so the original can be restored exactly, or lossily, which discards detail permanently to achieve a much smaller file. Data is measured in bits and bytes, with eight bits in a byte. AQA uses decimal prefixes, so a kilobyte is 1000 bytes and each step up to megabytes, gigabytes and terabytes is another factor of 1000; Edexcel uses binary prefixes, so a kibibyte is 1024 bytes and each step to mebibytes, gibibytes and tebibytes is another factor of 1024. Converting to a larger unit means dividing by 8 to go from bits to bytes and then by the step size each time.",
     keyIdeas: [
       "One hexadecimal digit represents exactly four bits.",
       "Convert binary to hex in groups of four bits.",
       "File size comes from the components that make up the file.",
       "Lossless can be restored exactly; lossy cannot.",
+      "Eight bits make a byte; each larger unit is 1000 times the last, or 1024 for binary prefixes.",
     ],
     formulae: [
       "Image size (bits) $=$ width $\\times$ height $\\times$ colour depth",
       "Sound size (bits) $=$ sample rate $\\times$ bit depth $\\times$ seconds",
       "$1$ byte $= 8$ bits",
+      "$1$ kB $= 1000$ bytes; $1$ KiB $= 1024$ bytes",
     ],
   },
   "y10-computing-architecture-and-storage": {
@@ -305,7 +312,7 @@ export const technicalContent = {
     formulae: [],
   },
 
-  // ---- Design Technology, Year 7 -----------------------------------------
+  // ---- Design & Technology, Year 7 -----------------------------------------
   "y7-design-technology-user-needs-and-iterative-design": {
     explanation:
       "Design starts with a user and a need, not with an idea for a product. Research establishes who the user is and what the problem actually is, using observation, interviews and the study of existing products. A design brief states the problem and the intent in a sentence or two, and a specification turns it into measurable requirements such as size, weight, cost and safety. Iterative design means making something, testing it with users, and improving it, repeating the cycle, which produces better outcomes than trying to get a single idea right first time.",
@@ -363,7 +370,7 @@ export const technicalContent = {
     formulae: [],
   },
 
-  // ---- Design Technology, Year 8 -----------------------------------------
+  // ---- Design & Technology, Year 8 -----------------------------------------
   "y8-design-technology-motion-and-mechanisms": {
     explanation:
       "Mechanisms convert one kind of motion into another. The four types of motion are linear in a straight line, reciprocating backwards and forwards, oscillating swinging about a point, and rotary turning. Levers change the size and direction of a force about a pivot, and the class of lever depends on where the effort, load and pivot sit. Gears and pulleys change speed and torque together: a larger driven gear turns more slowly with more turning force, and the ratio comes from the tooth counts.",
@@ -424,7 +431,7 @@ export const technicalContent = {
     formulae: [],
   },
 
-  // ---- Design Technology, Year 9 -----------------------------------------
+  // ---- Design & Technology, Year 9 -----------------------------------------
   "y9-design-technology-programmable-control": {
     explanation:
       "A programmable control system uses a microcontroller to read sensors and drive outputs according to a program, which means behaviour can be changed without rewiring. Sensor choice follows from what needs detecting: an LDR for light, a thermistor for temperature, a switch for position or contact. Control logic is usually a loop that reads inputs, applies conditions and sets outputs, and flowcharts express it clearly before coding. Testing an interactive prototype means checking each condition deliberately, including the edge cases, rather than trying it once and assuming it works.",
@@ -470,15 +477,16 @@ export const technicalContent = {
     formulae: [],
   },
 
-  // ---- Design Technology, Year 10 (GCSE) ---------------------------------
+  // ---- Design & Technology, Year 10 (GCSE) ---------------------------------
   "y10-design-technology-materials-and-their-properties": {
     explanation:
-      "GCSE requires knowledge of material families - papers and boards, natural and manufactured timbers, ferrous and non-ferrous metals, thermoforming and thermosetting polymers, textiles and composites - and of what distinguishes them. Physical properties such as density, conductivity and absorbency are distinguished from mechanical properties such as tensile strength, hardness, toughness, ductility and malleability, and a justified choice names the specific property required. Stock forms matter commercially: sheet, bar, tube, rod and moulding powder determine what processes are available and how much waste is produced. Selecting a material means balancing property, cost, availability and environmental impact.",
+      "GCSE requires knowledge of material families - papers and boards, natural and manufactured timbers, ferrous and non-ferrous metals, thermoforming and thermosetting polymers, textiles and composites - and of what distinguishes them. Physical properties such as density, conductivity and absorbency are distinguished from mechanical properties such as tensile strength, hardness, toughness, ductility and malleability, and a justified choice names the specific property required. Stock forms matter commercially: sheet, bar, tube, rod and moulding powder determine what processes are available and how much waste is produced. Selecting a material means balancing property, cost, availability and environmental impact. Papers and boards are specified by weight in grams per square metre and by thickness in microns: layout and cartridge paper for sketching and drawing, card and corrugated card for packaging, and foam board for light, rigid models.",
     keyIdeas: [
       "Thermoforming polymers can be reshaped; thermosetting ones cannot.",
       "Ferrous metals contain iron and rust; non-ferrous do not.",
       "Physical and mechanical properties are different categories.",
       "Stock form determines available processes and waste.",
+      "Paper is specified in gsm; above about 170 gsm it is usually called card or board.",
     ],
     formulae: [],
   },
@@ -532,12 +540,13 @@ export const technicalContent = {
   },
   "y10-design-technology-processes-and-quality": {
     explanation:
-      "Processes are grouped as wasting, which removes material by cutting or machining; shaping, which forms it by moulding, casting or bending; joining, whether permanent or temporary; and finishing, which protects or improves appearance. The right process depends on the material, the form required and the scale of production, since one-off, batch, mass and continuous production have very different economics. A production plan sequences the operations with timings, tools and quality checks. Tolerances state the acceptable variation, and quality checks at defined points catch errors before further value is added.",
+      "Processes are grouped as wasting, which removes material by cutting or machining; shaping, which forms it by moulding, casting or bending; joining, whether permanent or temporary; and finishing, which protects or improves appearance. The right process depends on the material, the form required and the scale of production, since one-off, batch, mass and continuous production have very different economics. A production plan sequences the operations with timings, tools and quality checks. Tolerances state the acceptable variation, and quality checks at defined points catch errors before further value is added. One-off production makes a single bespoke item, batch production makes a set quantity before the tooling is changed, mass production makes large numbers on a production line, and continuous production runs around the clock because stopping it costs too much; as the scale rises the cost of each item falls, but the investment in tooling and machinery rises.",
     keyIdeas: [
       "Wasting, shaping, joining and finishing cover the processes.",
       "Scale of production changes which process is economic.",
       "A production plan sequences operations with checks and timings.",
       "Check early, before more value is added to a faulty part.",
+      "One-off, batch, mass, continuous: unit cost falls as scale rises, set-up cost rises.",
     ],
     formulae: [],
   },
@@ -553,7 +562,7 @@ export const technicalContent = {
     formulae: [],
   },
 
-  // ---- Design Technology, Year 11 (GCSE) ---------------------------------
+  // ---- Design & Technology, Year 11 (GCSE) ---------------------------------
   "y11-design-technology-prototype-manufacture": {
     explanation:
       "Manufacturing the prototype is where the production plan is tested against reality, and following it - while recording where it had to change - is part of the assessment. Specialist tools and machinery must be used safely and correctly, with the right PPE, guards and settings for the material. Accuracy comes from marking out carefully, using jigs and templates for repeated operations, and checking dimensions against the tolerance as you go rather than at the end. Recording quality control decisions, including what was rejected and why, demonstrates control of the process.",

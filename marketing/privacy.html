@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy notice — Y7to11.AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+  /* The FAQ, on its own page. Carries the same tokens as the main site so the
+     two cannot drift apart visually. */
+  :root {
+    --ground:        #0a1120;
+    --ground-deep:   #070d19;
+    --raised:        #111c2f;
+    --raised-2:      #16233a;
+    --ink-bright:    #f2f7fd;
+    --ink:           #cddcee;
+    --ink-soft:      #8fa6c4;
+    --ink-faint:     #6b819e;
+    --hairline:      rgba(255, 255, 255, 0.10);
+    --hairline-firm: rgba(255, 255, 255, 0.18);
+    --recess:        rgba(0, 0, 0, 0.26);
+    --tab-face:      rgba(255, 255, 255, 0.045);
+    --shadow:        0 24px 48px -32px rgba(0, 0, 0, 0.9);
+    --spine-w:       5px;
+
+    /* The seven, respaced so no two sit within 30 degrees of each other. */
+    --maths:     #4c8dff;
+    --science:   #3ec46a;
+    --english:   #d95fae;
+    --history:   #ec4f5e;
+    --geography: #14b8c4;
+    --computing: #8b7cf6;
+    --dt:        #ff8a3d;
+
+    --measure: 64ch;
+    --gutter: clamp(20px, 5vw, 56px);
+    --radius: 14px;
+    --radius-sm: 9px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Source Sans 3", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, .wordmark, .amount {
+    font-family: "Bricolage Grotesque", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+    color: var(--ink-bright);
+    text-wrap: balance;
+    margin: 0;
+    line-height: 1.08;
+    letter-spacing: -0.018em;
+  }
+
+  h2 { font-size: clamp(27px, 4vw, 41px); font-weight: 700; }
+  h3 { font-size: 18px; font-weight: 700; line-height: 1.25; }
+
+  .mono, code, .fig-n, .chip, .eyebrow, .tab-meta, .marks, .year-ladder li, .yr-tag {
+    font-family: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  }
+
+  a { color: inherit; }
+  p { margin: 0; }
+
+  /* One wrapper owns the side gutter, for every width. */
+  .wrap {
+    width: 100%;
+    max-width: 1120px;
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+  .wrap-tight { max-width: 860px; }
+
+  section { padding-block: clamp(54px, 7.5vw, 100px); }
+
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 16px;
+  }
+
+  .lede { font-size: clamp(17px, 2vw, 19.5px); color: var(--ink-soft); max-width: var(--measure); }
+  .stack > * + * { margin-top: 18px; }
+
+  /* ---------- masthead ---------- */
+
+  .masthead {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: color-mix(in srgb, var(--ground) 88%, transparent);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--hairline);
+  }
+  @supports not (background: color-mix(in srgb, red 50%, blue)) {
+    .masthead { background: var(--ground); }
+  }
+
+  .masthead .wrap {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-block: 13px;
+  }
+
+  .wordmark {
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 1px;
+    text-decoration: none;
+  }
+  .wordmark .dot-ai {
+    color: var(--ink-faint);
+    font-weight: 600;
+    font-size: 0.84em;
+    letter-spacing: 0.01em;
+  }
+
+  .masthead nav {
+    margin-left: auto;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .masthead nav a {
+    font-size: 14.5px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    padding: 7px 11px;
+    border-radius: 999px;
+  }
+  .masthead nav a:hover { color: var(--ink-bright); background: var(--tab-face); }
+  .masthead nav a.nav-cta {
+    color: var(--ink-bright);
+    border: 1px solid var(--hairline-firm);
+    background: var(--tab-face);
+  }
+
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Source Sans 3", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, .wordmark {
+    font-family: "Bricolage Grotesque", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+    color: var(--ink-bright);
+    text-wrap: balance;
+    margin: 0;
+    line-height: 1.08;
+    letter-spacing: -0.018em;
+  }
+  h1 { font-size: clamp(32px, 5vw, 50px); font-weight: 800; }
+  h2 { font-size: clamp(27px, 4vw, 41px); font-weight: 700; }
+  h3 { font-size: 18px; font-weight: 700; line-height: 1.25; }
+
+  a { color: inherit; }
+  p { margin: 0; }
+
+  .wrap { width: 100%; max-width: 860px; margin-inline: auto; padding-inline: var(--gutter); }
+  section { padding-block: clamp(44px, 6vw, 76px); }
+
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 16px;
+  }
+  .lede { font-size: clamp(17px, 2vw, 19.5px); color: var(--ink-soft); max-width: var(--measure); }
+  .price-note { font-size: 14px; color: var(--ink-faint); }
+
+  .masthead {
+    position: sticky; top: 0; z-index: 40;
+    background: var(--ground);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .masthead .wrap {
+    max-width: 1120px;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding-block: 13px;
+  }
+  .wordmark {
+    font-size: 21px; font-weight: 800; letter-spacing: -0.035em;
+    display: inline-flex; align-items: baseline; gap: 1px; text-decoration: none;
+  }
+  .wordmark .dot-ai { color: var(--ink-faint); font-weight: 600; font-size: 0.84em; letter-spacing: 0.01em; }
+  .back {
+    margin-left: auto;
+    font-size: 14.5px; color: var(--ink-soft); text-decoration: none;
+    border: 1px solid var(--hairline-firm); background: var(--tab-face);
+    border-radius: 999px; padding: 7px 15px;
+  }
+  .back:hover { color: var(--ink-bright); }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+    font: inherit; font-weight: 600; font-size: 15.5px; text-decoration: none;
+    padding: 12px 22px; border-radius: 999px; border: 1px solid transparent; cursor: pointer;
+  }
+  .btn-primary {
+    background: linear-gradient(180deg, var(--maths), #2f6fd8);
+    border-color: #2a62c2; color: #fff;
+    box-shadow: 0 12px 26px -16px rgba(76, 141, 255, 0.95);
+  }
+
+  .still {
+    margin-top: 40px;
+    border: 1px solid var(--hairline-firm);
+    border-left: var(--spine-w) solid var(--science);
+    border-radius: var(--radius);
+    background: var(--raised);
+    padding: 26px 28px;
+  }
+  .still p { color: var(--ink-soft); font-size: 15.5px; margin-top: 8px; }
+
+  /* ---------- faq ---------- */
+
+  .faq { display: grid; gap: 10px; margin-top: 36px; }
+  .faq details {
+    background: var(--raised);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+    padding: 4px 22px;
+  }
+  .faq details[open] { border-color: var(--hairline-firm); }
+  .faq summary {
+    cursor: pointer;
+    padding: 16px 0;
+    font-weight: 600;
+    color: var(--ink-bright);
+    font-size: 16.5px;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after {
+    content: "+";
+    font-family: "IBM Plex Mono", monospace;
+    color: var(--ink-faint);
+    font-size: 19px;
+    flex: none;
+  }
+  .faq details[open] summary::after { content: "–"; }
+  .faq .answer { padding: 0 0 20px; color: var(--ink-soft); font-size: 15.5px; max-width: var(--measure); }
+  .faq .answer p + p { margin-top: 11px; }
+
+  /* ---------- footer ---------- */
+
+  .foot-link {
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 600;
+    border-bottom: 1px solid var(--hairline-firm);
+    padding-bottom: 2px;
+  }
+  .foot-link:hover { color: var(--ink-bright); border-bottom-color: var(--maths); }
+
+  footer { border-top: 1px solid var(--hairline); padding-block: 34px 44px; color: var(--ink-faint); font-size: 14px; }
+  .footer-rule { display: flex; height: 3px; border-radius: 3px; overflow: hidden; margin-bottom: 24px; }
+  .footer-rule span { flex: 1; }
+  .foot-grid { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; align-items: baseline; }
+
+
+  .foot-link {
+    color: var(--ink); text-decoration: none; font-weight: 600;
+    border-bottom: 1px solid var(--hairline-firm); padding-bottom: 2px;
+  }
+  .foot-link:hover { color: var(--ink-bright); border-bottom-color: var(--maths); }
+
+  .foot-legal {
+    align-items: center;
+    border-top: 1px solid var(--hairline);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    justify-content: space-between;
+    margin-top: 28px;
+    padding-top: 20px;
+  }
+  .foot-legal p { font-size: 13.5px; color: var(--ink-faint); margin: 0; }
+  .made { align-items: center; display: inline-flex; gap: 7px; }
+  .heart { color: #ec4f5e; font-size: 14px; line-height: 1; }
+  .flag {
+    border-radius: 2px;
+    display: block;
+    height: 11px;
+    width: 22px;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.16);
+  }
+
+  /* ---------- cookie choice ---------- */
+
+  .cookie-bar {
+    position: fixed;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    z-index: 90;
+    width: min(calc(100% - 32px), 720px);
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    background: var(--raised);
+    border: 1px solid var(--hairline-firm);
+    border-radius: 16px;
+    box-shadow: 0 24px 56px -28px rgba(0, 0, 0, 0.85);
+    padding: 18px 20px;
+  }
+  .cookie-bar[hidden] { display: none; }
+  .cookie-bar p { font-size: 14.5px; color: var(--ink-soft); flex: 1 1 260px; margin: 0; }
+  .cookie-bar a { color: var(--ink-bright); }
+  .cookie-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* Two real buttons, the same size and the same weight. Refusing has to be no
+     harder than agreeing, so neither is a faint link beside a solid button. */
+  .cookie-actions button {
+    font: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    min-width: 116px;
+    padding: 12px 24px;
+    border-radius: 999px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: filter 160ms ease, transform 160ms ease;
+  }
+  .cookie-actions button:hover { transform: translateY(-1px); filter: brightness(1.08); }
+  .cookie-actions button:active { transform: translateY(0); }
+
+  #cookie-reject {
+    background: linear-gradient(180deg, #33415c, #26324a);
+    border-color: #1d2941;
+    color: var(--ink-bright);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 10px 22px -16px rgba(0, 0, 0, 0.9);
+  }
+
+  #cookie-accept {
+    background: linear-gradient(180deg, var(--maths), #2f6fd8);
+    border-color: #2a62c2;
+    color: #ffffff;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 10px 22px -14px rgba(76, 141, 255, 0.95);
+  }
+
+  @media (max-width: 520px) {
+    .cookie-bar { padding: 16px; gap: 14px; }
+    .cookie-actions { width: 100%; }
+    .cookie-actions button { flex: 1; }
+  }
+
+  :focus-visible { outline: 2px solid var(--maths); outline-offset: 3px; border-radius: 4px; }
+
+  @media (max-width: 460px) { body { font-size: 16px; } }
+</style>
+<style>
+  .nowrap { white-space: nowrap; }
+  .legal { max-width: 74ch; }
+  .legal h2 { font-size: clamp(21px, 2.6vw, 26px); margin: 40px 0 12px; }
+  .legal h3 { font-size: 17px; margin: 24px 0 8px; }
+  .legal p, .legal li { color: var(--ink-soft); font-size: 16px; }
+  .legal p + p { margin-top: 12px; }
+  .legal ul { margin: 12px 0 0; padding-left: 20px; display: grid; gap: 9px; }
+  .legal strong { color: var(--ink); }
+  .legal a { color: var(--ink-bright); }
+  .updated {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    padding: 5px 12px;
+    display: inline-block;
+    margin-top: 18px;
+  }
+  .callout {
+    border: 1px solid var(--hairline-firm);
+    border-left: var(--spine-w) solid var(--hue, var(--maths));
+    border-radius: var(--radius);
+    background: var(--raised);
+    padding: 20px 22px;
+    margin-top: 22px;
+  }
+  .callout p { color: var(--ink); }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <a class="wordmark" href="index.html">Y7to11<span class="dot-ai">.AI</span></a>
+    <a class="back" href="index.html">← Back to the site</a>
+  </div>
+</header>
+
+<main>
+  <section>
+    <div class="wrap">
+      <p class="eyebrow">How we handle your information</p>
+      <h1>Privacy notice</h1>
+      <p class="lede" style="margin-top:18px">What we collect, why we collect it, and what we will never do with it, written plainly, because a notice nobody reads protects nobody.</p>
+      <p class="updated">Last updated 20 September 2026</p>
+      <div class="legal">
+
+        <div class="callout" style="--hue: var(--science)">
+          <p><strong>The short version.</strong> A parent or guardian holds the account. We collect
+          what is needed to teach your child and to show you how they are getting on, and nothing
+          for advertising. We do not sell data, we do not track you across other websites, and we
+          never see your card details.</p>
+        </div>
+
+        <h2>Who we are</h2>
+        <p>Y7to11.AI is operated by <strong>IntelliQuest Solutions Limited</strong>, a company
+        registered in the United Kingdom. We are the data controller for the information described
+        here. You can reach us at <a href="mailto:privacy@y7to11.ai">privacy@y7to11.ai</a>.</p>
+
+        <h2>What we collect</h2>
+
+        <h3>You, as the account holder</h3>
+        <p>The contract and the payment are with you, so we keep a record of who you are:</p>
+        <ul>
+          <li><strong>Your full name</strong></li>
+          <li><strong>Your email address</strong>: this is how we reach you, and it is the identity
+              the account is built on</li>
+          <li><strong>Your mobile number</strong>: so we can contact you about the account or a
+              safeguarding concern without waiting on email</li>
+          <li>Your relationship to the child, and your chosen username</li>
+          <li>Your password, stored only as a salted <strong>scrypt</strong> hash, which we cannot read. Nobody at IntelliQuest can tell you what it is</li>
+        </ul>
+        <p>We use your name, email address and mobile number to run your account and to reach you
+        about it. <strong>We do not use them for marketing unless you ask us to</strong>, we do not
+        pass them to anyone for their own marketing, and we never sell them.</p>
+
+        <h3>The child who will be learning</h3>
+        <div class="callout" style="--hue: var(--science)">
+          <p><strong>Two things, and nothing else.</strong> About your child we hold their
+          <strong>first name</strong> and their <strong>date of birth</strong>. No surname, no
+          school, no address, no photograph, no contact details of their own.</p>
+        </div>
+        <p>The first name is so the app can address them, and so that a safeguarding alert can tell
+        you which child it concerns. The date of birth is used to work out one thing: which school
+        year they are in, which decides the curriculum they are taught.</p>
+        <p><strong>We do not ask for the school year separately</strong>, because the date of birth
+        already answers it. In England the year group is fixed by a child's age on the 31st of
+        August, so asking for both would be collecting a second piece of personal information that
+        tells us nothing the first one does not.</p>
+        <p>We also store the exam board and tier chosen for each subject. Those describe the course,
+        not the child, and cannot identify anybody.</p>
+
+        <h3>Why so little, deliberately</h3>
+        <p>The ICO's <strong>Age Appropriate Design Code</strong> asks services likely to be used by
+        children to collect the minimum personal data needed for each element of the service, and to
+        turn off anything that is not needed. We have taken that literally:</p>
+        <ul>
+          <li>A surname was never needed for anything a first name does not do, so it is not asked for</li>
+          <li>The school name was never used at all, so it is not asked for</li>
+          <li>The school year is worked out rather than collected</li>
+          <li>Nothing about your child is used for profiling, advertising, or any decision other
+              than which lesson to show them</li>
+        </ul>
+        <p>Your own details as the account holder <span class="nowrap">''' + D + '''</span> name,
+        relationship to the child, email and telephone number <span class="nowrap">''' + D + '''</span>
+        are held separately, because the contract and the payment are with you rather than with them.</p>
+
+        <h3>Their learning</h3>
+        <ul>
+          <li>Which topics were opened, and in which mode</li>
+          <li>Answers given, whether they were right, and the marks awarded</li>
+          <li>How long questions took, and the mastery score calculated from that work</li>
+          <li>Messages sent to the tutor, and its replies</li>
+        </ul>
+        <p>Progress is recorded from marked work only. We do not infer anything from how long a
+        page was left open, and we do not ask a child to rate themselves and store that as fact.</p>
+
+        <h3>Payment</h3>
+        <p>Card payments are processed entirely by <strong>Stripe</strong>. Card numbers are entered
+        on Stripe's own secure page and never pass through our servers, so we neither see nor store
+        them. We keep only your subscription status, the plan, and Stripe's customer and
+        subscription references.</p>
+
+        <h2>Why we hold it, and on what basis</h2>
+        <ul>
+          <li><strong>To provide the service you bought</strong>: performance of our contract with you.</li>
+          <li><strong>To keep the account secure</strong>: our legitimate interest in preventing
+              unauthorised access, including rate limiting and sign-in records.</li>
+          <li><strong>To protect children</strong>: our legitimate interest, and our safeguarding
+              responsibilities, in reviewing messages that raise a concern.</li>
+          <li><strong>To take payment</strong>: performance of our contract, and our legal obligation
+              to keep financial records.</li>
+        </ul>
+
+        <h2>Children's information</h2>
+        <p>This service is bought and set up by an adult, and the account belongs to that adult. A
+        child uses it under the account you control. We ask for a child's details only where they
+        change what is taught: their school year decides the curriculum, and their exam board and
+        tier decide the questions.</p>
+        <p>You can see everything held about your child, which is a first name and a date of birth. You can correct
+        it, or delete the account and all of it, from <strong>Account and privacy</strong> inside
+        the app.</p>
+
+        <h2>The AI tutor</h2>
+        <p>When your child asks the tutor a question, the question and the topic they are working on
+        are sent to a language model running in <strong>Microsoft Azure</strong>, within our own
+        tenant. It is not used to train anyone's model.</p>
+        <p><strong>Your child's profile details are deliberately never included in what is sent.</strong>
+        Their name, date of birth, school and contact details are not part of any prompt.</p>
+        <p>Lessons, worked examples and questions are not generated while your child waits. They were
+        written in advance and are served from our own store, so most of what they read involves no
+        model call at all.</p>
+
+        <h2>Safeguarding</h2>
+        <p>Every message a child writes to the tutor is checked before it is sent anywhere. If one
+        raises a safeguarding concern, we do three things: answer the child by pointing them to a
+        trusted adult, record the message, and email the adult on the account.</p>
+        <p>That alert names the child and the rule that was triggered. <strong>It never contains what
+        the child wrote</strong>. That stays behind your sign-in, for you to read. We keep these
+        records because a concern that nobody can look at is not a safeguard. They are deleted with
+        the account.</p>
+
+        <h2>Cookies and browser storage</h2>
+        <p>We use one cookie that the service cannot work without:</p>
+        <ul>
+          <li><strong>education_session</strong>: keeps you signed in. It is <code>HttpOnly</code>
+              (unreadable by scripts), <code>SameSite=Strict</code>, sent only over HTTPS, and expires
+              after 8 hours.</li>
+        </ul>
+        <p>We also store small preferences in your browser, which never reach us: your light or dark
+        setting, and a local copy of the current learner view. Clearing your browser data removes them.</p>
+        <p><strong>We set no advertising cookies and no third-party tracking.</strong> If we ever add
+        analytics, it will only run for people who have accepted it, and you can change that choice
+        at any time.</p>
+
+        <h2>Who else processes it</h2>
+        <ul>
+          <li><strong>Microsoft Azure</strong>: hosting, databases, file storage, the language model and speech</li>
+          <li><strong>Stripe</strong>: payments and subscription billing</li>
+          <li><strong>Azure Communication Services</strong>: sending the emails we owe you</li>
+        </ul>
+        <p>Each acts on our instructions under a data processing agreement. We do not sell personal
+        data, and we do not share it for anyone else's marketing.</p>
+
+        <h2>How long we keep it</h2>
+        <ul>
+          <li><strong>While you subscribe</strong>, and for a short period afterwards so you can come back</li>
+          <li><strong>Financial records</strong> for as long as UK tax law requires</li>
+          <li><strong>Everything else</strong> is deleted when you delete the account: profile, progress,
+              safeguarding records and subscription row</li>
+        </ul>
+
+        <h2>Your rights</h2>
+        <p>Under UK data protection law you may ask us for a copy of what we hold, correct it, delete
+        it, restrict or object to how we use it, or receive it in a portable form. Write to
+        <a href="mailto:privacy@y7to11.ai">privacy@y7to11.ai</a> and we will respond within one month.</p>
+        <p>If you are unhappy with how we have handled it you can complain to the Information
+        Commissioner's Office at <a href="https://ico.org.uk" rel="noopener">ico.org.uk</a>, though we
+        would rather you told us first so we can put it right.</p>
+
+        <h2>Changes</h2>
+        <p>If we change this notice in a way that matters, we will tell you by email before it takes
+        effect rather than quietly updating the date at the top.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap" style="max-width:1120px">
+    <div class="footer-rule" aria-hidden="true">
+      <span style="background:var(--maths)"></span>
+      <span style="background:var(--science)"></span>
+      <span style="background:var(--english)"></span>
+      <span style="background:var(--geography)"></span>
+      <span style="background:var(--computing)"></span>
+      <span style="background:var(--history)"></span>
+      <span style="background:var(--dt)"></span>
+    </div>
+    <div class="foot-grid">
+      <div>
+        <a class="wordmark" href="index.html" style="font-size:17px">Y7to11<span class="dot-ai">.AI</span></a>
+        <p style="margin:8px 0 0;max-width:48ch">
+          Key Stage 3 and GCSE for Years 7 to 11. Written against the specification,
+          checked before it's taught.
+        </p>
+      </div>
+      <a href="index.html" class="foot-link">Back to the site →</a>
+    </div>
+      <p><a href="privacy.html" class="foot-link">Privacy</a> · <a href="terms.html" class="foot-link">Terms &amp; disclaimer</a> · <a href="#" class="foot-link" id="cookie-reopen">Cookie choice</a></p>
+    <div class="foot-legal">
+      <p>© 2026 IntelliQuest Solutions Limited. All rights reserved.</p>
+      <p class="made">Made with <span class="heart" aria-label="love" role="img">♥</span> in the UK <svg class="flag" viewBox="0 0 60 30" role="img" aria-label="United Kingdom"><clipPath id="uk-privacynot"><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z"/></clipPath><rect width="60" height="30" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#ffffff" stroke-width="6"/><path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#uk-privacynot)" stroke="#c8102e" stroke-width="4"/><path d="M30,0 v30 M0,15 h60" stroke="#ffffff" stroke-width="10"/><path d="M30,0 v30 M0,15 h60" stroke="#c8102e" stroke-width="6"/></svg></p>
+    </div>
+
+  </div>
+</footer>
+
+
+
+<div class="cookie-bar" id="cookie-bar" role="region" aria-label="Cookie choice" hidden>
+  <p>
+    We use one cookie to keep you signed in, which the site cannot work without.
+    May we also use analytics to see which pages actually help?
+    <a href="privacy.html">Read the privacy notice</a>.
+  </p>
+  <div class="cookie-actions">
+    <button id="cookie-reject" type="button">Reject</button>
+    <button id="cookie-accept" type="button">Accept</button>
+  </div>
+</div>
+
+<script>
+  // The choice is kept in this browser only; nothing is sent anywhere.
+  // Nothing optional runs until a choice exists, so analytics never fires on a
+  // first visit, and "Reject" is a real answer rather than a delayed "Accept".
+  (function () {
+    var KEY = "y7to11.cookieChoice";
+    var bar = document.getElementById("cookie-bar");
+    if (!bar) return;
+
+    function read() {
+      try { return window.localStorage.getItem(KEY); } catch (e) { return null; }
+    }
+    function write(value) {
+      try { window.localStorage.setItem(KEY, value); } catch (e) {}
+    }
+    function close(choice) {
+      write(choice);
+      bar.hidden = true;
+      // Optional measurement would start here, and only here.
+      if (choice === "accepted" && typeof window.startAnalytics === "function") {
+        window.startAnalytics();
+      }
+    }
+
+    var existing = read();
+    if (existing === "accepted") {
+      if (typeof window.startAnalytics === "function") window.startAnalytics();
+    } else if (existing !== "rejected") {
+      bar.hidden = false;
+    }
+
+    document.getElementById("cookie-accept").addEventListener("click", function () { close("accepted"); });
+    document.getElementById("cookie-reject").addEventListener("click", function () { close("rejected"); });
+  })();
+</script>
+
+<script>
+  (function () {
+    var link = document.getElementById("cookie-reopen");
+    var bar = document.getElementById("cookie-bar");
+    if (!link || !bar) return;
+    link.addEventListener("click", function (event) { event.preventDefault(); bar.hidden = false; });
+  })();
+</script>
+
+</body>
+</html>

@@ -1,7 +1,8 @@
 import { app } from "@azure/functions";
-import { authTable, findAuth, digest, hashPassword, checkPassword, createSession, sessionToken, createPasswordReset, completePasswordReset, createEmailVerification, completeEmailVerification } from "../lib/passwordAuth.js";
+import { authTable, findAuth, digest, hashPassword, checkPassword, createSession, sessionToken, createPasswordReset, completePasswordReset, createEmailVerification, completeEmailVerification, createCheckoutGrant } from "../lib/passwordAuth.js";
 import { sendPasswordResetEmail, sendVerificationEmail } from "../lib/email.js";
 import { getUserByEmail, saveUser } from "../lib/userStore.js";
+import { getSubscription, grantsAccess } from "../lib/subscriptionStore.js";
 
 app.http("passwordLogin", {
   methods: ["POST"], authLevel: "anonymous", route: "auth/{action}",
@@ -59,7 +60,11 @@ app.http("passwordLogin", {
         return { status: 200, jsonBody: { ok: true }, headers: { "Set-Cookie": cookie("", 0), "Cache-Control": "no-store" } };
       }
       const username = typeof body.username === "string" ? body.username.trim().toLowerCase() : "";
-      if (!/^[a-z0-9_.-]{3,32}$/.test(username) || typeof body.password !== "string" || body.password.length > 128) return fail(400, "Use a username of 3-32 letters, numbers, dots, underscores or hyphens and a password up to 128 characters.");
+      // "reserve" is the one action that carries no password: the account is
+      // created at sign-up and the password is set later from an emailed link.
+      const needsPassword = action !== "reserve";
+      if (!/^[a-z0-9_.-]{3,32}$/.test(username)) return fail(400, "Use a username of 3-32 letters, numbers, dots, underscores or hyphens.");
+      if (needsPassword && (typeof body.password !== "string" || body.password.length > 128)) return fail(400, "Use a password of up to 128 characters.");
       const accountId = `user-${digest(username)}`;
       if (!await withinLimit(`rate-${digest(username)}`, 10)) return fail(429, "Too many attempts. Try again in 15 minutes.");
       let account = await findAuth(accountId);
@@ -86,7 +91,59 @@ app.http("passwordLogin", {
         }
         return { status: 202, jsonBody: { ok: true, verificationRequired: true }, headers: { "Cache-Control": "no-store" } };
       }
+      // Sign-up from the website: the username and email are taken, the
+      // account is created, and that is all. No password is chosen here and
+      // none is carried in a URL - it is set later from the link emailed once
+      // payment clears, which is also what proves the address belongs to them.
+      //
+      // What comes back is a checkout grant, not a session: passwordPrincipal
+      // refuses a session whose address is not proven, and nothing here has
+      // proven it. The grant authorises one Stripe checkout for this address
+      // and expires in an hour.
+      if (action === "reserve") {
+        const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) return fail(400, "Enter an email address we can reach you on.");
+        if (body.consent !== true) return fail(400, "Confirm you are the parent, guardian or carer.");
+        if (account || await findAuth(`email-${digest(email)}`) || await getUserByEmail(email)) {
+          const refuse = (code, error) => ({ status: 409, jsonBody: { error, code }, headers: { "Cache-Control": "no-store" } });
+          // The same parent coming back to a sign-up they did not finish: this
+          // username with this email, no password yet, and nothing paid. Stripe
+          // was closed, the tab was lost or the card failed. Refusing them left
+          // them locked out of their own account with no way to pay for it, so
+          // they get a fresh grant instead. Nothing is handed over that the
+          // first attempt did not already give: the grant still only reaches
+          // Stripe, and the password link still goes only to this address.
+          const sameSignup = account && account.email === email && !account.passwordHash;
+          const paid = sameSignup && grantsAccess((await getSubscription(email))?.status);
+          if (sameSignup && !paid) {
+            return {
+              status: 201,
+              jsonBody: { ok: true, username, email, awaitingPassword: true, resumed: true, checkoutToken: await createCheckoutGrant(email) },
+              headers: { "Cache-Control": "no-store" },
+            };
+          }
+          if (sameSignup) {
+            return refuse("awaiting-password", "You have already paid for this account. Use the link we emailed to set your password, or use Forgot your password to get a new one.");
+          }
+          if (account && account.email === email) {
+            return refuse("existing", "You already have an account with this username and email. Sign in, or use Forgot your password.");
+          }
+          return refuse("taken", "That username or email is already used by another account. Start again with a different username, or sign in if the account is yours.");
+        }
+        account = { partitionKey: "auth", rowKey: accountId, username, email, name: username, emailVerified: false };
+        await client.submitTransaction([
+          ["create", account],
+          ["create", { partitionKey: "auth", rowKey: `email-${digest(email)}`, accountId }],
+        ]);
+        return {
+          status: 201,
+          jsonBody: { ok: true, username, email, awaitingPassword: true, checkoutToken: await createCheckoutGrant(email) },
+          headers: { "Cache-Control": "no-store" },
+        };
+      }
+
       if (action === "login") {
+        if (account && !account.passwordHash) return fail(403, "Your password has not been set yet. Use the link in the email we sent when your payment went through, or Forgot your password to get another.");
         if (!await checkPassword(body.password, account)) return fail(401, "Username or password is incorrect.");
         if (account.emailVerified !== true) return fail(403, "Confirm your email address before signing in. Check your inbox for the confirmation link.");
         const user = await getUserByEmail(account.email);

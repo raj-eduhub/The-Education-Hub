@@ -1,6 +1,7 @@
 import { app } from "@azure/functions";
 import Stripe from "stripe";
 import { developmentBypass, getPrincipal, isAdministrator, principalEmail } from "../lib/auth.js";
+import { emailForCheckoutGrant } from "../lib/passwordAuth.js";
 import {
   accountKey,
   getSubscription,
@@ -85,7 +86,21 @@ app.http("billing", {
         }
       }
 
-      const { email, admin, allowed } = await identity(request);
+      const identified = await identity(request);
+      // Checkout is the one action a brand-new account must reach before it has
+      // any access, because paying is how access is granted. A sign-up carries
+      // a checkout grant for exactly that: it resolves to one email address and
+      // authorises one thing. Every other action still needs real access.
+      let { email, admin, allowed } = identified;
+      if (!allowed && action === "checkout" && request.method === "POST") {
+        const body = await request.clone().json().catch(() => ({}));
+        const granted = await emailForCheckoutGrant(typeof body.checkoutToken === "string" ? body.checkoutToken : "");
+        if (granted) {
+          email = granted;
+          allowed = true;
+          admin = false;
+        }
+      }
       if (!allowed) return { status: 403, jsonBody: { error: "Your Education Hub access is inactive." } };
 
       if (request.method === "GET" && action === "status") {
@@ -161,8 +176,12 @@ app.http("billing", {
           },
         });
         await savePendingSubscription(email, { plan: "learner", billingPeriod });
-        // The embedded form mounts against the session rather than redirecting.
-        return { jsonBody: { client_secret: session.client_secret } };
+        // The embedded form mounts against the session rather than redirecting,
+        // so client_secret is what the subscription page needs. url is passed
+        // through as well because the local Stripe stub has no card form and
+        // answers with a plain redirect instead; against real Stripe in this
+        // ui_mode it is null and the embedded form is used.
+        return { jsonBody: { client_secret: session.client_secret ?? null, url: session.url ?? null } };
       }
 
       if (action === "portal") {

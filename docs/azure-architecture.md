@@ -141,6 +141,7 @@ The API also supports `DefaultAzureCredential`. If `AZURE_AI_API_KEY` is absent,
 | `AZURE_STORAGE_USERS_TABLE` | Static Web Apps application settings | Non-secret table name |
 | `AZURE_STORAGE_ATTEMPTS_TABLE` | Static Web Apps application settings | Non-secret table name |
 | `AZURE_STORAGE_MASTERY_TABLE` | Static Web Apps application settings | Non-secret table name |
+| `AZURE_STORAGE_LESSONS_TABLE` | Static Web Apps application settings | Non-secret table name |
 | `AZURE_STORAGE_SUBSCRIPTIONS_TABLE` | Static Web Apps application settings | Non-secret table name |
 | `AZURE_STORAGE_SIGNUP_INVITES_TABLE` | Static Web Apps application settings | Non-secret table name |
 | `AZURE_STORAGE_PROFILES_TABLE` | Static Web Apps application settings | Non-secret table name |
@@ -164,7 +165,8 @@ All progress tables use a SHA-256 hash of the normalised signed-in email as the 
 | Table | Row key | Important properties | Write pattern |
 | --- | --- | --- | --- |
 | `EducationHubAttempts` | Timestamp plus random UUID | Year, subject, topic, mode, accuracy, confidence, duration, marks, completion time | Append one immutable entity per completed activity |
-| `EducationHubMastery` | Hash of year, subject, and topic ID | Attempt count, average accuracy, average confidence, total time, mastery score, last practised, next review | Replace one aggregate entity after each attempt |
+| `EducationHubMastery` | Hash of year, subject, and topic ID | Attempt count, average accuracy, average confidence, total time, mastery score, last practised, next review, practice and exam answers counted | Replace one aggregate entity after each attempt |
+| `EducationHubLessons` | Hash of year, subject, topic ID and sub-topic index | Year, subject, topic, sub-topic index, completion time | Write once when a sub-topic's lesson is finished; never moves mastery or review |
 | `EducationHubSafeguarding` | Descending timestamp plus random UUID | Learner email and name, severity, guard reason, the refused message, alert delivery, review status, reviewer and note | Append one entity per refused message; merge a review decision onto it |
 
 `EducationHubSafeguarding` shares the hashed partition key but deliberately breaks the rule above: it stores the learner's address and the refused message in the row, because a safeguarding record that cannot name the child or show what was said cannot be acted on. Row keys count down from a fixed maximum so a learner's newest flags read back first. See [the tutor guardrails](tutor-guardrails.md) for the severity routing and the alert path.
@@ -248,7 +250,7 @@ graph LR
 6. Create a single Stripe monthly recurring price of GBP 9.99, configure the customer portal, add the Stripe server settings, and register the billing webhook URL.
 7. Create Azure Communication Services and an Email Communication Services domain, connect them, verify the sender, and add the email settings.
 8. Deploy the repository, sign in with the bootstrap administrator Gmail address, and add the first application users from the dashboard.
-9. Complete a Stripe test-mode payment, confirm receipt of the signup email, submit the profile, and verify that the selected year is locked.
+9. Complete a Stripe test-mode payment, confirm receipt of the signup email, submit the profile, and verify that the school year derived from date of birth is locked.
 10. Test `POST /api/tutor` through the Static Web Apps URL as an active subscribed user.
 
 ## Cost Notes

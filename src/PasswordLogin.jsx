@@ -1,13 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { GraduationCap, LogIn, UserPlus } from "lucide-react";
+import { GraduationCap } from "lucide-react";
 import { apiFetch, readJson } from "./auth.js";
 
+// Log in, or ask for a reset. Creating an account is not offered here: that
+// happens on the website, where the plan is chosen and paid for, and the
+// password is set afterwards from a one-time emailed link.
 export function LoginScreen({ onAuthenticated, error, checking }) {
-  const [view, setView] = useState("login");
+  // ?forgot=1 opens straight on the reset form, for a page that has just told
+  // someone to use Forgot your password.
+  const [view, setView] = useState(() => new URLSearchParams(window.location.search).get("forgot") === "1" ? "forgot" : "login");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [sent, setSent] = useState(false);
-  const signup = view === "register";
+  const signup = false;
   const forgot = view === "forgot";
   function show(next) { setView(next); setMessage(""); setSent(false); }
   async function submit(event) {
@@ -28,10 +33,7 @@ export function LoginScreen({ onAuthenticated, error, checking }) {
   }
   return <main className="password-login"><div className="login-box">
     <div className="password-brand"><GraduationCap size={30} /><strong>Education Hub</strong></div>
-    <div className="password-tabs" role="group" aria-label="Account access">
-      <button type="button" aria-pressed={view === "login"} onClick={() => show("login")}><LogIn size={18} /> Log in</button>
-      <button type="button" aria-pressed={signup} onClick={() => show("register")}><UserPlus size={18} /> Sign up</button>
-    </div>
+    <p className="login-no-account">New here? Accounts are created at <strong>y7to11.ai</strong>, where you choose your plan. We email you a link to set your password once payment goes through.</p>
     <h1>{forgot ? "Reset your password" : signup ? "Create your account" : "Welcome back"}</h1>
     {signup && <p>Parent or guardian account. We will email a link to confirm your address, and a paid subscription and learner setup are required before learning begins.</p>}
     {forgot && !sent && <p>Enter the email registered to the account. If it matches an account, we send the username and a reset link to that address.</p>}
@@ -123,5 +125,81 @@ export function PasswordReset({ token }) {
       <button type="submit" disabled={busy}>{busy ? "Please wait..." : "Update password"}</button>
       <button type="button" className="login-link" onClick={() => window.location.assign("/")}>Back to log in</button>
     </form>}
+  </div></main>;
+}
+
+// Arriving from the website, where the username, email and consent were given.
+//
+// No password is asked for: the account is created without one and the password
+// is set later, from the one-time link emailed when payment clears. So this is
+// a confirmation rather than a form - check the two details, then pay.
+export function SignupHandoff({ username, email }) {
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  // Set when the details belong to an account that already exists, so the
+  // way forward is a button rather than advice in a sentence.
+  const [conflict, setConflict] = useState("");
+
+  async function create(event) {
+    event.preventDefault();
+    const registration = Object.fromEntries(new FormData(event.currentTarget));
+    setBusy(true);
+    setMessage("");
+    setConflict("");
+    try {
+      const response = await apiFetch("/api/auth/reserve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: registration.username,
+          email: registration.email,
+          consent: true,
+        }),
+      });
+      const data = await readJson(response);
+      if (!response.ok) {
+        if (response.status === 409) setConflict(data.code ?? "existing");
+        throw new Error(data.error ?? "The account could not be created.");
+      }
+
+      // Straight on to Stripe using the grant that came back. There is no
+      // session yet - the address has not been proven - so the grant is what
+      // authorises this one checkout.
+      const checkout = await apiFetch("/api/billing/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ checkoutToken: data.checkoutToken }),
+      });
+      const session = await readJson(checkout);
+      if (!checkout.ok) throw new Error(session.error ?? "Checkout could not be opened.");
+      // A hosted checkout hands back a url to send the parent to. The embedded
+      // form hands back a client_secret instead and has to be mounted on a page
+      // in this application, which is not wired for a sign-up that has no
+      // session yet: say so rather than leaving a button that does nothing.
+      if (session.url) {
+        window.location.assign(session.url);
+        return;
+      }
+      throw new Error("Your account was created, but the payment form could not be opened here. Sign in once you have set your password, or contact support.");
+    } catch (failure) {
+      setMessage(failure.message);
+      setBusy(false);
+    }
+  }
+
+  return <main className="password-login"><div className="login-box">
+    <div className="password-brand"><GraduationCap size={30} /><strong>Education Hub</strong></div>
+    <h1>Check your details</h1>
+    <p>These came across from y7to11.ai. Payment is next, and we email you a link to set your password as soon as it goes through.</p>
+    <form className="password-form" onSubmit={create}>
+      <label>Username<input autoComplete="username" name="username" readOnly value={username} /></label>
+      <label>Email<input autoComplete="email" name="email" readOnly type="email" value={email} /></label>
+      {message && <p role="alert" className="login-error">{message}</p>}
+      {conflict ? <>
+        <button type="button" onClick={() => window.location.assign("/")}>Sign in</button>
+        <button type="button" className="login-link" onClick={() => window.location.assign("/?forgot=1")}>Forgot your password?</button>
+      </> : <button type="submit" disabled={busy}>{busy ? "Please wait..." : "Continue to payment"}</button>}
+      <button type="button" className="login-link" onClick={() => window.location.assign("/")}>These are wrong - start again</button>
+    </form>
   </div></main>;
 }

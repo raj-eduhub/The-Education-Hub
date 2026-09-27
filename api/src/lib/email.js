@@ -26,15 +26,53 @@ async function send({ email, to, subject, plainText, html, undelivered }) {
 // Sent once payment is confirmed. It is a receipt and a way back in, not a key:
 // learner setup happens in the app, so this link carries no token and never
 // expires. A learner who never opens the email loses nothing.
-export async function sendWelcomeEmail({ email, appUrl }) {
+// Sent once payment has gone through. It carries the two things somebody needs
+// to get back in - where to sign in, and the username they chose on the website
+// - because those are what a parent forgets between paying and returning. The
+// password is never included, and never could be: it is stored only as a hash.
+export async function sendWelcomeEmail({ email, appUrl, username = "" }) {
+  const signIn = username
+    ? `Sign in at ${appUrl} with your username ${username} and the password you chose.`
+    : `Sign in at ${appUrl} with the username and password you chose.`;
+  const signInHtml = username
+    ? `<p>Sign in with your username <strong>${username}</strong> and the password you chose.</p>`
+    : `<p>Sign in with the username and password you chose.</p>`;
   await send({
     email,
     subject: "Your Education Hub subscription is active",
-    plainText: `Your Education Hub subscription is active. Sign in to finish setting up the learner and open the curriculum: ${appUrl}
+    plainText: `Your Education Hub subscription is active.
+
+${signIn}
+
+The first time you sign in you will be asked for the learner's details, including the school year, which cannot be changed afterwards.
+
+We never include your password in an email. If you have forgotten it, use "Forgot your password?" on the sign-in page.
 
 You can cancel or change payment details at any time from Account and privacy.`,
-    html: `<h1>Your subscription is active</h1><p>Sign in to finish setting up the learner and open the curriculum.</p><p><a href="${appUrl}">Open Education Hub</a></p><p>You can cancel or change payment details at any time from Account and privacy.</p>`,
+    html: `<h1>Your subscription is active</h1>${signInHtml}<p><a href="${appUrl}">Open Education Hub</a></p><p>The first time you sign in you will be asked for the learner's details, including the school year, which cannot be changed afterwards.</p><p>We never include your password in an email. If you have forgotten it, use "Forgot your password?" on the sign-in page.</p><p>You can cancel or change payment details at any time from Account and privacy.</p>`,
     undelivered: "The welcome email could not be delivered.",
+  });
+}
+
+// Sent the moment payment clears, to an account that has no password yet.
+//
+// This is the way in, not a receipt, so the link lives for seven days rather
+// than the hour a password reset gets: it arrives while the parent is still on
+// the payment confirmation page and may not be opened until that evening. It is
+// still one-time and still revokes any earlier link.
+export async function sendSetPasswordEmail({ email, username, setUrl }) {
+  await send({
+    email,
+    subject: "Your subscription is active - set your password",
+    plainText: `Your Education Hub subscription is active.
+
+Set the password for your account "${username}" here: ${setUrl}
+
+The link works once and expires in seven days. If it expires, use "Forgot your password?" on the sign-in page and we will send another.
+
+Once your password is set you will be asked for the learner's details, including the school year, which cannot be changed afterwards.`,
+    html: `<h1>Your subscription is active</h1><p>Set the password for your account <strong>${username}</strong>.</p><p><a href="${setUrl}">Set your password</a></p><p>The link works once and expires in seven days. If it expires, use "Forgot your password?" on the sign-in page and we will send another.</p><p>Once your password is set you will be asked for the learner's details, including the school year, which cannot be changed afterwards.</p>`,
+    undelivered: "The set-password email could not be delivered.",
   });
 }
 

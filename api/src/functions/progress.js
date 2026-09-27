@@ -1,6 +1,6 @@
 import { app } from "@azure/functions";
 import { getLearningAccess } from "../lib/learningAccess.js";
-import { getHabit, getProgress, getReviewQueue, recordActivity, recordAttempt } from "../lib/progressStore.js";
+import { getHabit, getProgress, getReviewQueue, recordActivity, recordAttempt, recordLesson } from "../lib/progressStore.js";
 
 const modes = ["learn", "practice", "exam", "review", "diagnostic"];
 
@@ -43,6 +43,17 @@ app.http("progress", {
           modes.includes(body.mode) && Number.isFinite(Number(body.durationSeconds));
         if (!validActivity) return { status: 400, jsonBody: { error: "Valid activity details are required." } };
         return { status: 201, jsonBody: await recordActivity(email, { ...body, year: registeredYear }) };
+      }
+
+      // A sub-topic's lesson finished. Like activity, it carries no attainment.
+      if (body.kind === "lesson") {
+        const validLesson =
+          Number.isInteger(registeredYear) && registeredYear >= 7 && registeredYear <= 11 &&
+          typeof body.subject === "string" && body.subject.length <= 60 &&
+          typeof body.topicId === "string" && body.topicId.length <= 140 &&
+          Number.isInteger(body.index) && body.index >= 0 && body.index <= 30;
+        if (!validLesson) return { status: 400, jsonBody: { error: "Valid lesson details are required." } };
+        return { status: 201, jsonBody: await recordLesson(email, { ...body, year: registeredYear }) };
       }
 
       const valid =

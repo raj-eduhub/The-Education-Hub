@@ -9,7 +9,7 @@ import { curriculumByYear } from "../../src/data/curriculumCatalog.js";
 import { getAuthoredExample, getTopicGuide } from "../../src/topicGuides.js";
 import { callFoundry, deployment } from "../src/lib/foundry.js";
 import { contentKey, getContent, saveContent } from "../src/lib/contentStore.js";
-import { contentTypes, mayUseModel, routeFor, supportsQuestionBank, usesMathsNotation, variesByBoard, variesByTier } from "../src/lib/contentPolicy.js";
+import { allowsFormulae, contentTypes, mayUseModel, routeFor, supportsQuestionBank, usesMathsNotation, variesByBoard, variesByTier, warrantsWorkedExample } from "../src/lib/contentPolicy.js";
 import { parseQuestion, questionPrompt } from "../src/lib/questionBank.js";
 import { exampleSystemPrompt, parseWorkedExample, workedExamplePrompt } from "../src/lib/workedExample.js";
 
@@ -48,7 +48,7 @@ if (![contentTypes.EXAMPLE, contentTypes.PRACTICE, contentTypes.EXAM].includes(c
   throw new Error(`--type must be example, practice, or exam. Received: ${contentType}`);
 }
 
-const counts = { explanations: 0, authored: 0, skipped: 0, generated: 0, failed: 0, wouldGenerate: 0 };
+const counts = { explanations: 0, authored: 0, skipped: 0, generated: 0, failed: 0, wouldGenerate: 0, notWarranted: 0, otherTier: 0 };
 let claimed = 0;
 const jobs = [];
 
@@ -56,7 +56,19 @@ for (const year of years) {
   const entry = curriculumByYear[year];
   if (!entry) throw new Error(`Year ${year} is not in the catalogue.`);
   // Untiered subjects store one copy, not one per tier.
-  const tierFor = (subject) => (year >= 10 && variesByTier(subject) ? tier : null);
+  //
+  // A tiered topic is seeded only for the tiers it actually offers. Year 11
+  // maths splits into Foundation-only and Higher-only topics, and seeding a
+  // Foundation-only topic with --tier Higher filed its content under a tier no
+  // learner on that topic ever asks for: 34 worked examples were stored where
+  // nothing could reach them, and the learner got a miss and a fresh
+  // generation instead. undefined means "not this run's tier", and the topic
+  // is left for the run that matches it.
+  const tierFor = (topic) => {
+    if (!(year >= 10 && variesByTier(topic.subject))) return null;
+    const offered = topic.tiers?.length ? topic.tiers : ["Foundation", "Higher"];
+    return offered.includes(tier) ? tier : undefined;
+  };
   for (const [subject, topics] of Object.entries(entry.subjects)) {
     if (onlySubject && subject !== onlySubject) continue;
     for (const topic of topics) {
@@ -75,9 +87,14 @@ for (const year of years) {
         counts.explanations += 1;
       }
       if (explanationsOnly) continue;
-      const variantTier = tierFor(subject);
+      const variantTier = tierFor(topic);
+      if (variantTier === undefined) { counts.otherTier += 1; continue; }
       if (contentType === contentTypes.EXAMPLE) {
         for (const [index, outcome] of topic.outcomes.entries()) {
+          // An outcome with no method to show gets no example. Skipped here
+          // rather than generated and discarded, because generating it is the
+          // cost, and because a run that regenerates them undoes the pruning.
+          if (!warrantsWorkedExample(topic.id, index)) { counts.notWarranted += 1; continue; }
           jobs.push({ year, subject, topic, index, outcome, variantTier, board: null });
         }
         continue;
@@ -110,8 +127,8 @@ async function runJob(job) {
   // already correct, and until now these sat unused in the codebase while the
   // model was paid to write replacements for them. Checked before --limit,
   // because that budget exists to cap model calls.
-  if (contentType === contentTypes.EXAMPLE && index === 0) {
-    const authored = getAuthoredExample(subject, topic);
+  if (contentType === contentTypes.EXAMPLE) {
+    const authored = getAuthoredExample(subject, topic, index, variantTier);
     if (authored) {
       if (dryRun) { console.log(`WOULD STORE AUTHORED ${label}`); return; }
       await saveContent(key, { ...authored, notation: usesMathsNotation(subject) }, {
@@ -131,17 +148,23 @@ async function runJob(job) {
   if (dryRun) { counts.wouldGenerate += 1; console.log(`WOULD ${label}`); return; }
   try {
     const notation = usesMathsNotation(subject);
+    // Whether this sub-topic may carry a formula is decided per outcome rather
+    // than per subject. Three argued outcomes genuinely have one, and the
+    // blanket rule left them with no worked example at all.
+    const formulaeAllowed = contentType === contentTypes.EXAMPLE
+      ? allowsFormulae(subject, topic.id, index)
+      : null;
     const userPrompt = contentType === contentTypes.EXAMPLE
       ? workedExamplePrompt(topic, { title: outcome, index }, { notation })
       : questionPrompt(contentType, topic, { title: outcome, index }, { board, tier: variantTier, year, notation, index });
     const answer = await callFoundry({
       model: deployment,
       input: [
-        { role: "system", content: exampleSystemPrompt(year <= 9 ? "KS3" : "KS4", year, board, variantTier, subject) },
+        { role: "system", content: exampleSystemPrompt(year <= 9 ? "KS3" : "KS4", year, board, variantTier, subject, formulaeAllowed) },
         { role: "user", content: userPrompt },
       ],
     });
-    const parsed = contentType === contentTypes.EXAMPLE ? parseWorkedExample(answer) : parseQuestion(contentType, answer);
+    const parsed = contentType === contentTypes.EXAMPLE ? parseWorkedExample(answer, subject, formulaeAllowed) : parseQuestion(contentType, answer);
     if (!parsed) { counts.failed += 1; console.log(`WARN  unparsed response for ${label}`); return; }
     await saveContent(key, { ...parsed, notation }, {
       type: contentType, subject, year, topicTitle: topic.title, subtopicTitle: outcome,
@@ -170,3 +193,9 @@ async function worker() {
 await Promise.all(Array.from({ length: concurrency }, worker));
 
 console.log(`\nexplanations stored: ${counts.explanations}   authored examples stored: ${counts.authored}   ${dryRun ? "to generate" : "generated"}: ${dryRun ? counts.wouldGenerate : counts.generated}   already stored: ${counts.skipped}   failed: ${counts.failed}`);
+if (counts.notWarranted) {
+  console.log(`${counts.notWarranted} outcome(s) skipped: no method to work through, so no worked example. See src/data/workedExampleOutcomes.js.`);
+}
+if (counts.otherTier) {
+  console.log(`${counts.otherTier} topic(s) skipped: they are not offered at the ${tier} tier. Run again with the other tier to cover them.`);
+}

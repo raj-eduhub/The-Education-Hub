@@ -384,6 +384,18 @@ export const humanitiesContent = {
     ],
     formulae: [],
   },
+  "y7-geography-geology-rocks-and-weathering": {
+    explanation:
+      "Every landscape sits on rock, and the kind of rock decides much of what the landscape looks like. Igneous rock cooled from molten material, either slowly underground to give large crystals as in granite, or quickly at the surface to give small ones as in basalt. Sedimentary rock formed from layers of material settled in water and compressed over long periods, which is why chalk, limestone and sandstone are bedded and often carry fossils. Metamorphic rock is either of the others changed by heat or pressure without melting, so limestone becomes marble and shale becomes slate. Weathering is the breakdown of rock where it stands, and it comes in three kinds: physical, where water freezes in a crack and forces it apart; chemical, where slightly acidic rainwater dissolves limestone; and biological, where roots prise rock open. Weathering is not erosion, which is the carrying away of the loosened material. Hard rock resists and stands up as hills and headlands; softer rock wears down into valleys and bays, which is why a coastline with alternating bands of rock develops that shape.",
+    keyIdeas: [
+      "Igneous cooled from molten rock; sedimentary settled in layers; metamorphic was changed by heat or pressure.",
+      "Slow cooling gives large crystals, fast cooling small ones.",
+      "Weathering breaks rock where it stands; erosion carries the pieces away.",
+      "Freeze-thaw is physical, acid rainwater is chemical, roots are biological.",
+      "Harder rock stands out as high ground and headlands; softer rock becomes valleys and bays.",
+    ],
+    formulae: [],
+  },
   "y7-geography-west-africa-a-regional-study": {
     explanation:
       "West Africa runs from the Sahara in the north to the Gulf of Guinea in the south, and almost everything about "
@@ -573,6 +585,19 @@ export const humanitiesContent = {
     ],
     formulae: [],
   },
+  "y10-geography-glaciated-upland-landscapes": {
+    explanation:
+      "During the last glacial period ice covered much of upland Britain, and the landforms it left are still the shape of those uplands today. Ice erodes in two ways: plucking, where meltwater freezes onto rock and pulls fragments away as the ice moves, and abrasion, where the debris already carried scours the bed like sandpaper. Snow collecting in a hollow on a north-facing slope compacts to ice and rotates as it moves, deepening the hollow into a corrie, often holding a small lake, a tarn, once the ice has gone. Where two corries erode back to back the ridge between them sharpens into an arete, and three or more leave a pyramidal peak. A glacier filling a river valley cannot meander, so it straightens and deepens it into the characteristic U shape, truncating the spurs the river had wound around. When the ice melts it dumps its load unsorted as till, in moraines that record where the front of the glacier stood. These uplands now carry farming, forestry, water supply, quarrying, tourism and conservation designations at once, and those uses do not sit easily together.",
+    keyIdeas: [
+      "Plucking pulls rock away; abrasion scours the bed with the debris already carried.",
+      "A corrie deepens under rotating ice and may hold a tarn afterwards.",
+      "Aretes and pyramidal peaks are what is left between corries.",
+      "A glacier straightens and deepens a valley into a U shape and truncates the spurs.",
+      "Moraine is unsorted material marking where the ice front stood.",
+      "Glaciated uplands carry competing land uses, so management means choosing between them.",
+    ],
+    formulae: [],
+  },
   "y10-geography-urban-issues-and-challenges": {
     explanation:
       "Urban growth is driven by rural-urban migration and natural increase, and it happens fastest in lower-income and newly emerging economies. Rapid growth creates both opportunity - work, services, education, healthcare - and challenge, including informal settlements, pressure on water and sanitation, congestion and waste. GCSE answers require a named city in a lower-income or newly emerging economy and a named UK city, each with specific evidence. Regeneration and sustainable urban strategies are evaluated by asking who they serve, whether they displace existing residents, and whether the improvement can be maintained.",
@@ -586,14 +611,18 @@ export const humanitiesContent = {
   },
   "y10-geography-the-changing-economic-world": {
     explanation:
-      "Development is measured by several indicators because each captures only part of the picture, and the demographic transition model describes how birth and death rates change as a country develops. Causes of uneven development include physical factors, historical factors such as colonialism, and economic factors such as terms of trade. Countries change position over time, and one named country is studied to show how industrial development, investment, aid, tourism or trade changed its economy. The UK's own economy is studied as a contrast, covering deindustrialisation, the growth of services and regional differences.",
+      "Development is measured by several indicators because each captures only part of the picture, and the demographic transition model describes how birth and death rates change as a country develops. Causes of uneven development include physical factors, historical factors such as colonialism, and economic factors such as terms of trade. Countries change position over time, and one named country is studied to show how industrial development, investment, aid, tourism or trade changed its economy. The UK's own economy is studied as a contrast, covering deindustrialisation, the growth of services and regional differences. Since the 1970s the UK has deindustrialised: coal mining, steel and shipbuilding declined as machines replaced workers and cheaper production moved overseas, while globalisation and government policy helped services, finance, research and information technology grow into a post-industrial economy. The growth has not been even, and the north-south divide describes the higher wages, faster growth and longer life expectancy in much of the south-east; strategies to narrow it include better transport links, moving public and private investment north, and enterprise zones that offer firms tax breaks.",
     keyIdeas: [
       "Use several indicators: one measure hides too much.",
       "The demographic transition model links development to birth and death rates.",
       "Uneven development has physical, historical and economic causes.",
       "One named country is studied in depth, plus the UK as contrast.",
+      "The UK shifted from manufacturing to services after deindustrialisation.",
+      "The north-south divide is targeted with transport links, investment and enterprise zones.",
     ],
-    formulae: ["Natural increase $=$ birth rate $-$ death rate"],
+    formulae: [
+      "Natural increase $=$ birth rate $-$ death rate",
+    ],
   },
   "y10-geography-cartography-data-and-gis": {
     explanation:

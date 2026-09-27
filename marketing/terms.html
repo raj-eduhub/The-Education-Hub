@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terms and disclaimer — Y7to11.AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+  /* The FAQ, on its own page. Carries the same tokens as the main site so the
+     two cannot drift apart visually. */
+  :root {
+    --ground:        #0a1120;
+    --ground-deep:   #070d19;
+    --raised:        #111c2f;
+    --raised-2:      #16233a;
+    --ink-bright:    #f2f7fd;
+    --ink:           #cddcee;
+    --ink-soft:      #8fa6c4;
+    --ink-faint:     #6b819e;
+    --hairline:      rgba(255, 255, 255, 0.10);
+    --hairline-firm: rgba(255, 255, 255, 0.18);
+    --recess:        rgba(0, 0, 0, 0.26);
+    --tab-face:      rgba(255, 255, 255, 0.045);
+    --shadow:        0 24px 48px -32px rgba(0, 0, 0, 0.9);
+    --spine-w:       5px;
+
+    /* The seven, respaced so no two sit within 30 degrees of each other. */
+    --maths:     #4c8dff;
+    --science:   #3ec46a;
+    --english:   #d95fae;
+    --history:   #ec4f5e;
+    --geography: #14b8c4;
+    --computing: #8b7cf6;
+    --dt:        #ff8a3d;
+
+    --measure: 64ch;
+    --gutter: clamp(20px, 5vw, 56px);
+    --radius: 14px;
+    --radius-sm: 9px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Source Sans 3", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, .wordmark, .amount {
+    font-family: "Bricolage Grotesque", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+    color: var(--ink-bright);
+    text-wrap: balance;
+    margin: 0;
+    line-height: 1.08;
+    letter-spacing: -0.018em;
+  }
+
+  h2 { font-size: clamp(27px, 4vw, 41px); font-weight: 700; }
+  h3 { font-size: 18px; font-weight: 700; line-height: 1.25; }
+
+  .mono, code, .fig-n, .chip, .eyebrow, .tab-meta, .marks, .year-ladder li, .yr-tag {
+    font-family: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  }
+
+  a { color: inherit; }
+  p { margin: 0; }
+
+  /* One wrapper owns the side gutter, for every width. */
+  .wrap {
+    width: 100%;
+    max-width: 1120px;
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+  .wrap-tight { max-width: 860px; }
+
+  section { padding-block: clamp(54px, 7.5vw, 100px); }
+
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 16px;
+  }
+
+  .lede { font-size: clamp(17px, 2vw, 19.5px); color: var(--ink-soft); max-width: var(--measure); }
+  .stack > * + * { margin-top: 18px; }
+
+  /* ---------- masthead ---------- */
+
+  .masthead {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: color-mix(in srgb, var(--ground) 88%, transparent);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--hairline);
+  }
+  @supports not (background: color-mix(in srgb, red 50%, blue)) {
+    .masthead { background: var(--ground); }
+  }
+
+  .masthead .wrap {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-block: 13px;
+  }
+
+  .wordmark {
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 1px;
+    text-decoration: none;
+  }
+  .wordmark .dot-ai {
+    color: var(--ink-faint);
+    font-weight: 600;
+    font-size: 0.84em;
+    letter-spacing: 0.01em;
+  }
+
+  .masthead nav {
+    margin-left: auto;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .masthead nav a {
+    font-size: 14.5px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    padding: 7px 11px;
+    border-radius: 999px;
+  }
+  .masthead nav a:hover { color: var(--ink-bright); background: var(--tab-face); }
+  .masthead nav a.nav-cta {
+    color: var(--ink-bright);
+    border: 1px solid var(--hairline-firm);
+    background: var(--tab-face);
+  }
+
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Source Sans 3", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, .wordmark {
+    font-family: "Bricolage Grotesque", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+    color: var(--ink-bright);
+    text-wrap: balance;
+    margin: 0;
+    line-height: 1.08;
+    letter-spacing: -0.018em;
+  }
+  h1 { font-size: clamp(32px, 5vw, 50px); font-weight: 800; }
+  h2 { font-size: clamp(27px, 4vw, 41px); font-weight: 700; }
+  h3 { font-size: 18px; font-weight: 700; line-height: 1.25; }
+
+  a { color: inherit; }
+  p { margin: 0; }
+
+  .wrap { width: 100%; max-width: 860px; margin-inline: auto; padding-inline: var(--gutter); }
+  section { padding-block: clamp(44px, 6vw, 76px); }
+
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 16px;
+  }
+  .lede { font-size: clamp(17px, 2vw, 19.5px); color: var(--ink-soft); max-width: var(--measure); }
+  .price-note { font-size: 14px; color: var(--ink-faint); }
+
+  .masthead {
+    position: sticky; top: 0; z-index: 40;
+    background: var(--ground);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .masthead .wrap {
+    max-width: 1120px;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding-block: 13px;
+  }
+  .wordmark {
+    font-size: 21px; font-weight: 800; letter-spacing: -0.035em;
+    display: inline-flex; align-items: baseline; gap: 1px; text-decoration: none;
+  }
+  .wordmark .dot-ai { color: var(--ink-faint); font-weight: 600; font-size: 0.84em; letter-spacing: 0.01em; }
+  .back {
+    margin-left: auto;
+    font-size: 14.5px; color: var(--ink-soft); text-decoration: none;
+    border: 1px solid var(--hairline-firm); background: var(--tab-face);
+    border-radius: 999px; padding: 7px 15px;
+  }
+  .back:hover { color: var(--ink-bright); }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+    font: inherit; font-weight: 600; font-size: 15.5px; text-decoration: none;
+    padding: 12px 22px; border-radius: 999px; border: 1px solid transparent; cursor: pointer;
+  }
+  .btn-primary {
+    background: linear-gradient(180deg, var(--maths), #2f6fd8);
+    border-color: #2a62c2; color: #fff;
+    box-shadow: 0 12px 26px -16px rgba(76, 141, 255, 0.95);
+  }
+
+  .still {
+    margin-top: 40px;
+    border: 1px solid var(--hairline-firm);
+    border-left: var(--spine-w) solid var(--science);
+    border-radius: var(--radius);
+    background: var(--raised);
+    padding: 26px 28px;
+  }
+  .still p { color: var(--ink-soft); font-size: 15.5px; margin-top: 8px; }
+
+  /* ---------- faq ---------- */
+
+  .faq { display: grid; gap: 10px; margin-top: 36px; }
+  .faq details {
+    background: var(--raised);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+    padding: 4px 22px;
+  }
+  .faq details[open] { border-color: var(--hairline-firm); }
+  .faq summary {
+    cursor: pointer;
+    padding: 16px 0;
+    font-weight: 600;
+    color: var(--ink-bright);
+    font-size: 16.5px;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after {
+    content: "+";
+    font-family: "IBM Plex Mono", monospace;
+    color: var(--ink-faint);
+    font-size: 19px;
+    flex: none;
+  }
+  .faq details[open] summary::after { content: "–"; }
+  .faq .answer { padding: 0 0 20px; color: var(--ink-soft); font-size: 15.5px; max-width: var(--measure); }
+  .faq .answer p + p { margin-top: 11px; }
+
+  /* ---------- footer ---------- */
+
+  .foot-link {
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 600;
+    border-bottom: 1px solid var(--hairline-firm);
+    padding-bottom: 2px;
+  }
+  .foot-link:hover { color: var(--ink-bright); border-bottom-color: var(--maths); }
+
+  footer { border-top: 1px solid var(--hairline); padding-block: 34px 44px; color: var(--ink-faint); font-size: 14px; }
+  .footer-rule { display: flex; height: 3px; border-radius: 3px; overflow: hidden; margin-bottom: 24px; }
+  .footer-rule span { flex: 1; }
+  .foot-grid { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; align-items: baseline; }
+
+
+  .foot-link {
+    color: var(--ink); text-decoration: none; font-weight: 600;
+    border-bottom: 1px solid var(--hairline-firm); padding-bottom: 2px;
+  }
+  .foot-link:hover { color: var(--ink-bright); border-bottom-color: var(--maths); }
+
+  .foot-legal {
+    align-items: center;
+    border-top: 1px solid var(--hairline);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    justify-content: space-between;
+    margin-top: 28px;
+    padding-top: 20px;
+  }
+  .foot-legal p { font-size: 13.5px; color: var(--ink-faint); margin: 0; }
+  .made { align-items: center; display: inline-flex; gap: 7px; }
+  .heart { color: #ec4f5e; font-size: 14px; line-height: 1; }
+  .flag {
+    border-radius: 2px;
+    display: block;
+    height: 11px;
+    width: 22px;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.16);
+  }
+
+  /* ---------- cookie choice ---------- */
+
+  .cookie-bar {
+    position: fixed;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    z-index: 90;
+    width: min(calc(100% - 32px), 720px);
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    background: var(--raised);
+    border: 1px solid var(--hairline-firm);
+    border-radius: 16px;
+    box-shadow: 0 24px 56px -28px rgba(0, 0, 0, 0.85);
+    padding: 18px 20px;
+  }
+  .cookie-bar[hidden] { display: none; }
+  .cookie-bar p { font-size: 14.5px; color: var(--ink-soft); flex: 1 1 260px; margin: 0; }
+  .cookie-bar a { color: var(--ink-bright); }
+  .cookie-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* Two real buttons, the same size and the same weight. Refusing has to be no
+     harder than agreeing, so neither is a faint link beside a solid button. */
+  .cookie-actions button {
+    font: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    min-width: 116px;
+    padding: 12px 24px;
+    border-radius: 999px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: filter 160ms ease, transform 160ms ease;
+  }
+  .cookie-actions button:hover { transform: translateY(-1px); filter: brightness(1.08); }
+  .cookie-actions button:active { transform: translateY(0); }
+
+  #cookie-reject {
+    background: linear-gradient(180deg, #33415c, #26324a);
+    border-color: #1d2941;
+    color: var(--ink-bright);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 10px 22px -16px rgba(0, 0, 0, 0.9);
+  }
+
+  #cookie-accept {
+    background: linear-gradient(180deg, var(--maths), #2f6fd8);
+    border-color: #2a62c2;
+    color: #ffffff;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 10px 22px -14px rgba(76, 141, 255, 0.95);
+  }
+
+  @media (max-width: 520px) {
+    .cookie-bar { padding: 16px; gap: 14px; }
+    .cookie-actions { width: 100%; }
+    .cookie-actions button { flex: 1; }
+  }
+
+  :focus-visible { outline: 2px solid var(--maths); outline-offset: 3px; border-radius: 4px; }
+
+  @media (max-width: 460px) { body { font-size: 16px; } }
+</style>
+<style>
+  .legal { max-width: 74ch; }
+  .legal h2 { font-size: clamp(21px, 2.6vw, 26px); margin: 40px 0 12px; }
+  .legal h3 { font-size: 17px; margin: 24px 0 8px; }
+  .legal p, .legal li { color: var(--ink-soft); font-size: 16px; }
+  .legal p + p { margin-top: 12px; }
+  .legal ul { margin: 12px 0 0; padding-left: 20px; display: grid; gap: 9px; }
+  .legal strong { color: var(--ink); }
+  .legal a { color: var(--ink-bright); }
+  .updated {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    padding: 5px 12px;
+    display: inline-block;
+    margin-top: 18px;
+  }
+  .callout {
+    border: 1px solid var(--hairline-firm);
+    border-left: var(--spine-w) solid var(--hue, var(--maths));
+    border-radius: var(--radius);
+    background: var(--raised);
+    padding: 20px 22px;
+    margin-top: 22px;
+  }
+  .callout p { color: var(--ink); }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <a class="wordmark" href="index.html">Y7to11<span class="dot-ai">.AI</span></a>
+    <a class="back" href="index.html">← Back to the site</a>
+  </div>
+</header>
+
+<main>
+  <section>
+    <div class="wrap">
+      <p class="eyebrow">The agreement between us</p>
+      <h1>Terms and disclaimer</h1>
+      <p class="lede" style="margin-top:18px">What Y7to11.AI is, what it promises, and the things it deliberately does not promise.</p>
+      <p class="updated">Last updated 20 September 2026</p>
+      <div class="legal">
+
+        <div class="callout" style="--hue: var(--dt)">
+          <p><strong>In plain terms.</strong> Y7to11.AI helps your child learn. It is not a school, not
+          an exam board, and not a guarantee of any grade. Use it alongside their teaching, not
+          instead of it.</p>
+        </div>
+
+        <h2>About these terms</h2>
+        <p>These terms are the agreement between you and <strong>IntelliQuest Solutions Limited</strong>
+        when you use Y7to11.AI. By creating an account you accept them.</p>
+
+        <h2>Who may hold an account</h2>
+        <p>An account must be opened by a parent, guardian or other responsible adult aged 18 or over,
+        for a child in their care. You are responsible for what happens on your account, including
+        keeping your password to yourself.</p>
+
+        <h2>No affiliation with exam boards or schools</h2>
+        <p><strong>We are not affiliated with, endorsed by, or connected to AQA, Pearson Edexcel, OCR,
+        WJEC, the Department for Education, or any school.</strong> Those names are used only to
+        describe which published specification a piece of content was written against.</p>
+
+        <h2>What we ask about your child</h2>
+        <p>We ask for your child's <strong>first name and date of birth, and nothing else</strong>.
+        The date of birth is used only to establish which school year they are in, because that
+        decides what they are taught. We do not ask for a surname, a school, an address or any
+        contact details for them.</p>
+        <p>About <strong>you</strong> we keep a fuller record (your full name, email address and
+        mobile number), because the account, the contract and the payment are yours rather than
+        your child's, and we may need to reach you about any of them.</p>
+        <p>This follows the data minimisation standard in the ICO's Age Appropriate Design Code. The
+        <a href="privacy.html">privacy notice</a> sets out exactly what is held and why.</p>
+
+        <h2>What we do and do not promise</h2>
+        <p>Our lessons and questions are written against the published DfE programmes of study and the
+        AQA and Edexcel specifications, and checked automatically whenever they change. We work hard
+        to keep them accurate.</p>
+        <p>Even so:</p>
+        <ul>
+          <li><strong>We do not guarantee any grade, result or improvement.</strong> Nobody honestly can.</li>
+          <li>Specifications change, and there may be a period before our content catches up.</li>
+          <li>Content may contain errors. If you find one, tell us and we will fix it for everyone.</li>
+          <li>This is a supplement to school teaching, <strong>not a replacement for it</strong>, and not
+              a substitute for a qualified teacher's judgement about your child.</li>
+        </ul>
+
+        <h2>The AI tutor</h2>
+        <p>The tutor is software. It is built to explain rather than to hand over answers, and it
+        refuses requests to do the work outright, but like any such system it can occasionally be
+        wrong or incomplete. Treat what it says as help with understanding, not as a final authority,
+        and check anything that matters against your child's own materials.</p>
+        <p>Using it to produce work for submission as a pupil's own, where that breaks a school's or
+        exam board's rules, is not something we support and may end your account.</p>
+
+        <h2>Acceptable use</h2>
+        <ul>
+          <li>One subscription covers one child. Do not share account details.</li>
+          <li>Do not attempt to extract, copy or republish our curriculum content.</li>
+          <li>Do not try to bypass the tutor's safety rules or its usage limits.</li>
+          <li>Do not use the service to upset, harass or endanger anybody.</li>
+        </ul>
+        <p>Our content, software, wording and design remain ours. Your subscription is a licence to use
+        them for your own family, not a transfer of ownership.</p>
+
+        <h2>Payment and cancellation</h2>
+        <p>The subscription is billed monthly in advance through Stripe, and renews automatically until
+        you cancel. You can cancel at any time from your account; access continues to the end of the
+        month you have paid for, and we do not refund part-months unless the law requires it.</p>
+        <p>Introductory pricing applies for the period stated at the time you subscribe. We will give you
+        at least <strong>30 days' notice by email</strong> before any change to your rate.</p>
+        <p>If a payment fails, Stripe will retry over a short period. If it still cannot be taken, the
+        subscription is cancelled and access ends.</p>
+
+        <h2>Safeguarding is not an emergency service</h2>
+        <p>Our safeguarding alerts are a best-effort measure and are <strong>not monitored around the
+        clock</strong>. If you are worried about a child's immediate safety, contact the police on
+        <strong>999</strong>, or the NSPCC on <strong>0808 800 5000</strong>. Do not rely on this
+        service to raise an alarm.</p>
+
+        <h2>Availability</h2>
+        <p>We aim to keep the service running but cannot promise it will never be unavailable, whether
+        for maintenance or for reasons outside our control.</p>
+
+        <h2>Our liability</h2>
+        <p>Nothing here limits our liability for death or personal injury caused by our negligence, for
+        fraud, or for anything else that cannot lawfully be limited, including your rights under the
+        Consumer Rights Act 2015.</p>
+        <p>Beyond that, we are not liable for examination results, lost opportunities, or indirect losses,
+        and our total liability is limited to the amount you paid us in the twelve months before the
+        claim.</p>
+
+        <h2>Ending the agreement</h2>
+        <p>You may close your account at any time. We may suspend or close an account that breaks these
+        terms, and will tell you why unless we are prevented from doing so.</p>
+
+        <h2>Governing law</h2>
+        <p>These terms are governed by the law of <strong>England and Wales</strong>, and its courts have
+        jurisdiction.</p>
+
+        <h2>Contact</h2>
+        <p>IntelliQuest Solutions Limited, <a href="mailto:hello@y7to11.ai">hello@y7to11.ai</a></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap" style="max-width:1120px">
+    <div class="footer-rule" aria-hidden="true">
+      <span style="background:var(--maths)"></span>
+      <span style="background:var(--science)"></span>
+      <span style="background:var(--english)"></span>
+      <span style="background:var(--geography)"></span>
+      <span style="background:var(--computing)"></span>
+      <span style="background:var(--history)"></span>
+      <span style="background:var(--dt)"></span>
+    </div>
+    <div class="foot-grid">
+      <div>
+        <a class="wordmark" href="index.html" style="font-size:17px">Y7to11<span class="dot-ai">.AI</span></a>
+        <p style="margin:8px 0 0;max-width:48ch">
+          Key Stage 3 and GCSE for Years 7 to 11. Written against the specification,
+          checked before it's taught.
+        </p>
+      </div>
+      <a href="index.html" class="foot-link">Back to the site →</a>
+    </div>
+      <p><a href="privacy.html" class="foot-link">Privacy</a> · <a href="terms.html" class="foot-link">Terms &amp; disclaimer</a> · <a href="#" class="foot-link" id="cookie-reopen">Cookie choice</a></p>
+    <div class="foot-legal">
+      <p>© 2026 IntelliQuest Solutions Limited. All rights reserved.</p>
+      <p class="made">Made with <span class="heart" aria-label="love" role="img">♥</span> in the UK <svg class="flag" viewBox="0 0 60 30" role="img" aria-label="United Kingdom"><clipPath id="uk-termsanddi"><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z"/></clipPath><rect width="60" height="30" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#ffffff" stroke-width="6"/><path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#uk-termsanddi)" stroke="#c8102e" stroke-width="4"/><path d="M30,0 v30 M0,15 h60" stroke="#ffffff" stroke-width="10"/><path d="M30,0 v30 M0,15 h60" stroke="#c8102e" stroke-width="6"/></svg></p>
+    </div>
+
+  </div>
+</footer>
+
+
+
+<div class="cookie-bar" id="cookie-bar" role="region" aria-label="Cookie choice" hidden>
+  <p>
+    We use one cookie to keep you signed in, which the site cannot work without.
+    May we also use analytics to see which pages actually help?
+    <a href="privacy.html">Read the privacy notice</a>.
+  </p>
+  <div class="cookie-actions">
+    <button id="cookie-reject" type="button">Reject</button>
+    <button id="cookie-accept" type="button">Accept</button>
+  </div>
+</div>
+
+<script>
+  // The choice is kept in this browser only; nothing is sent anywhere.
+  // Nothing optional runs until a choice exists, so analytics never fires on a
+  // first visit, and "Reject" is a real answer rather than a delayed "Accept".
+  (function () {
+    var KEY = "y7to11.cookieChoice";
+    var bar = document.getElementById("cookie-bar");
+    if (!bar) return;
+
+    function read() {
+      try { return window.localStorage.getItem(KEY); } catch (e) { return null; }
+    }
+    function write(value) {
+      try { window.localStorage.setItem(KEY, value); } catch (e) {}
+    }
+    function close(choice) {
+      write(choice);
+      bar.hidden = true;
+      // Optional measurement would start here, and only here.
+      if (choice === "accepted" && typeof window.startAnalytics === "function") {
+        window.startAnalytics();
+      }
+    }
+
+    var existing = read();
+    if (existing === "accepted") {
+      if (typeof window.startAnalytics === "function") window.startAnalytics();
+    } else if (existing !== "rejected") {
+      bar.hidden = false;
+    }
+
+    document.getElementById("cookie-accept").addEventListener("click", function () { close("accepted"); });
+    document.getElementById("cookie-reject").addEventListener("click", function () { close("rejected"); });
+  })();
+</script>
+
+<script>
+  (function () {
+    var link = document.getElementById("cookie-reopen");
+    var bar = document.getElementById("cookie-bar");
+    if (!link || !bar) return;
+    link.addEventListener("click", function (event) { event.preventDefault(); bar.hidden = false; });
+  })();
+</script>
+
+</body>
+</html>
