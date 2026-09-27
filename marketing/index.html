@@ -407,8 +407,10 @@
     background: var(--tab-face);
   }
 
-  /* Jumping to a section must not park its heading under the sticky bar. */
-  section[id] { scroll-margin-top: 80px; }
+  /* Jumping to a section must not park its heading under the sticky bar.
+     Every in-page target, not only sections: "About Sonia" jumps to a panel
+     inside the demo section, and landed with its heading under the bar. */
+  [id] { scroll-margin-top: 88px; }
   html { scroll-behavior: smooth; }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
