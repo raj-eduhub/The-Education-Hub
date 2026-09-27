@@ -6,6 +6,31 @@ were changed). This file is the single source of truth for what is left to do.
 
 ---
 
+## Where this stands (27 September 2026)
+
+Everything in the code is done. What is left is putting your own keys in place,
+which is deliberately not automated: keys are pasted by you, never by a tool.
+
+1. **Roll the test secret key first.** The current one was pasted into a chat
+   session. Stripe Dashboard → Developers → API keys → Roll key.
+2. **Put the values in** `api/local.settings.json` (see the table below) and set
+   `VITE_STRIPE_PUBLISHABLE_KEY` in `.env.local`.
+3. **Delete `STRIPE_API_BASE`** from `api/local.settings.json`.
+4. **Forward webhooks** in a terminal you leave open (see Webhooks below), and
+   copy the `whsec_…` it prints into `STRIPE_WEBHOOK_SECRET`.
+5. **Restart** `npm run dev:all`, then sign up from the Y7to11.AI page and pay
+   with `4242 4242 4242 4242`.
+
+Checked against the test account: the checkout settings below create a session
+(it returns a `client_secret` and no `url`), and the account holds one active
+price, **Y7to11.AI, £14.99 a month**, `price_1UKDw22ZcvJZXQizaoisQcR2`.
+
+Once real Stripe is configured, `npm run test:e2e` no longer applies as written:
+it signs its own webhook with the stub secret. Run it with the stubs
+(`npm run stubs` and the stub values restored) when you need it.
+
+---
+
 ## Values to Replace
 
 **Files containing placeholders:**
@@ -15,7 +40,7 @@ were changed). This file is the single source of truth for what is left to do.
 
 | Field | Current Value | What to Set |
 |-------|--------------|-------------|
-| `STRIPE_PRICE_MONTHLY` | `price_stub_999` | Your real Price ID from the [Dashboard](https://dashboard.stripe.com/test/prices). This is the **Y7to11.AI £14.99/month** price you created. |
+| `STRIPE_PRICE_MONTHLY` | `price_stub_999` | `price_1UKDw22ZcvJZXQizaoisQcR2` — the **Y7to11.AI £14.99/month** test price. Use the live price's ID when you go live. |
 | `STRIPE_SECRET_KEY` | `sk_test_stub` | Your test secret key from the [API keys page](https://dashboard.stripe.com/test/apikeys). |
 | `STRIPE_WEBHOOK_SECRET` | `whsec_stub_secret` | From `stripe listen` (local) or your webhook endpoint (deployed). See **Webhooks** below. |
 | `VITE_STRIPE_PUBLISHABLE_KEY` | *not set* | Your `pk_test_…` publishable key. **Must** carry the `VITE_` prefix — Vite only exposes prefixed variables to the browser. |
@@ -94,14 +119,21 @@ and the browser mounts the form instead of redirecting. `success_url` and
 it asserts the response contains a URL with `checkout=success`. Update that
 assertion to check for `client_secret`.
 
-### 4. Pinning the API version changes a field you already read
+### 4. Pinning the API version changes a field you already read — fixed
 
 From API version **2025-03-31**, `current_period_end` moved off the subscription
 onto the subscription *item*. `periodEnd()` in
-[api/src/lib/billingEvents.js](api/src/lib/billingEvents.js) still reads
-`subscription.current_period_end`, so on the pinned version it will resolve to
-`null` and every renewal date will be stored empty. Read it from
-`subscription.items.data[0].current_period_end` instead.
+[api/src/lib/billingEvents.js](api/src/lib/billingEvents.js) now reads
+`subscription.items.data[0].current_period_end` first.
+
+### 5. The website sign-up takes payment on its own page
+
+A parent arriving from the Y7to11.AI page has no session and no password yet.
+The form `ui_mode` gives no `url` to redirect to, so the hand-off page mounts
+the same embedded form, using a one-hour checkout grant instead of a session.
+The mounting code is shared in [src/stripeCheckout.js](src/stripeCheckout.js).
+The session sets no `return_url`, so a confirmed payment stays on the page, and
+the app then moves to `/?checkout=success` to wait for the webhook.
 
 ---
 
@@ -135,10 +167,16 @@ The publishable key is the only one that belongs in the frontend build.
 Local:
 
 ```bash
-stripe listen --forward-to http://127.0.0.1:7071/api/billing/webhook
+stripe listen --api-key sk_test_... --forward-to http://127.0.0.1:7071/api/billing/webhook
 ```
 
-It prints a `whsec_…` — that is `STRIPE_WEBHOOK_SECRET`.
+It prints a `whsec_…` — that is `STRIPE_WEBHOOK_SECRET`. Leave it running while
+you test: it is what delivers `checkout.session.completed` to the local API,
+and without it payments succeed at Stripe but no subscription is activated.
+
+The Stripe CLI is not installed system-wide. Install it with
+`winget install Stripe.StripeCli`, or use the Windows build from
+[the stripe-cli releases](https://github.com/stripe/stripe-cli/releases).
 
 Deployed: create an endpoint at `https://<your-domain>/api/billing/webhook`
 subscribed to `checkout.session.completed`, `customer.subscription.created`,
@@ -154,6 +192,11 @@ payment form to come from Stripe's own origin.
 ---
 
 ## How the integration works
+
+Signing up from the website takes the same route with the hand-off page
+([src/PasswordLogin.jsx](src/PasswordLogin.jsx), `SignupHandoff`) in place of
+the subscription page: `/api/auth/reserve` issues a checkout grant, the grant is
+exchanged for a `client_secret`, and the form is mounted there.
 
 ```
 Parent signs up  →  confirms email  →  SubscriptionPage
@@ -182,7 +225,9 @@ Files touched:
 |------|--------|
 | [api/src/functions/billing.js](api/src/functions/billing.js) | Session parameters, pinned API version, returns `client_secret` |
 | [src/main.jsx](src/main.jsx) | `beginCheckout()` returns the client secret instead of redirecting |
-| [src/SubscriptionPage.jsx](src/SubscriptionPage.jsx) | `appearance`, form mount, `#checkout-form` container |
+| [src/SubscriptionPage.jsx](src/SubscriptionPage.jsx) | `#checkout-form` container; mounts the form through the shared helper |
+| [src/stripeCheckout.js](src/stripeCheckout.js) | `appearance`, form mount, confirm, and the move to the payment-received screen |
+| [src/PasswordLogin.jsx](src/PasswordLogin.jsx) | The website hand-off mounts the embedded form |
 | [index.html](index.html) | Loads Stripe.js (dahlia build) |
 | [.env.example](.env.example) | Stripe variable names |
 

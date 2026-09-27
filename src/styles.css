@@ -7219,3 +7219,13 @@ button { font-weight: 600; letter-spacing: 0.002em; }
 [data-content-theme="light"] .curriculum-overview-copy p { color: var(--ink-soft); }
 [data-content-theme="light"] .curriculum-overview-progress { background: rgba(20, 33, 61, 0.1); }
 [data-content-theme="light"] .curriculum-overview-progress span { background: #16793f; }
+
+/* Stripe's embedded card form. Its appearance is set in Checkout Studio with a
+   white background, so it sits on a white panel of its own rather than showing
+   white fields against the dark theme. */
+.checkout-form:not([hidden]) {
+  background: #ffffff;
+  border-radius: var(--radius-md, 8px);
+  margin: 4px 0 14px;
+  padding: 14px;
+}

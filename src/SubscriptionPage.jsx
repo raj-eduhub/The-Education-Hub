@@ -1,27 +1,10 @@
 import React, { useRef, useState } from "react";
 import { BadgeCheck, BookOpenCheck, Check, GraduationCap, LockKeyhole, LogOut, ShieldCheck } from "lucide-react";
+import { mountCheckoutForm } from "./stripeCheckout.js";
 
 // One plan, one price, billed monthly. There is no trial: the subscription
 // starts and is charged today, and it can be cancelled at any time.
-const price = { amount: "GBP 9.99", suffix: "/month", note: "Billed monthly from today. Cancel any time." };
-
-// Configured in Checkout Studio. Passed to the form SDK as-is.
-const appearance = {
-  theme: "stripe",
-  labels: "auto",
-  inputs: "spaced",
-  variables: {
-    borderRadius: "4px",
-    colorBackground: "#ffffff",
-    colorDanger: "#df1b41",
-    colorPrimary: "#0570de",
-    colorSuccess: "#00c853",
-    colorText: "#30313d",
-    fontFamily: "default",
-    fontSizeBase: "16px",
-    spacingUnit: "4px",
-  },
-};
+const price = { amount: "£14.99", suffix: "/month", note: "Billed monthly from today. Cancel any time." };
 
 export function SubscriptionPage({ checkoutState, currentUser, onCheckout, onPrivacy, onSignOut }) {
   const [terms, setTerms] = useState(false);
@@ -39,26 +22,8 @@ export function SubscriptionPage({ checkoutState, currentUser, onCheckout, onPri
     setError("");
     try {
       const clientSecret = await onCheckout();
-      const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-      if (!window.Stripe) throw new Error("The payment form could not be loaded. Check your connection and try again.");
-      if (!publishableKey) throw new Error("Payments are not configured yet.");
-
-      const stripe = window.Stripe(publishableKey, { betas: ["custom_checkout_payment_form_1"] });
-      const checkout = stripe.initCheckoutFormSdk({ clientSecret, appearance });
-      const form = checkout.createForm({ layout: "expanded" });
       setPaying(true);
-      form.mount(formRef.current ?? "#checkout-form");
-
-      const loadActionsResult = await checkout.loadActions();
-      if (loadActionsResult.type === "success") {
-        form.on("confirm", async (event) => {
-          try {
-            await loadActionsResult.actions.confirm({ formConfirmEvent: event });
-          } catch (confirmError) {
-            setError(confirmError.message ?? "The payment could not be confirmed.");
-          }
-        });
-      }
+      await mountCheckoutForm(clientSecret, formRef.current ?? "#checkout-form", { onError: setError });
     } catch (checkoutError) {
       setError(checkoutError.message);
       setPaying(false);

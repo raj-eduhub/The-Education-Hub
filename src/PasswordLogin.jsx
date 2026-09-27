@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { GraduationCap } from "lucide-react";
 import { apiFetch, readJson } from "./auth.js";
+import { mountCheckoutForm } from "./stripeCheckout.js";
 
 // Log in, or ask for a reset. Creating an account is not offered here: that
 // happens on the website, where the plan is chosen and paid for, and the
@@ -139,6 +140,11 @@ export function SignupHandoff({ username, email }) {
   // Set when the details belong to an account that already exists, so the
   // way forward is a button rather than advice in a sentence.
   const [conflict, setConflict] = useState("");
+  // Set once the card form is on the page. Stripe's form ui_mode answers with a
+  // client_secret and no url, so the payment is taken here rather than on a
+  // page redirected to.
+  const [paying, setPaying] = useState(false);
+  const formRef = useRef(null);
 
   async function create(event) {
     event.preventDefault();
@@ -180,9 +186,13 @@ export function SignupHandoff({ username, email }) {
         window.location.assign(session.url);
         return;
       }
-      throw new Error("Your account was created, but the payment form could not be opened here. Sign in once you have set your password, or contact support.");
+      if (!session.client_secret) throw new Error("The payment form could not be opened. Please try again, or contact support.");
+      setPaying(true);
+      await mountCheckoutForm(session.client_secret, formRef.current, { onError: setMessage });
+      setBusy(false);
     } catch (failure) {
       setMessage(failure.message);
+      setPaying(false);
       setBusy(false);
     }
   }
@@ -194,8 +204,11 @@ export function SignupHandoff({ username, email }) {
     <form className="password-form" onSubmit={create}>
       <label>Username<input autoComplete="username" name="username" readOnly value={username} /></label>
       <label>Email<input autoComplete="email" name="email" readOnly type="email" value={email} /></label>
+      {/* Stripe renders the card fields in here, in its own iframe. Kept in the
+          tree throughout so the mount target cannot disappear under the form. */}
+      <div className="checkout-form" hidden={!paying} ref={formRef}></div>
       {message && <p role="alert" className="login-error">{message}</p>}
-      {conflict ? <>
+      {paying ? null : conflict ? <>
         <button type="button" onClick={() => window.location.assign("/")}>Sign in</button>
         <button type="button" className="login-link" onClick={() => window.location.assign("/?forgot=1")}>Forgot your password?</button>
       </> : <button type="submit" disabled={busy}>{busy ? "Please wait..." : "Continue to payment"}</button>}
