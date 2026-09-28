@@ -6,19 +6,25 @@ were changed). This file is the single source of truth for what is left to do.
 
 ---
 
-## Where this stands (27 September 2026)
+## Where this stands (28 September 2026)
 
 Everything in the code is done. What is left is putting your own keys in place,
 which is deliberately not automated: keys are pasted by you, never by a tool.
 
-1. **Roll the test secret key first.** The current one was pasted into a chat
-   session. Stripe Dashboard → Developers → API keys → Roll key.
-2. **Put the values in** `api/local.settings.json` (see the table below) and set
-   `VITE_STRIPE_PUBLISHABLE_KEY` in `.env.local`.
-3. **Delete `STRIPE_API_BASE`** from `api/local.settings.json`.
-4. **Forward webhooks** in a terminal you leave open (see Webhooks below), and
-   copy the `whsec_…` it prints into `STRIPE_WEBHOOK_SECRET`.
-5. **Restart** `npm run dev:all`, then sign up from the Y7to11.AI page and pay
+Done: the test secret key, the price and the publishable key are in place, and
+`STRIPE_API_BASE` has been deleted.
+
+Still to do:
+
+1. **Confirm the test secret key was rolled.** The original was pasted into a
+   chat session. If it has not been rolled: Stripe Dashboard → Developers →
+   API keys → Roll key, then paste the new one into `api/local.settings.json`.
+2. **Install the Stripe CLI** — it is not on this machine yet (see Webhooks below).
+3. **Forward webhooks** in a terminal you leave open, and copy the `whsec_…` it
+   prints into `STRIPE_WEBHOOK_SECRET`. It still holds the stub value, so until
+   this is done a test card is charged at Stripe but no subscription is
+   activated.
+4. **Restart** `npm run dev:all`, then sign up from the Y7to11.AI page and pay
    with `4242 4242 4242 4242`.
 
 Checked against the test account: the checkout settings below create a session
@@ -38,13 +44,13 @@ it signs its own webhook with the stub secret. Run it with the stubs
 - [.env.example](.env.example) — copy these names into your real environment
 - [api/local.settings.json](api/local.settings.json) — local Functions settings (gitignored, not in the repo)
 
-| Field | Current Value | What to Set |
+| Field | Local status | What to Set |
 |-------|--------------|-------------|
-| `STRIPE_PRICE_MONTHLY` | `price_stub_999` | `price_1UKDw22ZcvJZXQizaoisQcR2` — the **Y7to11.AI £14.99/month** test price. Use the live price's ID when you go live. |
-| `STRIPE_SECRET_KEY` | `sk_test_stub` | Your test secret key from the [API keys page](https://dashboard.stripe.com/test/apikeys). |
-| `STRIPE_WEBHOOK_SECRET` | `whsec_stub_secret` | From `stripe listen` (local) or your webhook endpoint (deployed). See **Webhooks** below. |
-| `VITE_STRIPE_PUBLISHABLE_KEY` | *not set* | Your `pk_test_…` publishable key. **Must** carry the `VITE_` prefix — Vite only exposes prefixed variables to the browser. |
-| `STRIPE_API_BASE` | `http://127.0.0.1:4242` | **Delete this variable.** It points the SDK at the local Stripe stub; while it is set (and the host is in Development) no request ever reaches Stripe. |
+| `STRIPE_PRICE_MONTHLY` | Set | `price_1UKDw22ZcvJZXQizaoisQcR2` — the **Y7to11.AI £14.99/month** test price. Use the live price's ID when you go live. |
+| `STRIPE_SECRET_KEY` | Set (`sk_test_…`) | Your test secret key from the [API keys page](https://dashboard.stripe.com/test/apikeys). |
+| `STRIPE_WEBHOOK_SECRET` | **Still the stub** | From `stripe listen` (local) or your webhook endpoint (deployed). See **Webhooks** below. |
+| `VITE_STRIPE_PUBLISHABLE_KEY` | Set (`pk_test_…`) | Your `pk_test_…` publishable key. **Must** carry the `VITE_` prefix — Vite only exposes prefixed variables to the browser. |
+| `STRIPE_API_BASE` | Deleted | Leave it out. It points the SDK at the local Stripe stub; while it is set (and the host is in Development) no request ever reaches Stripe. |
 
 `mode` and `line_items` were **not** replaced with placeholders — they already
 held real values (`"subscription"`, and the price from `STRIPE_PRICE_MONTHLY`),
@@ -115,9 +121,8 @@ will not appear.
 and the browser mounts the form instead of redirecting. `success_url` and
 `cancel_url` were removed with the redirect flow.
 
-**This means [api/scripts/test-e2e.mjs](api/scripts/test-e2e.mjs) will fail** —
-it asserts the response contains a URL with `checkout=success`. Update that
-assertion to check for `client_secret`.
+[api/scripts/test-e2e.mjs](api/scripts/test-e2e.mjs) has been updated to match —
+it accepts either a `client_secret` or, against the local stub, a `url`.
 
 ### 4. Pinning the API version changes a field you already read — fixed
 
@@ -132,8 +137,10 @@ A parent arriving from the Y7to11.AI page has no session and no password yet.
 The form `ui_mode` gives no `url` to redirect to, so the hand-off page mounts
 the same embedded form, using a one-hour checkout grant instead of a session.
 The mounting code is shared in [src/stripeCheckout.js](src/stripeCheckout.js).
-The session sets no `return_url`, so a confirmed payment stays on the page, and
-the app then moves to `/?checkout=success` to wait for the webhook.
+The session sets no `return_url`, so the form passes one to `confirm()`, which
+Stripe requires: `/?checkout=success`, the screen that waits for the webhook.
+Stripe uses it for redirect-based methods such as 3D Secure; a card that
+confirms on the page is sent there by the app instead.
 
 ---
 
@@ -179,8 +186,15 @@ The Stripe CLI is not installed system-wide. Install it with
 [the stripe-cli releases](https://github.com/stripe/stripe-cli/releases).
 
 Deployed: create an endpoint at `https://<your-domain>/api/billing/webhook`
-subscribed to `checkout.session.completed`, `customer.subscription.created`,
-`customer.subscription.updated` and `customer.subscription.deleted`.
+subscribed to:
+
+- `checkout.session.completed`
+- `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`
+- `invoice.payment_failed`, `invoice.paid`, `invoice.payment_succeeded`
+
+The invoice events are what warn a parent when a renewal fails and clear the
+warning when a retry succeeds. Leave them off and a failed card goes unnoticed
+until Stripe cancels the subscription at the end of its retries.
 
 ### 3. Dependencies
 
@@ -249,23 +263,27 @@ Everything stays in test mode while the keys begin `sk_test_` / `pk_test_`.
 The Sandbox banner in the Dashboard confirms it.
 
 Existing suites: `npm test` runs the billing and webhook suites against the
-storage emulator with synthetic events — no live Stripe account needed. Note the
-e2e assertion change described above.
+storage emulator with synthetic events — no live Stripe account needed.
+[api/scripts/test-failed-payments.mjs](api/scripts/test-failed-payments.mjs)
+covers the failed-renewal path. To see it against real Stripe, pay with
+`4000 0000 0000 0341` and watch `invoice.payment_failed` arrive in `stripe listen`.
 
 ---
 
 ## Next steps
 
-1. Replace the five values in **Values to Replace**, and delete `STRIPE_API_BASE`.
-2. Fix the two live issues flagged above — the `current_period_end` field move,
-   and the e2e assertion.
-3. Decide on promotion codes (see item 2) if you are running the introductory offer.
+1. Put the webhook secret in place — see **Where this stands** at the top.
+2. Test the full flow with `4242 4242 4242 4242`, then confirm in the Dashboard
+   that the subscription exists and that the local subscription row was written.
+3. Decide on promotion codes (see item 2 under **Read this before you go live**)
+   if you are running the introductory offer.
 4. Decide on tax. `automatic_tax` is **off**, and the pricing page states
    "VAT £0.00" — correct only while you are not VAT-registered.
-5. Handle `invoice.payment_failed` so a failed renewal prompts a card update
-   rather than silently lapsing into `past_due`.
-6. Test the full flow with `4242 4242 4242 4242`, then confirm in the Dashboard
-   that the subscription exists and that the local subscription row was written.
+5. Deploy: set the Stripe values as Azure Static Web Apps application settings,
+   and create the webhook endpoint with all seven events listed under **Webhooks**.
+
+Already done: the `current_period_end` field move, the e2e assertion, and
+`invoice.payment_failed` handling.
 
 ---
 
