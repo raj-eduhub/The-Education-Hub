@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { ArrowRight, BookOpen, CalendarDays, Check, ShieldCheck, UserRound } from "lucide-react";
 import { examBoards, subjects, tiers, topicsFor } from "./curriculum.js";
 import { BrandIcon } from "./BrandLogo.jsx";
+import { RequiredMark, RequiredNote } from "./RequiredMark.jsx";
 
 const schoolYears = [7, 8, 9, 10, 11];
 
@@ -76,8 +77,9 @@ export function LearnerProfileSetup({ initialProfile, onSave, onCancel, yearLock
       </section>
 
       <form className="profile-form" onSubmit={submit}>
+        <RequiredNote />
         <label>
-          <span><UserRound size={17} /> Learner's first name</span>
+          <span><UserRound size={17} /> <span>Learner's first name<RequiredMark /></span></span>
           <input
             autoComplete="given-name"
             maxLength="40"
@@ -89,7 +91,7 @@ export function LearnerProfileSetup({ initialProfile, onSave, onCancel, yearLock
         </label>
 
         <label>
-          <span><CalendarDays size={17} /> Date of birth</span>
+          <span><CalendarDays size={17} /> <span>Date of birth<RequiredMark /></span></span>
           <input
             max={new Date().toISOString().slice(0, 10)}
             min="2008-09-01"

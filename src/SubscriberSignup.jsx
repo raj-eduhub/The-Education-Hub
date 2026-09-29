@@ -4,8 +4,17 @@ import { apiFetch, authFetch, readJson } from "./auth.js";
 import { subjects } from "./curriculum.js";
 import { yearFromDateOfBirth } from "./schoolYear.js";
 import { BrandLogo } from "./BrandLogo.jsx";
+import { RequiredMark, RequiredNote } from "./RequiredMark.jsx";
 
 const years = [7, 8, 9, 10, 11];
+
+// The same rule as validMobile() in api/src/lib/learnerDetails.js, so a number
+// the server would refuse is caught here with a reason, not after submitting
+// with a general one.
+function validMobile(value) {
+  const digits = value.replace(/[\s()\-.]/g, "");
+  return /^\+?\d{10,15}$/.test(digits);
+}
 // Exam boards are chosen per subject, because a school rarely enters every
 // subject with the same board.
 const signupBoards = ["AQA", "Edexcel"];
@@ -84,6 +93,7 @@ export function SubscriberSignup({ preview = false, token, account, onComplete }
     const gaps = [];
     if (!form.guardianName.trim()) gaps.push("the parent or guardian's full name");
     if (!form.guardianPhone.trim()) gaps.push("a mobile number");
+    else if (!validMobile(form.guardianPhone)) gaps.push("a mobile number of 10 to 15 digits");
     if (!form.studentFirstName.trim()) gaps.push("the student's first name");
     if (!inRange) gaps.push("a date of birth that works out as Year 7 to Year 11");
     if (choosesBoards && subjects.some((subject) => !form.examBoards[subject])) gaps.push("an exam board for every subject");
@@ -144,22 +154,23 @@ export function SubscriberSignup({ preview = false, token, account, onComplete }
       </section>
 
       <form className="signup-form" onSubmit={submit}>
-        {byLink && <label>Set your account password<input type="password" autoComplete="new-password" minLength={15} maxLength={128} required value={form.password} onChange={event => update("password", event.target.value)} /></label>}
+        <RequiredNote />
+        {byLink && <label><span>Set your account password<RequiredMark /></span><input type="password" autoComplete="new-password" minLength={15} maxLength={128} required value={form.password} onChange={event => update("password", event.target.value)} /></label>}
         <section>
           <div className="signup-section-heading"><UsersRound size={20} /><div><h2>Parent or guardian</h2><p>Account holder and primary contact</p></div></div>
           <div className="signup-fields two-columns">
-            <label>Full name<input autoComplete="name" onChange={(event) => update("guardianName", event.target.value)} required value={form.guardianName} /></label>
-            <label>Relationship<select onChange={(event) => update("guardianRelationship", event.target.value)} value={form.guardianRelationship}><option value="parent">Parent</option><option value="legal-guardian">Legal guardian</option><option value="carer">Carer</option></select></label>
+            <label><span>Full name<RequiredMark /></span><input autoComplete="name" onChange={(event) => update("guardianName", event.target.value)} required value={form.guardianName} /></label>
+            <label><span>Relationship<RequiredMark /></span><select onChange={(event) => update("guardianRelationship", event.target.value)} required value={form.guardianRelationship}><option value="parent">Parent</option><option value="legal-guardian">Legal guardian</option><option value="carer">Carer</option></select></label>
             <label>Email<input autoComplete="email" readOnly type="email" value={invite.email} /></label>
-            <label>Mobile number<input autoComplete="tel" inputMode="tel" onChange={(event) => update("guardianPhone", event.target.value)} placeholder="07700 900123" required type="tel" value={form.guardianPhone} /></label>
+            <label><span>Mobile number<RequiredMark /></span><input autoComplete="tel" inputMode="tel" onChange={(event) => update("guardianPhone", event.target.value)} placeholder="07700 900123" required type="tel" value={form.guardianPhone} /></label>
           </div>
         </section>
 
         <section>
           <div className="signup-section-heading"><UserRound size={20} /><div><h2>Student</h2><p>Details used to build the learning path</p></div></div>
           <div className="signup-fields two-columns">
-            <label>First name<input autoComplete="given-name" onChange={(event) => update("studentFirstName", event.target.value)} required value={form.studentFirstName} /></label>
-            <label><span>Date of birth</span><div className="input-with-icon"><CalendarDays size={17} /><input max={new Date().toISOString().slice(0, 10)} onChange={(event) => update("dateOfBirth", event.target.value)} required type="date" value={form.dateOfBirth} /></div></label>
+            <label><span>First name<RequiredMark /></span><input autoComplete="given-name" onChange={(event) => update("studentFirstName", event.target.value)} required value={form.studentFirstName} /></label>
+            <label><span>Date of birth<RequiredMark /></span><div className="input-with-icon"><CalendarDays size={17} /><input max={new Date().toISOString().slice(0, 10)} onChange={(event) => update("dateOfBirth", event.target.value)} required type="date" value={form.dateOfBirth} /></div></label>
           </div>
         </section>
 
@@ -175,7 +186,7 @@ export function SubscriberSignup({ preview = false, token, account, onComplete }
           </div>
           {choosesBoards && <>
             <fieldset className="board-picker">
-              <legend>Exam board for each subject</legend>
+              <legend>Exam board for each subject<RequiredMark /></legend>
               <p className="board-picker-hint">GCSE preparation begins in Year 9. Pick the board the student will be entered for in each subject, and check the entry codes with the school if you are not sure.</p>
               {subjects.map((subject) => (
                 <div className="board-row" key={subject}>
@@ -197,7 +208,7 @@ export function SubscriberSignup({ preview = false, token, account, onComplete }
                 </div>
               ))}
             </fieldset>
-            {isGcse && <div className="signup-fields gcse-signup-fields"><label>Maths and Science tier<select onChange={(event) => update("tier", event.target.value)} required value={form.tier}><option disabled value="">Choose a tier</option><option>Foundation</option><option>Higher</option></select></label></div>}
+            {isGcse && <div className="signup-fields gcse-signup-fields"><label><span>Maths and Science tier<RequiredMark /></span><select onChange={(event) => update("tier", event.target.value)} required value={form.tier}><option disabled value="">Choose a tier</option><option>Foundation</option><option>Higher</option></select></label></div>}
           </>}
         </section>
 

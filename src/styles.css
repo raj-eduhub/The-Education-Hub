@@ -6398,6 +6398,22 @@ input:not([type="checkbox"]):not([type="radio"]), select, textarea {
   .signup-missing { background: rgba(184, 134, 11, 0.16); }
 }
 
+/* Beside the label of every field a form cannot be sent without. One red that
+   reads on both the light forms and the dark sign-in pane. */
+.required-mark {
+  color: #ec4f5e;
+  font-weight: 700;
+  margin-left: 3px;
+}
+.required-note {
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+  margin: 0;
+}
+.required-note .required-mark { margin: 0 3px 0 0; }
+/* The learner setup form is a block of sections, not a grid with a gap. */
+.signup-form > .required-note { margin-bottom: 20px; }
+
 /* Play the worked example, beside the example it reads ----------------------
    Laid out like "Play this as a lesson" and wearing the same face, because it
    makes the same offer about a smaller piece of content. */
