@@ -106,17 +106,25 @@ export async function accountAwaitsPassword(email) {
   const account = await findAuth(index.accountId);
   return Boolean(account) && !account.passwordHash;
 }
-export async function completePasswordReset(token, password) {
-  if (!/^[\w-]{43}$/.test(token)) return false;
+// Returns "reset" when the password was set, "wrong-username" when the link is
+// good but the username typed is not the account it was sent for, and
+// "invalid" for a link that is malformed, expired or already used.
+export async function completePasswordReset(token, password, username) {
+  if (!/^[\w-]{43}$/.test(token)) return "invalid";
   const client = await authTable();
   const reset = await findAuth(`reset-${digest(token)}`);
-  if (!reset || reset.expiresAt <= Date.now()) return false;
+  if (!reset || reset.expiresAt <= Date.now()) return "invalid";
+  // Checked before the token is claimed, so a mistyped username costs nothing:
+  // the link still works for the next attempt.
+  const owner = await findAuth(reset.accountId);
+  if (!owner) return "invalid";
+  if (owner.username !== username) return "wrong-username";
   // Claim the single-use token before writing the password so a replayed link cannot reset it twice.
   const claimed = await client.deleteEntity("auth", reset.rowKey, { etag: reset.etag })
     .then(() => true).catch(e => { if ([404, 412].includes(e.statusCode)) return false; throw e; });
-  if (!claimed) return false;
+  if (!claimed) return "invalid";
   const account = await findAuth(reset.accountId);
-  if (!account) return false;
+  if (!account) return "invalid";
   // Using a link that was only ever sent to that address proves the address,
   // so this confirms it too. For an account created at sign-up, where the
   // password is set from the email that follows payment, this is the only
@@ -125,7 +133,7 @@ export async function completePasswordReset(token, password) {
   // address was already confirmed and this changes nothing.
   await client.updateEntity({ ...account, ...await hashPassword(password), emailVerified: true }, "Replace", { etag: account.etag });
   await revokeAccountTokens(reset.accountId);
-  return true;
+  return "reset";
 }
 // The username an address signs in with, for the receipt sent after payment.
 // Returns "" rather than throwing: a missing username must not stop a paid

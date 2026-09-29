@@ -56,7 +56,15 @@ app.http("passwordLogin", {
       }
       if (action === "reset") {
         if (typeof body.password !== "string" || body.password.length < 15 || body.password.length > 128) return fail(400, "Set a password of 15-128 characters.");
-        if (!await completePasswordReset(typeof body.token === "string" ? body.token : "", body.password)) return fail(410, "This reset link is invalid, expired, or already used.");
+        const username = typeof body.username === "string" ? body.username.trim().toLowerCase() : "";
+        if (!username) return fail(400, "Enter your username.");
+        const token = typeof body.token === "string" ? body.token : "";
+        // A wrong username leaves the link usable, so the attempts are counted
+        // against the link itself rather than left unlimited.
+        if (!await withinLimit(`rate-link-${digest(token)}`, 10)) return fail(429, "Too many attempts. Try again in 15 minutes.");
+        const outcome = await completePasswordReset(token, body.password, username);
+        if (outcome === "wrong-username") return fail(400, "That username does not match this link. Use the username in the email the link came in.");
+        if (outcome !== "reset") return fail(410, "This reset link is invalid, expired, or already used.");
         return { status: 200, jsonBody: { ok: true }, headers: { "Set-Cookie": cookie("", 0), "Cache-Control": "no-store" } };
       }
       const username = typeof body.username === "string" ? body.username.trim().toLowerCase() : "";

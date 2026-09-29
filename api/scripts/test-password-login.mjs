@@ -56,14 +56,16 @@ try {
   const reset = await createPasswordReset(email);
   assert.equal(reset.username, username);
   const newPassword = randomBytes(24).toString("base64url");
-  assert.equal((await post("reset", { token: reset.token, password: "short" })).status, 400);
-  assert.equal((await post("reset", { token: "not-a-real-token", password: newPassword })).status, 410);
-  assert.equal((await post("reset", { token: reset.token, password: newPassword })).status, 200);
-  assert.equal((await post("reset", { token: reset.token, password: newPassword })).status, 410, "A reset token must work only once");
+  assert.equal((await post("reset", { token: reset.token, username, password: "short" })).status, 400);
+  assert.equal((await post("reset", { token: "not-a-real-token", username, password: newPassword })).status, 410);
+  assert.equal((await post("reset", { token: reset.token, password: newPassword })).status, 400, "Setting a password needs the username");
+  assert.equal((await post("reset", { token: reset.token, username: "someone.else", password: newPassword })).status, 400, "The username must be the account the link was sent for");
+  assert.equal((await post("reset", { token: reset.token, username: username.toUpperCase(), password: newPassword })).status, 200, "A wrong username must not use up the link, and case does not matter");
+  assert.equal((await post("reset", { token: reset.token, username, password: newPassword })).status, 410, "A reset token must work only once");
   assert.equal((await fetch(`${base}/session`, { headers: { cookie: activeCookie } })).status, 401, "A reset must sign out existing sessions");
   assert.equal((await post("login", { username, password })).status, 401, "The old password must stop working");
   assert.equal((await post("login", { username, password: newPassword })).status, 200);
-  console.log("PASS: registration, password checks, parent and student roles, all user-management methods denied to students, logout revocation, forged header rejection, password reset issue/single use/session revocation");
+  console.log("PASS: registration, password checks, parent and student roles, all user-management methods denied to students, logout revocation, forged header rejection, password reset issue/username match/single use/session revocation");
 } finally {
   await deleteCredentials(email);
   await deleteUserByEmail(email);

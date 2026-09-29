@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { apiFetch, readJson } from "./auth.js";
 import { mountCheckoutForm } from "./stripeCheckout.js";
 import { BrandLogo } from "./BrandLogo.jsx";
+import { RequiredMark, RequiredNote } from "./RequiredMark.jsx";
 
 // Log in, or ask for a reset. Creating an account is not offered here: that
 // happens on the website, where the plan is chosen and paid for, and the
@@ -105,7 +106,7 @@ export function PasswordReset({ token }) {
     if (form.password !== form.confirm) { setMessage("Passwords do not match."); return; }
     setBusy(true); setMessage("");
     try {
-      const response = await apiFetch("/api/auth/reset", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, password: form.password }) });
+      const response = await apiFetch("/api/auth/reset", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, username: form.username, password: form.password }) });
       const data = await readJson(response);
       if (!response.ok) throw new Error(data.error);
       setDone(true);
@@ -119,9 +120,14 @@ export function PasswordReset({ token }) {
       <p role="status">Your password is updated and every signed-in device was signed out. Log in with your new password.</p>
       <button type="button" className="login-link" onClick={() => window.location.assign("/")}>Go to log in</button>
     </div> : <form className="password-form" onSubmit={submit}>
-      <p>This link can be used once and expires one hour after it was requested.</p>
-      <label>New password (15-128 characters)<input name="password" type="password" autoComplete="new-password" required minLength={15} maxLength={128} /></label>
-      <label>Confirm new password<input name="confirm" type="password" autoComplete="new-password" required maxLength={128} /></label>
+      <p>Enter the username from the email this link came in, then choose your password. The link can be used once.</p>
+      <RequiredNote />
+      {/* Asked for rather than filled in: it has to match the account the link
+          was sent for, and typing it here lets a password manager save the
+          username and password together. */}
+      <label><span>Username<RequiredMark /></span><input name="username" autoCapitalize="none" autoComplete="username" required minLength={3} maxLength={32} pattern="[A-Za-z0-9_.\-]{3,32}" spellCheck={false} /></label>
+      <label><span>New password (15-128 characters)<RequiredMark /></span><input name="password" type="password" autoComplete="new-password" required minLength={15} maxLength={128} /></label>
+      <label><span>Confirm new password<RequiredMark /></span><input name="confirm" type="password" autoComplete="new-password" required maxLength={128} /></label>
       {message && <p role="alert" className="login-error">{message}</p>}
       <button type="submit" disabled={busy}>{busy ? "Please wait..." : "Update password"}</button>
       <button type="button" className="login-link" onClick={() => window.location.assign("/")}>Back to log in</button>
