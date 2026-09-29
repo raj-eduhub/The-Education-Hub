@@ -391,20 +391,37 @@
     transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease;
   }
   .masthead nav a:hover { color: var(--ink-bright); background: var(--tab-face); }
-  .masthead nav a.nav-sonia {
+  /* Outlined pills with an icon, each in its own colour: About Sonia in her
+     amber, Sign up in the blue of the Log in button beside it. */
+  .masthead nav a.nav-sonia { --pill: var(--sonia); }
+  .masthead nav a.nav-signup { --pill: var(--maths); }
+  .masthead nav a:is(.nav-sonia, .nav-signup) {
     align-items: center;
-    border-color: color-mix(in srgb, var(--sonia) 45%, var(--hairline));
+    border-color: color-mix(in srgb, var(--pill) 45%, var(--hairline));
     color: var(--ink-bright);
     display: inline-flex;
     gap: 7px;
   }
-  .masthead nav a.nav-sonia svg { color: var(--sonia); flex: 0 0 auto; }
-  .masthead nav a.nav-sonia:hover {
-    background: color-mix(in srgb, var(--sonia) 14%, transparent);
-    border-color: var(--sonia);
+  .masthead nav a:is(.nav-sonia, .nav-signup) svg { color: var(--pill); flex: 0 0 auto; }
+  .masthead nav a:is(.nav-sonia, .nav-signup):hover {
+    background: color-mix(in srgb, var(--pill) 14%, transparent);
+    border-color: var(--pill);
   }
   @supports not (border-color: color-mix(in srgb, red 50%, blue)) {
-    .masthead nav a.nav-sonia { border-color: var(--hairline); }
+    .masthead nav a:is(.nav-sonia, .nav-signup) { border-color: var(--hairline); }
+  }
+  /* Returning parents sign in to the application, so this leaves the page
+     rather than jumping within it. Filled, to read as the one action in the
+     bar rather than another section. */
+  .masthead nav a.nav-login {
+    background: linear-gradient(180deg, var(--maths), #2f6fd8);
+    border-color: #2a62c2;
+    color: #ffffff;
+    font-weight: 600;
+  }
+  .masthead nav a.nav-login:hover {
+    background: linear-gradient(180deg, var(--maths), #2f6fd8);
+    filter: brightness(1.07);
   }
 
 
@@ -810,6 +827,10 @@
   }
   .field label { font-size: 13.5px; color: var(--ink); font-weight: 600; }
   .field .hint { font-size: 12.5px; color: var(--ink-faint); }
+  /* Beside the label of every field the form cannot be sent without. */
+  .req { color: var(--history); font-weight: 700; margin-left: 3px; }
+  .req-note { font-size: 12.5px; color: var(--ink-faint); margin: 0; }
+  .req-note .req { margin: 0 3px 0 0; }
 
   .field input,
   .field select {
@@ -1144,17 +1165,17 @@
     .row-2 { grid-template-columns: minmax(0, 1fr); }
     .masthead nav a { padding: 6px 8px; font-size: 13.5px; }
     /* Five links would wrap to three rows on a phone and leave a sticky bar
-       taller than the content, so only the one people came for is kept. */
-    .masthead nav a:not([href="#price"]) { display: none; }
+       taller than the content, so only the two people come for are kept:
+       signing up, and signing in. */
+    .masthead nav a:not(.nav-signup):not(.nav-login) { display: none; }
   }
 </style>
 
 <header class="masthead">
   <div class="wrap">
-    <a class="wordmark" href="#top"><img src="brand/logo-header.png" alt="Y7to11.AI" width="127" height="40"></a>
+    <a class="wordmark" href="#top"><img src="brand/logo-header.png" alt="Y7to11.AI" width="156" height="40"></a>
     <nav>
       <a href="#example">Worked example</a>
-      <a href="#price">Price</a>
       <a href="#help">Contact</a>
       <a class="nav-sonia" href="#sonia">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -1163,6 +1184,16 @@
         </svg>
         About Sonia
       </a>
+      <!-- The price and the sign-up form share one section, so signing up
+           starts where the price is shown. -->
+      <a class="nav-signup" href="#price">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M19 8v6"/><path d="M22 11h-6"/>
+        </svg>
+        Sign up
+      </a>
+      <a class="nav-login" data-app-login data-needs-app hidden target="_blank" rel="noopener">Log in</a>
     </nav>
   </div>
 </header>
@@ -1721,15 +1752,16 @@
           <p class="panel-sub">Set up by a parent or guardian. Takes about a minute.</p>
 
           <div class="form-grid">
+            <p class="req-note"><span class="req" aria-hidden="true">*</span> Required</p>
             <div class="row-2">
               <div class="field">
-                <label for="su-user">Username</label>
+                <label for="su-user">Username<span class="req" aria-hidden="true">*</span></label>
                 <input id="su-user" name="username" type="text" autocomplete="username"
-                       placeholder="e.g. jo.taylor" spellcheck="false">
+                       placeholder="e.g. jo.taylor" spellcheck="false" required>
                 <span class="hint">3 to 32 characters, no spaces</span>
               </div>
               <div class="field">
-                <label for="su-year">School year</label>
+                <label for="su-year">School year<span class="req" aria-hidden="true">*</span></label>
                 <select id="su-year" name="year" required>
                   <option value="" selected disabled>Select school year</option>
                   <option value="7">Year 7</option>
@@ -1743,9 +1775,9 @@
             </div>
 
             <div class="field">
-              <label for="su-email">Your email address</label>
+              <label for="su-email">Your email address<span class="req" aria-hidden="true">*</span></label>
               <input id="su-email" name="email" type="email" autocomplete="email"
-                     placeholder="you@example.com" spellcheck="false">
+                     placeholder="you@example.com" spellcheck="false" required>
               <span class="hint">We send your link to set a password here once payment goes through</span>
             </div>
 
@@ -1761,6 +1793,8 @@
           </button>
           <p class="form-note">Once payment goes through we email you a link to set your password. We never
             ask for a password on this page.</p>
+          <p class="form-note" data-needs-app hidden>Already have an account?
+            <a data-app-login target="_blank" rel="noopener">Log in</a></p>
           <div class="form-status" id="signup-status" hidden></div>
         </form>
 
@@ -1891,7 +1925,7 @@
     </div>
     <div class="foot-grid">
       <div>
-        <a class="wordmark logo-foot" href="#top"><img src="brand/logo-header.png" alt="Y7to11.AI" width="127" height="40"></a>
+        <a class="wordmark logo-foot" href="#top"><img src="brand/logo-header.png" alt="Y7to11.AI" width="156" height="40"></a>
         <p style="margin:8px 0 0;max-width:48ch">
           Key Stage 3 and GCSE for Years 7 to 11. Written against the specification,
           checked before it's taught.
@@ -1920,6 +1954,15 @@
   // says so plainly rather than pretending to create an account that cannot
   // exist yet. Set this to the deployed URL and the form hands straight over.
   var APP_URL = "http://127.0.0.1:5173";
+
+  // Signing in happens in the application; the site only links to it. Until
+  // there is an application to link to, the links stay hidden rather than
+  // pointing somewhere that does not exist. A new tab, for the same reason as
+  // the sign-up hand-off below: the application will not load inside a frame.
+  if (APP_URL) {
+    document.querySelectorAll("[data-app-login]").forEach(function (link) { link.href = APP_URL + "/"; });
+    document.querySelectorAll("[data-needs-app]").forEach(function (item) { item.hidden = false; });
+  }
 
   (function () {
     var form = document.getElementById("signup-form");
