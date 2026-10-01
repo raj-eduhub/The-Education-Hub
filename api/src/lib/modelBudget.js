@@ -28,15 +28,15 @@ const daily = {
   message: "You have reached today's limit for new questions. Everything you have already studied is still here, and the limit resets tomorrow.",
 };
 
-// A free trial gets a handful of tutor replies in all, not per day: enough to
-// see what the tutor does in the free topic, and a fixed, small cost for an
-// account anyone can make without paying. The window is long enough to be a
-// lifetime for a trial. Paying lifts it, because only a trial is counted here.
+// A free trial gets its own, smaller daily allowance of tutor replies: enough
+// to use the tutor properly in the free topic every day of the week, with a
+// fixed ceiling on what an account anyone can make without paying can cost.
+// Paying lifts it, because only a trial is counted here.
 const trial = {
   key: "trial",
-  windowMs: 365 * 24 * 60 * 60 * 1000,
-  limit: () => Number(process.env.TRIAL_MODEL_CALLS ?? 10),
-  message: "That is all the tutor questions in the free topic. Subscribe to keep asking Sonia, in every topic.",
+  windowMs: 24 * 60 * 60 * 1000,
+  limit: () => Number(process.env.TRIAL_MODEL_CALLS_PER_DAY ?? 20),
+  message: "That is today's tutor questions in the free trial. They reset tomorrow, or subscribe to keep asking Sonia now.",
 };
 
 // A window that has expired starts again; one still running is added to. The
@@ -84,12 +84,14 @@ export async function checkModelBudget(email, { context, trial: inTrial = false 
       if (result.allowed) continue;
       const retryAfter = Math.max(1, Math.ceil((result.resetAt - Date.now()) / 1000));
       context?.warn(`model budget reached (${window.key}) for a learner: ${result.used}/${limit}`);
-      // Waiting does not end a trial's allowance, so no Retry-After is sent.
-      if (window === trial) return { status: 429, jsonBody: { error: window.message, limit: window.key, code: "trial-tutor-used" } };
       return {
         status: 429,
         headers: { "Retry-After": String(retryAfter) },
-        jsonBody: { error: window.message, limit: window.key, retryAfterSeconds: retryAfter },
+        jsonBody: {
+          error: window.message, limit: window.key, retryAfterSeconds: retryAfter,
+          // Lets the app offer the subscription rather than only a wait.
+          ...(window === trial ? { code: "trial-tutor-used" } : {}),
+        },
       };
     }
   } catch (error) {

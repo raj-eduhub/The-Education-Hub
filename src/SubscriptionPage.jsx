@@ -8,7 +8,7 @@ import { BrandLogo } from "./BrandLogo.jsx";
 // at any time.
 const price = { amount: "£14.99", suffix: "/month", note: "Billed monthly from today. Cancel any time." };
 
-export function SubscriptionPage({ checkoutState, currentUser, freeTopic = null, onBack, onCheckout, onPrivacy, onSignOut }) {
+export function SubscriptionPage({ checkoutState, currentUser, freeTopic = null, onBack, onCheckout, onPrivacy, onSignOut, trialEnded = false }) {
   const [terms, setTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [paying, setPaying] = useState(false);
@@ -45,8 +45,8 @@ export function SubscriptionPage({ checkoutState, currentUser, freeTopic = null,
 
       <section className="subscription-content">
         <div className="subscription-intro">
-          <p className="eyebrow">Y7to11.AI subscription</p>
-          <h1>A focused learning plan for Years 7 to 11</h1>
+          <p className="eyebrow">{trialEnded ? "Your free week has ended" : "Y7to11.AI subscription"}</p>
+          <h1>{trialEnded ? "Carry on with the full plan" : "A focused learning plan for Years 7 to 11"}</h1>
           <p>One subscription covering the complete curriculum, diagnostics, Sonia the AI tutor, and progress tracking. {freeTopic ? `Everything from ${freeTopic.title} carries over.` : "Your learner setup and any progress carry over."}</p>
           <div className="subscription-benefits">
             <div><BookOpenCheck size={19} /><span><strong>Seven subjects</strong><small>Year-specific KS3 and GCSE pathways</small></span></div>

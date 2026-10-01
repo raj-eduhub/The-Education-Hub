@@ -234,7 +234,7 @@ export function SignupHandoff({ username, email }) {
       <div className="password-brand"><BrandLogo /></div>
       <h1>Check your email</h1>
       <p>We have sent a link to <strong>{email}</strong> to set your password. It works for seven days.</p>
-      <p className="login-no-account">Once it is set, sign in with the username <strong>{username}</strong>, tell us about the learner, and choose one topic to study free.</p>
+      <p className="login-no-account">Once it is set, sign in with the username <strong>{username}</strong>, tell us about the learner, and choose one topic to study free for a week.</p>
       <button type="button" className="login-link" onClick={() => window.location.assign("/?forgot=1")}>Didn't get the email? Send another link</button>
     </div></main>;
   }
@@ -242,7 +242,7 @@ export function SignupHandoff({ username, email }) {
   return <main className="password-login"><div className="login-box">
     <div className="password-brand"><BrandLogo /></div>
     <h1>Check your details</h1>
-    <p>These came across from Y7to11.AI. Start with one topic free, or subscribe now for every topic. Either way we email you a link to set your password.</p>
+    <p>These came across from Y7to11.AI. Try one topic free for a week with no card needed, or subscribe now for every topic. Either way we email you a link to set your password.</p>
     <form className="password-form" onSubmit={create}>
       <label>Username<input autoComplete="username" name="username" readOnly value={username} /></label>
       <label>Email<input autoComplete="email" name="email" readOnly type="email" value={email} /></label>
@@ -254,7 +254,7 @@ export function SignupHandoff({ username, email }) {
         <button type="button" onClick={() => window.location.assign("/")}>Sign in</button>
         <button type="button" className="login-link" onClick={() => window.location.assign("/?forgot=1")}>Forgot your password?</button>
       </> : <>
-        <button type="button" disabled={busy} onClick={startFree}>{busy ? "Please wait..." : "Start with a free topic"}</button>
+        <button type="button" disabled={busy} onClick={startFree}>{busy ? "Please wait..." : "Try one topic free for a week"}</button>
         <button type="submit" className="secondary-button" disabled={busy}>Subscribe now - £14.99/month</button>
       </>}
       <button type="button" className="login-link" onClick={() => window.location.assign("/")}>These are wrong - start again</button>

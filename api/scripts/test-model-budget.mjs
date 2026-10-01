@@ -20,7 +20,7 @@ if (!process.env.AZURE_STORAGE_CONNECTION_STRING) {
 // application settings.
 process.env.MODEL_CALLS_PER_MINUTE = "4";
 process.env.MODEL_CALLS_PER_DAY = "6";
-process.env.TRIAL_MODEL_CALLS = "2";
+process.env.TRIAL_MODEL_CALLS_PER_DAY = "2";
 
 const { checkModelBudget, modelUsage } = await import("../src/lib/modelBudget.js");
 const { authTable, digest } = await import("../src/lib/passwordAuth.js");
@@ -59,14 +59,14 @@ check(typeof refused?.jsonBody?.error === "string" && !/limit|quota|budget/i.tes
 // --- one learner cannot spend another's --------------------------------------
 check((await checkModelBudget(other)) === null, "a different learner is unaffected");
 
-// --- a free trial gets a few tutor replies in all ----------------------------
+// --- a free trial gets a smaller daily allowance ----------------------------
 const trialCalls = [];
 for (let call = 0; call < 3; call += 1) trialCalls.push(await checkModelBudget(trialist, { trial: true }));
-check(trialCalls.filter((result) => result === null).length === 2, "a trial's allowance is its own, smaller cap",
+check(trialCalls.filter((result) => result === null).length === 2, "a trial's daily allowance is its own, smaller cap",
   `${trialCalls.filter((result) => result === null).length} allowed of 3`);
 const spent = trialCalls.find((result) => result !== null);
-check(spent?.jsonBody?.code === "trial-tutor-used" && !spent?.headers?.["Retry-After"],
-  "a spent trial is told to subscribe, not to wait", `code=${spent?.jsonBody?.code}`);
+check(spent?.jsonBody?.code === "trial-tutor-used" && Boolean(spent?.headers?.["Retry-After"]),
+  "a spent trial can subscribe, or wait for tomorrow", `code=${spent?.jsonBody?.code} Retry-After: ${spent?.headers?.["Retry-After"]}`);
 check((await checkModelBudget(trialist)) === null, "paying lifts the trial cap", "same learner, not a trial");
 
 // --- usage is readable --------------------------------------------------------

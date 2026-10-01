@@ -78,11 +78,24 @@ const learningModes = {
 // retrying, and access continues while it does.
 const paidStatuses = ["active", "past_due"];
 
-// A free trial is an account that has not paid: it may study one topic. The
-// API enforces this; the app only follows it, so a locked topic is offered
-// rather than requested and refused.
+// A free trial is an account that has not paid: it may study one topic for a
+// week from choosing it. The API enforces this; the app only follows it, so a
+// locked topic is offered rather than requested and refused.
 function trialFor(isAdmin, subscription) {
   return !isAdmin && !paidStatuses.includes(subscription?.status);
+}
+
+// The week has run out, or the account has paid before and so has no trial.
+function trialEndedFor(isAdmin, subscription) {
+  if (!trialFor(isAdmin, subscription)) return false;
+  if (subscription?.everPaid) return true;
+  return Boolean(subscription?.trialEndsAt) && Date.parse(subscription.trialEndsAt) <= Date.now();
+}
+
+// Whole days left, rounded up: on the last day it says 1, never 0.
+function trialDaysLeft(subscription) {
+  if (!subscription?.trialEndsAt) return null;
+  return Math.max(0, Math.ceil((Date.parse(subscription.trialEndsAt) - Date.now()) / (24 * 3600000)));
 }
 
 function topicById(topicId) {
@@ -436,6 +449,8 @@ function App() {
   const selectedEvidence = selectedTopic ? evidenceByTopic.get(selectedTopic.id) : null;
   const selectedMastery = selectedTopic ? mastery.find((item) => item.topicId === selectedTopic.id) : null;
   const trial = trialFor(currentUser?.isAdmin, subscription);
+  const trialEnded = trialEndedFor(currentUser?.isAdmin, subscription);
+  const daysLeft = trialDaysLeft(subscription);
   const freeTopic = trial ? topicById(subscription?.freeTopicId) : null;
   // Every topic is listed in a trial, so the learner can see what the plan
   // covers. One that is not their free topic is shown as an offer instead of a
@@ -632,11 +647,19 @@ function App() {
     setExamSeconds(0);
   }
 
+  // The free week can run out while the page is open. The API says so, and the
+  // subscription page takes over rather than each part of the lesson failing.
+  function noteTrialEnded(data) {
+    if (data?.code !== "trial-ended") return;
+    // The server decides: its clock, not this device's, ends the week.
+    setSubscription((current) => ({ ...current, trialEndsAt: new Date().toISOString() }));
+  }
+
   // Spends the trial's one free topic, so it asks first. The API keeps the
   // first choice whatever happens, and says which topic that was.
   async function chooseFreeTopic(topic) {
     if (!topic || freeTopicState.busy) return;
-    if (!window.confirm(`Make "${topic.title}" your free topic? You cannot change it later.`)) return;
+    if (!window.confirm(`Make "${topic.title}" your free topic? It is open for one week from now, and the choice cannot be changed.`)) return;
     setFreeTopicState({ busy: true, error: "" });
     try {
       const response = await appRequest("/api/billing/free-topic", {
@@ -645,7 +668,7 @@ function App() {
         body: JSON.stringify({ topicId: topic.id }),
       });
       const data = await readJson(response);
-      if (data.freeTopicId) setSubscription((current) => ({ ...current, freeTopicId: data.freeTopicId }));
+      if (data.freeTopicId) setSubscription((current) => ({ ...current, freeTopicId: data.freeTopicId, trialEndsAt: data.trialEndsAt ?? current?.trialEndsAt }));
       if (!response.ok) throw new Error(data.error ?? "The free topic could not be saved. Please try again.");
       setFreeTopicState({ busy: false, error: "" });
     } catch (failure) {
@@ -749,6 +772,7 @@ function App() {
       }),
     });
     const data = await readJson(response);
+    noteTrialEnded(data);
     if (!response.ok) {
       const failure = new Error(data.error ?? "That part of the lesson could not be loaded right now.");
       failure.noWorkedExample = data.noWorkedExample === true;
@@ -1057,6 +1081,7 @@ Mark my answer.`,
       });
 
       const data = await readJson(response);
+      noteTrialEnded(data);
       if (!response.ok) {
         const refusal = new Error(data.error ?? "The tutor could not answer right now.");
         // A limit or a locked topic is an answer the learner should read, not a
@@ -1246,13 +1271,15 @@ Mark my answer.`,
     return <SubscriberSignup account={currentUser} onComplete={completeOnboarding} />;
   }
   // A trial reaches the subscription page when it asks to, and can go back.
-  if (authStatus === "signed-in" && billingChecked && trial && (view === "subscribe" || checkoutState === "cancelled")) {
+  // Once the week is over it is the only page, with nothing to go back to.
+  if (authStatus === "signed-in" && billingChecked && trial && (trialEnded || view === "subscribe" || checkoutState === "cancelled")) {
     return <>
       <SubscriptionPage
         checkoutState={checkoutState}
         currentUser={currentUser}
         freeTopic={freeTopic}
-        onBack={() => {
+        trialEnded={trialEnded}
+        onBack={trialEnded ? null : () => {
           // Clears ?checkout= as well, so going back does not land here again.
           window.history.replaceState(null, "", "/");
           chooseView("learning");
@@ -1406,7 +1433,7 @@ Mark my answer.`,
       ) : view === "support" ? (
         <SupportTickets />
       ) : view === "account" ? (
-        <AccountSettings currentUser={currentUser} freeTopic={freeTopic} onDeleted={finishAccountDeletion} onSubscribe={() => chooseView("subscribe")} request={appRequest} subscription={subscription} trial={trial} />
+        <AccountSettings currentUser={currentUser} daysLeft={daysLeft} freeTopic={freeTopic} onDeleted={finishAccountDeletion} onSubscribe={() => chooseView("subscribe")} request={appRequest} subscription={subscription} trial={trial} />
       ) : view === "progress" ? (
         <ProgressDashboard learner={learnerProfile} onOpenTopic={openTrackedTopic} request={appRequest} />
       ) : <section className="workspace" data-subject={subject}>
@@ -1486,8 +1513,8 @@ Mark my answer.`,
           <p>
             <strong>Free trial.</strong>{" "}
             {freeTopic
-              ? <>Your free topic is <button className="trial-topic-link" onClick={openFreeTopic} type="button">{freeTopic.title}</button>{freeTopic.subject !== subject ? ` in ${freeTopic.subject}` : ""}.</>
-              : "Choose any one topic to study free: lessons, practice, exam questions and a few questions to Sonia."}
+              ? <>Your free topic is <button className="trial-topic-link" onClick={openFreeTopic} type="button">{freeTopic.title}</button>{freeTopic.subject !== subject ? ` in ${freeTopic.subject}` : ""}, open for {daysLeft === 1 ? "1 more day" : `${daysLeft} more days`}.</>
+              : "Choose any one topic to study free for a week: lessons, practice, exam questions and questions to Sonia."}
           </p>
           <button className="trial-unlock" onClick={() => chooseView("subscribe")} type="button"><LockKeyholeOpen size={16} /> Unlock every topic</button>
         </section>}
@@ -1565,13 +1592,13 @@ Mark my answer.`,
             </div>
             <p className="lesson-goal">{selectedTopic.title} — {selectedTopic.goal}</p>
             {freeTopic ? <>
-              <p>Your free topic is <strong>{freeTopic.title}</strong>{freeTopic.subject !== subject ? ` in ${freeTopic.subject}` : ""}. Subscribe to open this topic and every other topic in Year {learnerYear}.</p>
+              <p>Your free topic is <strong>{freeTopic.title}</strong>{freeTopic.subject !== subject ? ` in ${freeTopic.subject}` : ""}, open for {daysLeft === 1 ? "1 more day" : `${daysLeft} more days`}. Subscribe to open this topic and every other topic in Year {learnerYear}.</p>
               <div className="trial-actions">
                 <button className="subscribe-button" onClick={() => chooseView("subscribe")} type="button"><LockKeyholeOpen size={17} /> Unlock every topic</button>
                 <button className="secondary-button" onClick={openFreeTopic} type="button">Go to my free topic</button>
               </div>
             </> : <>
-              <p>You can study one topic free, with its lessons, worked examples, practice and exam questions, and a few questions to Sonia, your AI tutor. Pick the one that matters most: the choice cannot be changed afterwards.</p>
+              <p>You can study one topic free for a week, with its lessons, worked examples, practice and exam questions, and up to 20 questions a day to Sonia, your AI tutor. The week starts when you choose. Pick the one that matters most: the choice cannot be changed afterwards.</p>
               <div className="trial-actions">
                 <button className="subscribe-button" disabled={freeTopicState.busy} onClick={() => chooseFreeTopic(selectedTopic)} type="button">
                   <Gift size={17} /> {freeTopicState.busy ? "Saving..." : "Make this my free topic"}

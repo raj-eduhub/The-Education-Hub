@@ -3,7 +3,7 @@ import { CreditCard, ExternalLink, ShieldCheck, Trash2 } from "lucide-react";
 import { LegalNotice } from "./LegalNotice.jsx";
 import { readJson } from "./auth.js";
 
-export function AccountSettings({ currentUser, freeTopic = null, onDeleted, onSubscribe, request, subscription, trial = false }) {
+export function AccountSettings({ currentUser, daysLeft = null, freeTopic = null, onDeleted, onSubscribe, request, subscription, trial = false }) {
   const [confirmation, setConfirmation] = useState("");
   const [legalSection, setLegalSection] = useState(null);
   const [message, setMessage] = useState("");
@@ -46,7 +46,9 @@ export function AccountSettings({ currentUser, freeTopic = null, onDeleted, onSu
   const plan = isAdminPlan
     ? "Administrator access does not use a paid subscription."
     : trial
-      ? `You are on the free trial: one topic free${freeTopic ? ` (${freeTopic.title})` : ", chosen from the Learning hub"}. Subscribe to unlock every topic.`
+      ? freeTopic
+        ? `You are on the free trial: ${freeTopic.title} is open for ${daysLeft === 1 ? "1 more day" : `${daysLeft} more days`}. Subscribe to unlock every topic.`
+        : "You are on the free trial: choose one topic from the Learning hub to study free for a week. Subscribe to unlock every topic."
       : `Your learner plan is ${subscription?.status ?? "inactive"}.`;
   return <section className="account-settings">
     <header className="account-settings-header">

@@ -8,7 +8,14 @@ Last updated: 1 October 2026
 
 Keep this section current after each meaningful implementation session so work can resume without reconstructing the latest state from scratch. The entries describe files saved in the working tree; they do not imply that the changes have been committed to Git. Before continuing, run `git status --short` and inspect the relevant diff so existing work is preserved.
 
-Latest saved update (1 October 2026):
+Latest saved update (1 October 2026, later):
+
+- **The free trial is now one topic for one week, with no card.** The week starts when the learner chooses the topic (`TRIAL_DAYS`, default 7), not at sign-up, so all of it is study time. When it ends everything locks and only the subscription page shows. The tutor allowance in the trial is now `TRIAL_MODEL_CALLS_PER_DAY` (default 20) a day instead of 10 in all. An account Stripe has ever billed gets no trial.
+- **Paid and trial are separate records.** Onboarding no longer writes `status: "trial"`: `status` is Stripe's alone. The trial lives in `freeTopicId`, `trialStartedAt` and `trialEndsAt`, written together by `claimFreeTopic()` in `api/src/lib/subscriptionStore.js`, and `getSubscription()` adds `everPaid`. `getLearningAccess()` returns `trialEnded`, and `trialRefusal()` answers it with `code: "trial-ended"`; the topic routes now send every refusal through it. The payments dashboard shows "Free trial to <date>", "Trial ended" and "Trial not started" from those fields, with a free-trial count.
+- App: a days-left banner, an offer panel and account text that say the topic is free for a week, and a subscription page that takes over, with no way back, when the week is over, including when it runs out with the page open. Website sign-up and the free-start email say "free for a week, no card".
+- Verification: `npm run test:e2e` passes all 64 checks against the local stubs, now including the week starting on the choice, an expired week locking the free topic and refusing a restart, and payment reopening it. `test-model-budget.mjs` passes with the daily trial cap. `vite build` passes.
+
+Earlier update (1 October 2026):
 
 - **Free trial: one topic free.** An account that has not paid can finish learner setup, choose one topic from the learner's year, and study it in full: lessons, worked examples, practice and exam questions, progress, and up to `TRIAL_MODEL_CALLS` (default 10) tutor replies that reach the model. The choice is permanent and is made with an explicit "Make this my free topic" button, never by opening a topic, because the app opens the first Maths topic on its own at load. The placement check stays paid-only. Paying opens every topic, and setup, the free topic and its progress carry over. A cancelled subscriber falls back to the trial and keeps their free topic.
   - API: `api/src/lib/learningAccess.js` now returns `trial` and `freeTopicId` alongside `allowed`. `allowed` still means full paid access; the topic routes (`content`, `narration`, `progress` POST, `tutor`) opt a trial in only for its free topic through `mayStudyTopic()`, and refuse it with `trialRefusal()` (codes `trial-topic-unchosen` and `trial-topic-locked`). A route that does not opt in, such as `diagnostic`, stays closed to a trial.
@@ -216,10 +223,10 @@ all real in that run. Only Stripe and the email service are stubbed.
 
 1. **Register or sign in** on the combined account screen, with a username and password or a Google account. A sign-up handed over from the website can start free (the set-password link is emailed straight away) or subscribe at once (the link follows payment).
 2. **Learner setup** opens in the app once the email address is confirmed, paid or not: parent or guardian contact details, the student's name, date of birth and school, the immutable Year 7-11 selection, and per-subject exam boards from Year 9.
-3. **The free topic.** An account that has not paid is a free trial. Every topic in the learner's year is listed, and the learner chooses one to study free: its lessons, worked examples, practice and exam questions, progress, and up to `TRIAL_MODEL_CALLS` (default 10) tutor replies that reach the model. The choice cannot be changed. The placement check and every other topic need the subscription.
-4. **Subscribe** at £14.99 per month through Stripe checkout, from the "Unlock every topic" prompts. The subscription itself has no trial period, so the first payment is taken immediately. Setup, the free topic and its progress carry over.
+3. **The free week.** An account that has never paid gets one free trial, with no card. Every topic in the learner's year is listed, and the learner chooses one to study free for `TRIAL_DAYS` (default 7) days from the moment of choosing: its lessons, worked examples, practice and exam questions, progress, and up to `TRIAL_MODEL_CALLS_PER_DAY` (default 20) tutor replies a day that reach the model. The choice cannot be changed and the week cannot be restarted. The placement check and every other topic need the subscription. When the week ends, everything locks and the app shows only the subscription page. An account that has paid before gets no trial.
+4. **Subscribe** at £14.99 per month through Stripe checkout, from the "Unlock every topic" prompts or once the week ends. The subscription itself has no trial period, so the first payment is taken immediately. Setup and progress carry over.
 
-The API enforces the trial, not the app: `getLearningAccess()` reports `trial` for a set-up, unpaid account, and the routes that serve a topic (content, narration, progress, tutor) admit it only for its `freeTopicId` through `mayStudyTopic()`. Any route that does not opt in stays closed to a trial. The free topic is chosen with `POST /api/billing/free-topic`, which takes only a topic in the learner's own year and keeps the first choice.
+Paid and trial are kept apart. Whether an account has paid is Stripe's `status` on the subscription row, written only from Stripe's events. The trial is the app's own `freeTopicId`, `trialStartedAt` and `trialEndsAt`, set in one write when the topic is chosen. `getLearningAccess()` is the one place they are combined: `allowed` (paid, every topic), `trial` (never paid, week not over, one topic) or `trialEnded`. The routes that serve a topic (content, narration, progress, tutor) admit a trial only for its free topic through `mayStudyTopic()`, and answer an expired one with `code: "trial-ended"`, on which the app switches to the subscription page. Any route that does not opt in stays closed to a trial. The topic is chosen with `POST /api/billing/free-topic`, which takes only a topic in the learner's own year and keeps the first choice.
 
 Stripe returns the customer before its webhook necessarily has, so the app waits and re-checks the subscription rather than showing the free trial to somebody who has just paid.
 
@@ -367,7 +374,7 @@ instances:
 ```
 MODEL_CALLS_PER_MINUTE=12    catches a script or a stuck retry loop
 MODEL_CALLS_PER_DAY=200      catches the slow, patient version
-TRIAL_MODEL_CALLS=10         a free trial's tutor replies, in all
+TRIAL_MODEL_CALLS_PER_DAY=20 a free trial's tutor replies, each day
 ```
 
 Two properties are deliberate. It is checked **only where a call reaches the

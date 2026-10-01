@@ -14,6 +14,8 @@ const states = [
   { value: "past_due", label: "Payment late" },
   { value: "cancelling", label: "Cancelling" },
   { value: "cancelled", label: "Cancelled" },
+  { value: "trial", label: "Free trial" },
+  { value: "trial_ended", label: "Trial ended" },
   { value: "checkout_pending", label: "Never paid" },
 ];
 
@@ -33,8 +35,17 @@ function stateOf(row) {
   if (row.status === "active") return { key: "active", label: "Active", tone: "ok" };
   if (row.status === "past_due") return { key: "past_due", label: "Payment late", tone: "warn" };
   if (["canceled", "unpaid"].includes(row.status)) return { key: "cancelled", label: "Cancelled", tone: "off" };
+  // The free week is the app's record, not a Stripe status, so it is read from
+  // its own field. It comes before "Never paid" because a trial that opened
+  // checkout and left it is still a trial.
+  if (row.trialEndsAt) {
+    return Date.parse(row.trialEndsAt) > Date.now()
+      ? { key: "trial", label: `Free trial to ${when(row.trialEndsAt)}`, tone: "warn" }
+      : { key: "trial_ended", label: "Trial ended", tone: "off" };
+  }
   if (row.status === "checkout_pending") return { key: "checkout_pending", label: "Never paid", tone: "off" };
-  return { key: row.status, label: row.status || "Unknown", tone: "off" };
+  if (!row.status) return { key: "checkout_pending", label: "Trial not started", tone: "off" };
+  return { key: row.status, label: row.status, tone: "off" };
 }
 
 export function PaymentsDashboard({ request }) {
@@ -108,6 +119,7 @@ export function PaymentsDashboard({ request }) {
       <article className="pending"><span>Payment late</span><strong>{totals.pastDue ?? 0}</strong></article>
       <article className="pending"><span>Cancelling</span><strong>{totals.cancelling ?? 0}</strong></article>
       <article className="rejected"><span>Cancelled</span><strong>{totals.cancelled ?? 0}</strong></article>
+      <article className="pending"><span>Free trial</span><strong>{totals.trial ?? 0}</strong></article>
       <article><span>Setup unfinished</span><strong>{totals.setupIncomplete ?? 0}</strong></article>
     </div>}
 

@@ -22,9 +22,8 @@ app.http("narration", {
   handler: async (request, context) => {
     try {
       const access = await getLearningAccess(request);
-      if (!access.allowed && !access.trial) {
-        return { status: 403, jsonBody: { error: "Your Y7to11.AI access is inactive or has not been added yet." } };
-      }
+      // An inactive account, or a free week that has run out.
+      if (!access.allowed && !access.trial) return trialRefusal(access);
 
       const body = await request.json();
       const topicId = typeof body.topicId === "string" ? body.topicId : "";

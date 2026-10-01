@@ -12,7 +12,8 @@ app.http("progress", {
     try {
       const access = await getLearningAccess(request);
       const { allowed, trial, email } = access;
-      if (!allowed && !trial) return { status: 403, jsonBody: { error: "Your Y7to11.AI access is inactive." } };
+      // An inactive account, or a free week that has run out.
+      if (!allowed && !trial) return trialRefusal(access);
 
       if (request.method === "GET") {
         const yearValue = access.profile?.year ?? Number(request.query.get("year"));

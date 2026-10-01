@@ -4,21 +4,31 @@ import { getSubscription, grantsAccess } from "./subscriptionStore.js";
 import { userCanAccess } from "./userStore.js";
 
 // allowed means the whole curriculum, and stays the only thing most routes
-// check. trial means a set-up account that has not paid, which may study one
-// topic: the routes that serve a topic opt in through mayStudyTopic(), so any
-// route that does not is closed to a trial by default rather than open to it.
+// check. trial means a set-up account that has never paid and whose free week
+// has not run out: it may study one topic. The routes that serve a topic opt in
+// through mayStudyTopic(), so any route that does not is closed to a trial by
+// default rather than open to it.
+//
+// Paid comes from Stripe's status; the trial comes from the app's own
+// trialEndsAt. They are separate fields with separate owners, and this is the
+// only place they are combined.
 export async function getLearningAccess(request) {
   const principal = await getPrincipal(request);
   const email = principalEmail(principal) || (developmentBypass() ? "local@example.com" : "");
   const admin = developmentBypass() || isAdministrator(principal);
-  if (admin) return { allowed: true, trial: false, admin, email, profile: null };
-  if (!email || !(await userCanAccess(email))) return { allowed: false, trial: false, admin, email, profile: null };
+  if (admin) return { allowed: true, trial: false, trialEnded: false, admin, email, profile: null };
+  if (!email || !(await userCanAccess(email))) return { allowed: false, trial: false, trialEnded: false, admin, email, profile: null };
   const [subscription, profile] = await Promise.all([getSubscription(email), getProfile(email)]);
   const setUp = subscription?.onboardingComplete === true && Boolean(profile);
   const allowed = setUp && grantsAccess(subscription?.status);
+  // Not started (no topic chosen yet) still counts as a trial, so the topic can
+  // be chosen. Over means the week has run out, or the account has paid before.
+  const trialOver = Boolean(subscription?.everPaid)
+    || (Boolean(subscription?.trialEndsAt) && Date.parse(subscription.trialEndsAt) <= Date.now());
   return {
     allowed,
-    trial: setUp && !allowed,
+    trial: setUp && !allowed && !trialOver,
+    trialEnded: setUp && !allowed && trialOver,
     freeTopicId: subscription?.freeTopicId ?? null,
     admin,
     email,
@@ -39,6 +49,9 @@ export function mayStudyTopic(access, topicId) {
 // The refusal for a trial reaching past its topic. The code lets the app offer
 // the way on - choose this topic, or subscribe - instead of showing an error.
 export function trialRefusal(access) {
+  if (access.trialEnded) {
+    return { status: 403, jsonBody: { error: "The free week has ended. Subscribe to carry on learning.", code: "trial-ended" } };
+  }
   if (!access.trial) {
     return { status: 403, jsonBody: { error: "Your Y7to11.AI access is inactive or has not been added yet." } };
   }

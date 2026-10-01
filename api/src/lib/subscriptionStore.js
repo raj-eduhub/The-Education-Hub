@@ -69,9 +69,14 @@ function toSubscription(entity) {
     paymentFailedAt: entity.paymentFailedAt || null,
     paymentAttemptCount: entity.paymentAttemptCount ?? 0,
     nextPaymentAttempt: entity.nextPaymentAttempt || null,
-    // The one topic an unpaid account may study. Kept after payment, so it is
-    // still known if the subscription later ends.
+    // The free trial: one topic, for a week from the moment it is chosen. These
+    // fields belong to the app. status above belongs to Stripe and is written
+    // only from its events, so neither side can overwrite the other's record.
     freeTopicId: entity.freeTopicId || null,
+    trialStartedAt: entity.trialStartedAt || null,
+    trialEndsAt: entity.trialEndsAt || null,
+    // An account Stripe has ever billed has had the product, so it gets no trial.
+    everPaid: Boolean(entity.stripeSubscriptionId || entity.stripeCustomerId),
     updatedAt: entity.updatedAt,
   };
 }
@@ -148,23 +153,28 @@ export async function updateSubscriptionByAccountKey(key, details) {
   }, "Merge");
 }
 
-// Learner setup done by an account that has not paid. The row is created here
-// for a trial, so it is marked as one: without a status the payments view would
-// list it as a subscription in no state at all. A row that already has a status
-// - a cancelled subscriber setting up again, say - keeps it.
+// Learner setup, paid or not. Only the app's own fields are written: an
+// account that has not paid has no Stripe status, and is given none here.
 export async function completeOnboarding(email) {
   const existing = await getSubscriptionEntity(email);
   await updateSubscriptionByAccountKey(accountKey(email), {
     email: email.trim().toLowerCase(),
     onboardingComplete: true,
-    ...(existing?.status ? {} : { status: "trial", createdAt: new Date().toISOString() }),
+    ...(existing?.createdAt ? {} : { createdAt: new Date().toISOString() }),
   });
 }
 
-// Fixes an unpaid account's one free topic. The first choice stands: the etag
-// makes a second, simultaneous choice fail rather than overwrite it, so two
-// tabs cannot claim two topics. Returns the topic that is actually free, which
-// is the earlier one if a choice had already been made.
+// How long the free topic stays open, counted from the moment it is chosen.
+export function trialDays() {
+  const days = Number(process.env.TRIAL_DAYS ?? 7);
+  return Number.isFinite(days) && days > 0 ? days : 7;
+}
+
+// Starts an unpaid account's free trial: fixes its one topic and the week it
+// is open for, in one write. The first choice stands: the etag makes a second,
+// simultaneous choice fail rather than overwrite it, so two tabs cannot claim
+// two topics or two weeks. Returns the topic that is actually free, which is
+// the earlier one if a choice had already been made.
 export async function claimFreeTopic(email, topicId) {
   const current = await readyClient();
   for (let attempt = 0; attempt < 2; attempt += 1) {
@@ -172,12 +182,14 @@ export async function claimFreeTopic(email, topicId) {
     if (!entity) return null;
     if (entity.freeTopicId) return entity.freeTopicId;
     try {
+      const now = new Date();
       await current.updateEntity({
         partitionKey,
         rowKey: entity.rowKey,
         freeTopicId: topicId,
-        freeTopicChosenAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        trialStartedAt: now.toISOString(),
+        trialEndsAt: new Date(now.getTime() + trialDays() * 24 * 3600000).toISOString(),
+        updatedAt: now.toISOString(),
       }, "Merge", { etag: entity.etag });
       return topicId;
     } catch (error) {
@@ -201,6 +213,8 @@ export async function listSubscriptions() {
       currentPeriodEnd: entity.currentPeriodEnd ?? null,
       cancelAtPeriodEnd: entity.cancelAtPeriodEnd === true,
       onboardingComplete: entity.onboardingComplete === true,
+      freeTopicId: entity.freeTopicId ?? "",
+      trialEndsAt: entity.trialEndsAt ?? "",
       stripeCustomerId: entity.stripeCustomerId ?? "",
       stripeSubscriptionId: entity.stripeSubscriptionId ?? "",
       welcomeDelivery: entity.welcomeDelivery ?? "",

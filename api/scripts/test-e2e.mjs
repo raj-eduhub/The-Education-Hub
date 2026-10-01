@@ -14,7 +14,7 @@ import { readFileSync } from "node:fs";
 import Stripe from "stripe";
 import { createEmailVerification, deleteCredentials, digest } from "../src/lib/passwordAuth.js";
 import { deleteUserByEmail } from "../src/lib/userStore.js";
-import { accountKey, deleteSubscription } from "../src/lib/subscriptionStore.js";
+import { accountKey, deleteSubscription, updateSubscriptionByAccountKey } from "../src/lib/subscriptionStore.js";
 import { deleteProfile } from "../src/lib/signupStore.js";
 import { deleteProgress } from "../src/lib/progressStore.js";
 import { deleteFlags } from "../src/lib/safeguardingStore.js";
@@ -138,8 +138,10 @@ record(lockedYear.status === 409, "the registered year cannot be changed", `HTTP
 const afterSetup = await call("/billing/status");
 record(afterSetup.body?.subscription?.onboardingComplete === true, "setup is marked complete",
   `onboardingComplete=${afterSetup.body?.subscription?.onboardingComplete}`);
-record(afterSetup.body?.subscription?.status === "trial", "the account is on the free trial",
-  `status=${afterSetup.body?.subscription?.status}`);
+record(!afterSetup.body?.subscription?.status, "setup writes no Stripe status, which only Stripe sets",
+  `status=${afterSetup.body?.subscription?.status ?? "none"}`);
+record(!afterSetup.body?.subscription?.trialEndsAt, "the free week has not started before a topic is chosen",
+  `trialEndsAt=${afterSetup.body?.subscription?.trialEndsAt ?? "none"}`);
 
 // 3. The free topic -------------------------------------------------------------
 console.log("\n--- 3. The free topic ---");
@@ -161,6 +163,9 @@ record(otherYear.status === 400, "a topic from another year cannot be the free o
 const chosen = await call("/billing/free-topic", json({ topicId: freeTopic.id }));
 record(chosen.status === 200 && chosen.body?.freeTopicId === freeTopic.id, "the free topic is chosen",
   `HTTP ${chosen.status} ${chosen.body?.freeTopicId}`);
+const weekAhead = Date.parse(chosen.body?.trialEndsAt ?? "") - Date.now();
+record(Math.abs(weekAhead - 7 * 24 * 3600000) < 5 * 60000, "choosing it starts a week of access",
+  `ends ${chosen.body?.trialEndsAt}`);
 
 const secondChoice = await call("/billing/free-topic", json({ topicId: lockedTopic.id }));
 record(secondChoice.status === 409 && secondChoice.body?.freeTopicId === freeTopic.id,
@@ -191,6 +196,18 @@ record(lockedTutor.status === 403, "the tutor is refused in a locked topic", `HT
 
 const trialDiagnostic = await call("/diagnostic", json({ year: 10, subject: "Maths", responses: [] }));
 record(trialDiagnostic.status === 403, "the placement check is part of the paid plan", `HTTP ${trialDiagnostic.status}`);
+
+// The week is moved into the past in storage, as eight days would.
+await updateSubscriptionByAccountKey(accountKey(email), { trialEndsAt: new Date(Date.now() - 60000).toISOString() });
+const expired = await call("/content", json({ type: "explanation", subject: "Maths", topic: freeTopic }));
+record(expired.status === 403 && expired.body?.code === "trial-ended", "after the week the free topic locks too",
+  `HTTP ${expired.status} ${expired.body?.code}`);
+const expiredProgress = await call("/progress", json({
+  kind: "activity", year: 10, subject: "Maths", topicId: freeTopic.id, mode: "learn", durationSeconds: 60,
+}));
+record(expiredProgress.status === 403, "and nothing more is recorded", `HTTP ${expiredProgress.status}`);
+const restart = await call("/billing/free-topic", json({ topicId: lockedTopic.id }));
+record(restart.status === 409, "the week cannot be restarted with another topic", `HTTP ${restart.status}`);
 
 // 4. Checkout -----------------------------------------------------------------
 console.log("\n--- 4. Checkout ---");
@@ -241,6 +258,8 @@ record(afterPay.body?.subscription?.onboardingComplete === true, "learner setup 
 
 const unlocked = await call("/content", json({ type: "explanation", subject: "Maths", topic: lockedTopic }));
 record(unlocked.status === 200, "paying opens every topic", `HTTP ${unlocked.status}`);
+const reopened = await call("/content", json({ type: "explanation", subject: "Maths", topic: freeTopic }));
+record(reopened.status === 200, "including the free topic after its week ran out", `HTTP ${reopened.status}`);
 
 // 6. Learning -----------------------------------------------------------------
 console.log("\n--- 6. Learning ---");

@@ -86,12 +86,8 @@ app.http("tutor", {
     try {
       const access = await getLearningAccess(request);
       const { allowed, trial } = access;
-      if (!allowed && !trial) {
-        return {
-          status: 403,
-          jsonBody: { error: "Your Y7to11.AI access is inactive or has not been added yet." },
-        };
-      }
+      // An inactive account, or a free week that has run out.
+      if (!allowed && !trial) return trialRefusal(access);
 
       const body = await request.json();
       if (!mayStudyTopic(access, body.topic?.id)) return trialRefusal(access);

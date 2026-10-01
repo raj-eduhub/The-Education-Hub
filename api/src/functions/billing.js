@@ -139,7 +139,9 @@ app.http("billing", {
               cancelling: counted((row) => row.status === "active" && row.cancelAtPeriodEnd),
               cancelled: counted((row) => ["canceled", "unpaid"].includes(row.status)),
               pending: counted((row) => row.status === "checkout_pending"),
-              trial: counted((row) => row.status === "trial"),
+              // Trials are the app's own record, not a Stripe status.
+              trial: counted((row) => !grantsAccess(row.status) && row.trialEndsAt && Date.parse(row.trialEndsAt) > Date.now()),
+              trialEnded: counted((row) => !grantsAccess(row.status) && row.trialEndsAt && Date.parse(row.trialEndsAt) <= Date.now()),
               setupIncomplete: counted((row) => grantsAccess(row.status) && !row.onboardingComplete),
             },
           },
@@ -148,13 +150,15 @@ app.http("billing", {
 
       if (request.method !== "POST") return { status: 405 };
 
-      // An unpaid account's one free topic. It has to be a topic in the
-      // learner's own year, and the first choice stands - the store refuses to
-      // overwrite it - so the reply always names the topic that is actually free.
+      // Starts the free trial: one topic, open for a week from now. It has to be
+      // a topic in the learner's own year, and the first choice stands - the
+      // store refuses to overwrite it - so the reply always names the topic
+      // that is actually free, and the week cannot be restarted.
       if (action === "free-topic") {
         if (admin) return { status: 400, jsonBody: { error: "Administrator access already covers every topic." } };
         const subscription = await getSubscription(email);
         if (grantsAccess(subscription?.status)) return { status: 409, jsonBody: { error: "Your subscription already covers every topic." } };
+        if (subscription?.everPaid) return { status: 409, jsonBody: { error: "The free trial is for new accounts. Subscribe to carry on learning." } };
         if (!subscription?.onboardingComplete) return { status: 409, jsonBody: { error: "Finish learner setup first." } };
         const body = await request.json().catch(() => ({}));
         const profile = await getProfile(email);
@@ -163,10 +167,11 @@ app.http("billing", {
           return { status: 400, jsonBody: { error: "Choose a topic from the learner's own year." } };
         }
         const freeTopicId = await claimFreeTopic(email, topic.id);
+        const { trialEndsAt = null } = (await getSubscription(email)) ?? {};
         if (freeTopicId !== topic.id) {
-          return { status: 409, jsonBody: { error: "A free topic has already been chosen.", freeTopicId } };
+          return { status: 409, jsonBody: { error: "A free topic has already been chosen.", freeTopicId, trialEndsAt } };
         }
-        return { jsonBody: { freeTopicId } };
+        return { jsonBody: { freeTopicId, trialEndsAt } };
       }
 
       const stripe = stripeClient();
