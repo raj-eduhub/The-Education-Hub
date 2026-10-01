@@ -5606,8 +5606,14 @@ input::placeholder, textarea::placeholder { color: #7c8fab; }
 /* Literal colours, not tokens. A native dropdown list is drawn by the browser
    and the OS rather than by the page, and an <option> there does not reliably
    resolve a custom property - it falls back to the initial colour, which is
-   black, on this navy. The list then reads as empty rows. */
-select option { background: #16264d; color: #f2f7fd; }
+   black, on this navy. The list then reads as empty rows. The unit headings in
+   an <optgroup> need the same, or they sit on the select's translucent ground,
+   which the OS draws over white, and the near-white ink vanishes into it.
+   color-scheme makes the OS draw the list itself - its ground and scrollbar -
+   dark as well. */
+select { color-scheme: dark; }
+select optgroup, select option { background: #16264d; color: #f2f7fd; }
+select optgroup { color: #93a7c2; font-style: normal; font-weight: 800; }
 
 /* Tracks and toolbars. */
 .progress-track, .goal-track, .workspace .progress-track, .workspace .goal-track,
@@ -5922,7 +5928,10 @@ input:not([type="checkbox"]):not([type="radio"]), select, textarea {
 
 [data-content-theme="light"] input::placeholder,
 [data-content-theme="light"] textarea::placeholder { color: #8193ab; }
+[data-content-theme="light"] select { color-scheme: light; }
+[data-content-theme="light"] select optgroup,
 [data-content-theme="light"] select option { background: #ffffff; color: #10192c; }
+[data-content-theme="light"] select optgroup { color: #5b6d86; }
 
 /* Panels sit on a light ground, so the lift comes from a grey shadow rather
    than from a black one. */
