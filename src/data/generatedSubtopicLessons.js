@@ -875,7 +875,7 @@ export const generatedSubtopicLessons = {
     },
     {
       "title": "Use factors and multiples",
-      "explanation": "A factor divides another number exactly; a multiple is produced by multiplying by an integer. To compare numbers, use prime factorisation to reveal shared parts and identify the Highest Common Factor (HCF) and the Least Common Multiple (LCM). A frequent misconception is confusing the two terms: for instance, a factor of a number is not a multiple of that number, and vice versa. Prime factorisation clarifies the structure: express a number as a product of primes to see common factors and common multiples more quickly.",
+      "explanation": "A factor divides another number exactly; a multiple is produced by multiplying by an integer. To compare numbers, use prime factorisation to reveal shared parts and identify the Highest Common Factor (HCF) and the Least Common Multiple (LCM). Factors and multiples describe different relationships, but they can overlap: every positive integer is both a factor and a multiple of itself. For example, 6 divides 6 exactly and 6 is 6 times 1. Prime factorisation clarifies the structure: express a number as a product of primes to see common factors and common multiples more quickly.",
       "keyIdeas": [
         "Factors divide exactly; multiples are in a times-table sequence",
         "HCF comes from common factors; LCM from common multiples",

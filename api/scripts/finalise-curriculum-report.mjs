@@ -14,6 +14,7 @@ const client=TableClient.fromConnectionString(connection,table),entities=[];
 for await(const entity of client.listEntities())entities.push(entity);
 writeFileSync(`${dir}/current-snapshot.json`,JSON.stringify({capturedAt:new Date().toISOString(),environment:local?'local Azurite':'configured storage',table,entities},null,2));
 const batches=[dir,...readdirSync(dir).filter(s=>/^pass-\d+$/.test(s)).sort((a,b)=>Number(a.slice(5))-Number(b.slice(5))).map(s=>`${dir}/${s}`)];
+if(existsSync(`${dir}/standards-mapping/factor-correction/applied-corrections.json`))batches.push(`${dir}/standards-mapping/factor-correction`);
 const latest=new Map(),history=[],adjudicated=new Map(),modelReviews=new Map();
 for(const batch of batches){
  if(existsSync(`${batch}/applied-corrections.json`)){
@@ -70,7 +71,7 @@ assert.equal(sourceErrors.length,0,`Explanation source drift: ${sourceErrors.joi
 for(const t of curriculum){subjects[t.subject].topics++;subjects[t.subject].outcomes+=t.outcomes.length;}
 const audit=read(`${dir}/audit.json`),baseline=read(`${dir}/baseline-audit.json`),deep=read(`${dir}/pass-3/deep-flags-current.json`);
 const initialPolicyOperations=read(`${dir}/backup-1790805750241.json`).entities.length;
-const narration=existsSync(`${dir}/narration-dry-run.json`)?read(`${dir}/narration-dry-run.json`):null;
+const narration=['narration-dry-run.json','narration-standards-post-correction.json'].map(name=>`${dir}/${name}`).filter(existsSync).map(read).filter(r=>r.dryRun&&r.includeExamples&&r.counts.topics===curriculum.length).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt))[0]??null;
 const narrationRun=existsSync(`${dir}/narration-run.json`)?read(`${dir}/narration-run.json`):null;
 const latestNarratedEdit=entities.filter(e=>['explanation','example'].includes(e.type)).reduce((latest,e)=>e.storedAt>latest?e.storedAt:latest,'');
 const speechComplete=!!narration && narration.updatedAt>=latestNarratedEdit && narration.includeExamples && narration.counts.topics===curriculum.length

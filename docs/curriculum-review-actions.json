@@ -214,7 +214,7 @@
     "subject": "Computing / Science / Maths / Geography",
     "status": "Corrections applied locally; further review tracked",
     "finding": "Additional demand, equation, arithmetic and stimulus errors",
-    "evidence": "853 backed-up editorial write operations across 813 distinct current records; 259 initial policy operations recorded separately. Current authored-explanation and editorial-source drift: 0.",
+    "evidence": "854 backed-up editorial write operations across 813 distinct current records; 259 initial policy operations recorded separately. Current authored-explanation and editorial-source drift: 0.",
     "recommendation": "Use the generated report, applied-change ledger and outstanding-model-flags.json for current record-level evidence. Do not present automated review as 100% certification."
   }
 ]
