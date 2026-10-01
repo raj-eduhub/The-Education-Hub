@@ -22,7 +22,7 @@ const noBoards = Object.fromEntries(subjects.map((subject) => [subject, ""]));
 
 // Collects the student and guardian details. Two ways in:
 //
-//   in-app    signed in, payment just taken, no token - the normal path
+//   in-app    signed in, before or after paying, no token - the normal path
 //   by link   an emailed one-time token, kept for invitations already sent
 //
 // The emailed path also sets the account password, because that flow could be
@@ -149,7 +149,7 @@ export function SubscriberSignup({ preview = false, token, account, onComplete }
       <section className="signup-intro">
         <p className="eyebrow">Secure account setup</p>
         <h1>Tell us about the learner</h1>
-        <p>One more step. These details build the learning path and are linked to your subscription.</p>
+        <p>One more step. These details build the learning path and are linked to your account.</p>
         <div><ShieldCheck size={19} /><span><strong>The school year is permanent</strong><small>Check it carefully. Once submitted, it cannot be changed from the app.</small></span></div>
       </section>
 

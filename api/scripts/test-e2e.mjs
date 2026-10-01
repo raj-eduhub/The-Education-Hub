@@ -1,5 +1,5 @@
-// Walks the whole flow a new customer walks - register, pay, learner setup,
-// learn - over HTTP against a running Functions host, with Stripe and Azure
+// Walks the whole flow a new customer walks - register, learner setup, the
+// free topic, pay, learn - over HTTP against a running Functions host, with Stripe and Azure
 // Communication Services replaced by local stubs. Storage, authentication, the
 // tutor guard and the model are the real thing.
 //
@@ -104,8 +104,9 @@ record(session.body?.user?.email === email, "session reports the registered emai
 record(session.body?.hasAccess === true, "registration puts the account on the access roster", `hasAccess=${session.body?.hasAccess}`);
 record(session.body?.isAdmin === false, "the learner account is not an administrator", `isAdmin=${session.body?.isAdmin}`);
 
-// 2. Before paying ------------------------------------------------------------
-console.log("\n--- 2. Before payment ---");
+// 2. Learner setup, before paying ----------------------------------------------
+// A free trial chooses its topic from the learner's year, so setup comes first.
+console.log("--- 2. Learner setup, before paying ---");
 const beforeBilling = await call("/billing/status");
 record(beforeBilling.body?.subscription?.status !== "active", "no active subscription before paying",
   `status=${beforeBilling.body?.subscription?.status ?? "none"}`);
@@ -114,13 +115,85 @@ const blockedTutor = await call("/tutor", json({
   year: 7, subject: "Maths", mode: "learn", question: "Explain place value",
   topic: { id: "y7-maths-number", title: "Integers and Place Value", unit: "Number", outcomes: [] },
 }));
-record(blockedTutor.status === 403, "the tutor is refused before payment", `HTTP ${blockedTutor.status}`);
+record(blockedTutor.status === 403, "the tutor is refused before learner setup", `HTTP ${blockedTutor.status}`);
 
-const earlyOnboarding = await call("/onboarding", json({ guardianName: "Too early" }));
-record(earlyOnboarding.status === 402, "learner setup is refused before payment", `HTTP ${earlyOnboarding.status}`);
+const details = {
+  guardianName: "Test Guardian", guardianRelationship: "parent", guardianPhone: "07700 900321",
+  studentFirstName: "Aria", dateOfBirth: year10DateOfBirth,
+  year: 10, examBoards: { Maths: "AQA", Science: "Edexcel", English: "AQA" },
+  examBoard: "AQA", tier: "Higher", parentalConsent: true,
+};
+const noConsent = await call("/onboarding", json({ ...details, parentalConsent: false }));
+record(noConsent.status === 400, "setup without consent is refused", `HTTP ${noConsent.status}`);
 
-// 3. Checkout -----------------------------------------------------------------
-console.log("\n--- 3. Checkout ---");
+const setup = await call("/onboarding", json(details));
+record(setup.status === 201, "learner setup completes in the app before payment", `HTTP ${setup.status}`);
+record(setup.body?.profile?.year === 10, "the year is stored", `year=${setup.body?.profile?.year}`);
+record(setup.body?.profile?.examBoards?.Science === "Edexcel", "per-subject boards are stored",
+  JSON.stringify(setup.body?.profile?.examBoards));
+
+const lockedYear = await call("/onboarding", json({ ...details, dateOfBirth: year9DateOfBirth, year: 9 }));
+record(lockedYear.status === 409, "the registered year cannot be changed", `HTTP ${lockedYear.status}`);
+
+const afterSetup = await call("/billing/status");
+record(afterSetup.body?.subscription?.onboardingComplete === true, "setup is marked complete",
+  `onboardingComplete=${afterSetup.body?.subscription?.onboardingComplete}`);
+record(afterSetup.body?.subscription?.status === "trial", "the account is on the free trial",
+  `status=${afterSetup.body?.subscription?.status}`);
+
+// 3. The free topic -------------------------------------------------------------
+console.log("\n--- 3. The free topic ---");
+const { curriculum: catalogue } = await import("../../src/data/curriculumCatalog.js");
+const asTopic = (id) => {
+  const entry = catalogue.find((item) => item.id === id);
+  return { id: entry.id, title: entry.title, unit: entry.unit, goal: entry.goal, outcomes: entry.outcomes };
+};
+const freeTopic = asTopic("y10-maths-algebra");
+const lockedTopic = asTopic("y10-maths-number");
+
+const unchosen = await call("/content", json({ type: "explanation", subject: "Maths", topic: freeTopic }));
+record(unchosen.status === 403 && unchosen.body?.code === "trial-topic-unchosen",
+  "no topic is served until the free one is chosen", `HTTP ${unchosen.status} ${unchosen.body?.code}`);
+
+const otherYear = await call("/billing/free-topic", json({ topicId: "y7-maths-number" }));
+record(otherYear.status === 400, "a topic from another year cannot be the free one", `HTTP ${otherYear.status}`);
+
+const chosen = await call("/billing/free-topic", json({ topicId: freeTopic.id }));
+record(chosen.status === 200 && chosen.body?.freeTopicId === freeTopic.id, "the free topic is chosen",
+  `HTTP ${chosen.status} ${chosen.body?.freeTopicId}`);
+
+const secondChoice = await call("/billing/free-topic", json({ topicId: lockedTopic.id }));
+record(secondChoice.status === 409 && secondChoice.body?.freeTopicId === freeTopic.id,
+  "the choice cannot be changed", `HTTP ${secondChoice.status} ${secondChoice.body?.freeTopicId}`);
+
+const freeLesson = await call("/content", json({ type: "explanation", subject: "Maths", topic: freeTopic }));
+record(freeLesson.status === 200, "the free topic's lesson is served", `HTTP ${freeLesson.status}`);
+
+const lockedLesson = await call("/content", json({ type: "explanation", subject: "Maths", topic: lockedTopic }));
+record(lockedLesson.status === 403 && lockedLesson.body?.code === "trial-topic-locked",
+  "any other topic is refused", `HTTP ${lockedLesson.status} ${lockedLesson.body?.code}`);
+
+const lockedByKey = await call("/content", json({ type: "practice", subject: "Maths", topic: lockedTopic, rowKey: "explanation" }));
+record(lockedByKey.status === 403, "a locked topic cannot be reached by asking for a stored row directly", `HTTP ${lockedByKey.status}`);
+
+const freeActivity = await call("/progress", json({
+  kind: "activity", year: 10, subject: "Maths", topicId: freeTopic.id, mode: "learn", durationSeconds: 60,
+}));
+record(freeActivity.status === 201, "study in the free topic is recorded", `HTTP ${freeActivity.status}`);
+
+const lockedActivity = await call("/progress", json({
+  kind: "activity", year: 10, subject: "Maths", topicId: lockedTopic.id, mode: "learn", durationSeconds: 60,
+}));
+record(lockedActivity.status === 403, "nothing can be recorded against a locked topic", `HTTP ${lockedActivity.status}`);
+
+const lockedTutor = await call("/tutor", json({ year: 10, subject: "Maths", mode: "learn", topic: lockedTopic, question: "Explain bounds" }));
+record(lockedTutor.status === 403, "the tutor is refused in a locked topic", `HTTP ${lockedTutor.status}`);
+
+const trialDiagnostic = await call("/diagnostic", json({ year: 10, subject: "Maths", responses: [] }));
+record(trialDiagnostic.status === 403, "the placement check is part of the paid plan", `HTTP ${trialDiagnostic.status}`);
+
+// 4. Checkout -----------------------------------------------------------------
+console.log("\n--- 4. Checkout ---");
 const checkout = await call("/billing/checkout", json({}));
 record(checkout.status === 200, "checkout session is created", `HTTP ${checkout.status}`);
 // Production can use an embedded form or a hosted checkout. The local Stripe
@@ -130,8 +203,8 @@ record(typeof checkoutDestination === "string" && checkoutDestination.length > 0
   "Stripe returns a checkout destination",
   checkout.body?.url ? "hosted checkout URL present" : checkout.body?.client_secret ? "client_secret present" : JSON.stringify(checkout.body));
 
-// 4. The webhook Stripe would send -------------------------------------------
-console.log("\n--- 4. Stripe webhook ---");
+// 5. The webhook Stripe would send -------------------------------------------
+console.log("\n--- 5. Stripe webhook ---");
 const event = {
   id: `evt_${randomBytes(6).toString("hex")}`,
   type: "checkout.session.completed",
@@ -163,32 +236,11 @@ record(deliveredBody.welcomeSent === true, "the welcome email is sent", `welcome
 
 const afterPay = await call("/billing/status");
 record(afterPay.body?.subscription?.status === "active", "subscription is active", `status=${afterPay.body?.subscription?.status}`);
-record(afterPay.body?.subscription?.onboardingComplete === false, "learner setup is still outstanding",
+record(afterPay.body?.subscription?.onboardingComplete === true, "learner setup done in the trial carries over",
   `onboardingComplete=${afterPay.body?.subscription?.onboardingComplete}`);
 
-// 5. Learner setup, in the app ------------------------------------------------
-console.log("\n--- 5. Learner setup ---");
-const details = {
-  guardianName: "Test Guardian", guardianRelationship: "parent", guardianPhone: "07700 900321",
-  studentFirstName: "Aria", dateOfBirth: year10DateOfBirth,
-  year: 10, examBoards: { Maths: "AQA", Science: "Edexcel", English: "AQA" },
-  examBoard: "AQA", tier: "Higher", parentalConsent: true,
-};
-const noConsent = await call("/onboarding", json({ ...details, parentalConsent: false }));
-record(noConsent.status === 400, "setup without consent is refused", `HTTP ${noConsent.status}`);
-
-const setup = await call("/onboarding", json(details));
-record(setup.status === 201, "learner setup completes in the app", `HTTP ${setup.status}`);
-record(setup.body?.profile?.year === 10, "the year is stored", `year=${setup.body?.profile?.year}`);
-record(setup.body?.profile?.examBoards?.Science === "Edexcel", "per-subject boards are stored",
-  JSON.stringify(setup.body?.profile?.examBoards));
-
-const lockedYear = await call("/onboarding", json({ ...details, dateOfBirth: year9DateOfBirth, year: 9 }));
-record(lockedYear.status === 409, "the registered year cannot be changed", `HTTP ${lockedYear.status}`);
-
-const afterSetup = await call("/billing/status");
-record(afterSetup.body?.subscription?.onboardingComplete === true, "setup is marked complete",
-  `onboardingComplete=${afterSetup.body?.subscription?.onboardingComplete}`);
+const unlocked = await call("/content", json({ type: "explanation", subject: "Maths", topic: lockedTopic }));
+record(unlocked.status === 200, "paying opens every topic", `HTTP ${unlocked.status}`);
 
 // 6. Learning -----------------------------------------------------------------
 console.log("\n--- 6. Learning ---");

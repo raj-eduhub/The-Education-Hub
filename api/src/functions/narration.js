@@ -1,5 +1,5 @@
 import { app } from "@azure/functions";
-import { getLearningAccess } from "../lib/learningAccess.js";
+import { getLearningAccess, mayStudyTopic, trialRefusal } from "../lib/learningAccess.js";
 import { getNarration, narrationKey } from "../lib/narrationStore.js";
 
 // Serves the cached narration for one lesson beat.
@@ -22,12 +22,13 @@ app.http("narration", {
   handler: async (request, context) => {
     try {
       const access = await getLearningAccess(request);
-      if (!access.allowed) {
+      if (!access.allowed && !access.trial) {
         return { status: 403, jsonBody: { error: "Your Y7to11.AI access is inactive or has not been added yet." } };
       }
 
       const body = await request.json();
       const topicId = typeof body.topicId === "string" ? body.topicId : "";
+      if (!mayStudyTopic(access, topicId)) return trialRefusal(access);
       const text = typeof body.text === "string" ? body.text : "";
 
       // The topic id becomes a blob path segment, so it is held to the same

@@ -28,6 +28,17 @@ const daily = {
   message: "You have reached today's limit for new questions. Everything you have already studied is still here, and the limit resets tomorrow.",
 };
 
+// A free trial gets a handful of tutor replies in all, not per day: enough to
+// see what the tutor does in the free topic, and a fixed, small cost for an
+// account anyone can make without paying. The window is long enough to be a
+// lifetime for a trial. Paying lifts it, because only a trial is counted here.
+const trial = {
+  key: "trial",
+  windowMs: 365 * 24 * 60 * 60 * 1000,
+  limit: () => Number(process.env.TRIAL_MODEL_CALLS ?? 10),
+  message: "That is all the tutor questions in the free topic. Subscribe to keep asking Sonia, in every topic.",
+};
+
 // A window that has expired starts again; one still running is added to. The
 // etag makes the update fail rather than overwrite if another instance counted
 // the same call, and a lost race is retried once.
@@ -60,17 +71,21 @@ async function consume(rowKey, windowMs, limit) {
 // Failing open is deliberate: if the table is unreachable, a learner should
 // still get their lesson. This protects a budget, it does not protect data, and
 // a limiter that breaks the product when it breaks is worse than the overspend.
-export async function checkModelBudget(email, { context } = {}) {
+export async function checkModelBudget(email, { context, trial: inTrial = false } = {}) {
   if (!email) return null;
   const id = digest(email).slice(0, 32);
   try {
-    for (const window of [burst, daily]) {
+    // The trial allowance is checked first, so a spent one is refused without
+    // also counting against the short windows.
+    for (const window of inTrial ? [trial, burst, daily] : [burst, daily]) {
       const limit = window.limit();
       if (!Number.isFinite(limit) || limit <= 0) continue;
       const result = await consume(`model-${window.key}-${id}`, window.windowMs, limit);
       if (result.allowed) continue;
       const retryAfter = Math.max(1, Math.ceil((result.resetAt - Date.now()) / 1000));
       context?.warn(`model budget reached (${window.key}) for a learner: ${result.used}/${limit}`);
+      // Waiting does not end a trial's allowance, so no Retry-After is sent.
+      if (window === trial) return { status: 429, jsonBody: { error: window.message, limit: window.key, code: "trial-tutor-used" } };
       return {
         status: 429,
         headers: { "Retry-After": String(retryAfter) },

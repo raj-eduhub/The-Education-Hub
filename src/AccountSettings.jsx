@@ -3,7 +3,7 @@ import { CreditCard, ExternalLink, ShieldCheck, Trash2 } from "lucide-react";
 import { LegalNotice } from "./LegalNotice.jsx";
 import { readJson } from "./auth.js";
 
-export function AccountSettings({ currentUser, onDeleted, request, subscription }) {
+export function AccountSettings({ currentUser, freeTopic = null, onDeleted, onSubscribe, request, subscription, trial = false }) {
   const [confirmation, setConfirmation] = useState("");
   const [legalSection, setLegalSection] = useState(null);
   const [message, setMessage] = useState("");
@@ -40,6 +40,14 @@ export function AccountSettings({ currentUser, onDeleted, request, subscription 
   }
 
   const isAdminPlan = subscription?.plan === "admin";
+  // Billing exists once Stripe has seen the account. A trial that has never
+  // paid has nothing for the billing portal to show.
+  const hasBilling = !isAdminPlan && !["trial", "checkout_pending", "", undefined, null].includes(subscription?.status);
+  const plan = isAdminPlan
+    ? "Administrator access does not use a paid subscription."
+    : trial
+      ? `You are on the free trial: one topic free${freeTopic ? ` (${freeTopic.title})` : ", chosen from the Learning hub"}. Subscribe to unlock every topic.`
+      : `Your learner plan is ${subscription?.status ?? "inactive"}.`;
   return <section className="account-settings">
     <header className="account-settings-header">
       <p className="eyebrow">Account & privacy</p>
@@ -49,8 +57,11 @@ export function AccountSettings({ currentUser, onDeleted, request, subscription 
 
     <section className="account-section">
       <div className="account-section-icon"><CreditCard size={20} /></div>
-      <div><h3>Subscription</h3><p>{isAdminPlan ? "Administrator access does not use a paid subscription." : `Your learner plan is ${subscription?.status ?? "inactive"}.`}</p></div>
-      {!isAdminPlan && <button disabled={working} onClick={openBillingPortal} type="button">Manage billing <ExternalLink size={16} /></button>}
+      <div><h3>Subscription</h3><p>{plan}</p></div>
+      {(trial || hasBilling) && <div className="account-links">
+        {trial && onSubscribe && <button onClick={onSubscribe} type="button">Subscribe</button>}
+        {hasBilling && <button disabled={working} onClick={openBillingPortal} type="button">Manage billing <ExternalLink size={16} /></button>}
+      </div>}
     </section>
 
     <section className="account-section">

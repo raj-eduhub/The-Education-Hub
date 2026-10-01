@@ -4,11 +4,27 @@ An Azure-ready learning hub for KS3, KS4, and GCSE revision. The project include
 
 ## Development handoff
 
-Last updated: 24 September 2026
+Last updated: 1 October 2026
 
 Keep this section current after each meaningful implementation session so work can resume without reconstructing the latest state from scratch. The entries describe files saved in the working tree; they do not imply that the changes have been committed to Git. Before continuing, run `git status --short` and inspect the relevant diff so existing work is preserved.
 
-Latest saved UI update:
+Latest saved update (1 October 2026):
+
+- **Free trial: one topic free.** An account that has not paid can finish learner setup, choose one topic from the learner's year, and study it in full: lessons, worked examples, practice and exam questions, progress, and up to `TRIAL_MODEL_CALLS` (default 10) tutor replies that reach the model. The choice is permanent and is made with an explicit "Make this my free topic" button, never by opening a topic, because the app opens the first Maths topic on its own at load. The placement check stays paid-only. Paying opens every topic, and setup, the free topic and its progress carry over. A cancelled subscriber falls back to the trial and keeps their free topic.
+  - API: `api/src/lib/learningAccess.js` now returns `trial` and `freeTopicId` alongside `allowed`. `allowed` still means full paid access; the topic routes (`content`, `narration`, `progress` POST, `tutor`) opt a trial in only for its free topic through `mayStudyTopic()`, and refuse it with `trialRefusal()` (codes `trial-topic-unchosen` and `trial-topic-locked`). A route that does not opt in, such as `diagnostic`, stays closed to a trial.
+  - `POST /api/billing/free-topic` (in `api/src/functions/billing.js`) accepts only a topic in the learner's own year. `claimFreeTopic()` in `api/src/lib/subscriptionStore.js` keeps the first choice with an etag, so two tabs cannot claim two topics. `GET /api/billing/status` now includes `freeTopicId`, and the payments totals count `trial` rows.
+  - `api/src/functions/onboarding.js` accepts any account on the roster instead of requiring an active subscription, and `completeOnboarding()` marks a new row `status: "trial"`.
+  - `api/src/lib/modelBudget.js` has a third, lifetime `trial` window, checked first and only for a trial. A spent allowance answers 429 with `code: "trial-tutor-used"` and no `Retry-After`.
+  - Sign-up: `POST /api/auth/reserve` with `start: "free"` emails the set-password link at once (`sendFreeStartEmail()` in `api/src/lib/email.js`, seven-day link, rate-limited per address) instead of returning a checkout grant. Setting a password through `/api/auth/reset` now adds the account to the roster if it has no row yet; an existing row, including an inactive one, is left alone. The website handoff (`SignupHandoff` in `src/PasswordLogin.jsx`) leads with "Start with a free topic", with "Subscribe now" as the second button.
+  - App (`src/main.jsx`): learner setup now comes before payment, and the subscription page is reached from the "Unlock every topic" prompts and has a way back. A trial sees a banner, "(free)" and "(locked)" labels in the topic dropdown, and an offer panel in place of a locked topic's lesson. No content, progress or tutor request is made for a locked topic. Tutor refusals (403 and 429) are now shown to the learner instead of a generic connection error. `src/AccountSettings.jsx`, `src/SubscriptionPage.jsx` and `src/SubscriberSignup.jsx` wording follows the trial; the styles are the `.trial-*` rules at the end of `src/styles.css`.
+- **Fixed: starting a checkout undid learner setup.** `savePendingSubscription()` wrote `onboardingComplete: false`, so anyone who had already set up (a trial now, or someone resubscribing after cancelling) was sent back through setup once the payment cleared, and was locked out in the meantime. It now keeps the existing value and `createdAt`.
+- **Topic dropdown in dark mode.** The unit headings (`<optgroup>`) had no colours of their own and showed the select's translucent background over the list Windows draws, which left near-white text on a pale background. `select optgroup` now has the same literal navy as `select option`, with blue-grey heading text, and `select { color-scheme: dark; }` makes the browser draw the open list and its scrollbar dark. Light mode has matching overrides. Rules are by the `select option` comment in `src/styles.css`. The open list is drawn by the OS, so this was not verifiable in a screenshot; check it by eye.
+- **Narration coverage, checked.** In local storage (Azurite), all 18,715 lesson beats across the 240 topics and all 6,776 beats of the 616 stored worked examples are voiced; no example slot is unseeded. The check was `node api/scripts/synthesise-narration.mjs --dry-run --report-tag coverage-check-lessons` and `node api/scripts/synthesise-examples.mjs --dry-run`, which send nothing to the speech service. Deployed storage was not checked, and edited lesson text needs re-synthesising, so re-run the dry runs after content changes.
+- Verification after this update: `npm run test:e2e` passes all 58 customer-journey checks, including the new trial sections, against the local stubs and an API on port 7075 started with the stub settings. `test-model-budget.mjs` (with the new trial checks), `test-billing.mjs`, `test-failed-payments.mjs`, `test-billing-routes.mjs` and `test-password-login.mjs` pass. A one-off script walked the website free start (reserve, email, set password, roster, sign in) and passed. `vite build` passes with the existing large-chunk warning. The full `npm test` run and a real-browser pass of the trial screens were not done.
+- Committed as three commits on `feat/education-hub-application`: the curriculum session's sub-topic lessons and review (which shared `src/main.jsx`, `api/src/functions/content.js` and `src/styles.css` with this work and were split out of them), the dark-mode dropdown fix, and the free trial. The review's generated reports and snapshots in `output/` were left uncommitted.
+- To see the trial in the browser, the API on port 7071 has to be restarted so it loads the new code.
+
+Previous update (24 September 2026):
 
 - **Sonia · Your AI Tutor** in the learning header now matches the compact rounded treatment of **Take the check**, with a distinct muted-bronze accent and icon so the two controls remain easy to distinguish.
 - The User management table keeps every `<td>` as a native table cell, with the user identity and action-button layouts moved into inner wrappers. This fixes the staggered, disconnected row separators visible when the table was rendered at desktop width.
@@ -163,8 +179,8 @@ npm run stubs        # Stripe on 4242, email on 4243
 npm run dev:all      # Azurite, the API on 7071, the site on 5173
 ```
 
-Then open http://127.0.0.1:5173 and use it: register, subscribe, set the learner
-up, start learning. The Stripe stub has no card form, so "Continue to secure
+Then open http://127.0.0.1:5173 and use it: register, set the learner up, choose
+a free topic, subscribe, start learning. The Stripe stub has no card form, so "Continue to secure
 payment" returns straight to the app - and, like Stripe, it then delivers the
 signed `checkout.session.completed` webhook, which is what actually activates the
 subscription. It arrives a beat late on purpose, so the "Confirming your
@@ -180,10 +196,14 @@ To walk the same flow without a browser:
 npm run test:e2e
 ```
 
-It registers an account, checks that the tutor and learner setup are both refused
-before payment, creates a checkout session, delivers a signed Stripe webhook (and
-checks an unsigned one is rejected), completes learner setup in the app, serves an
-authored explanation and a stored practice question, records an attempt, and
+It registers an account, checks that the tutor is refused before learner setup,
+completes learner setup before payment, and walks the free trial: no topic is
+served until one is chosen, the choice is limited to the learner's year and cannot
+be changed, the free topic is served while every other topic, the tutor outside it
+and the placement check are refused. It then creates a checkout session, delivers
+a signed Stripe webhook (and checks an unsigned one is rejected), checks that setup
+carried over and every topic opened, serves an authored explanation and a stored
+practice question, records an attempt, and
 confirms the tutor guard blocks an unsafe message and that a learner cannot read
 safeguarding flags. The run is repeatable: it clears the previous account first.
 Set `E2E_EMAIL` to use a particular address, and `E2E_BASE` to point at a
@@ -194,12 +214,14 @@ all real in that run. Only Stripe and the email service are stubbed.
 
 ## Registration flow
 
-1. **Register or sign in** on the combined account screen, with a username and password or a Google account.
-2. **Subscribe** at £14.99 per month through Stripe-hosted checkout. There is no free trial, so the first payment is taken immediately.
-3. **Learner setup** opens in the app as soon as Stripe confirms the payment: parent or guardian contact details, the student's name, date of birth and school, the immutable Year 7-11 selection, and per-subject exam boards from Year 9.
-4. **Learning begins.**
+1. **Register or sign in** on the combined account screen, with a username and password or a Google account. A sign-up handed over from the website can start free (the set-password link is emailed straight away) or subscribe at once (the link follows payment).
+2. **Learner setup** opens in the app once the email address is confirmed, paid or not: parent or guardian contact details, the student's name, date of birth and school, the immutable Year 7-11 selection, and per-subject exam boards from Year 9.
+3. **The free topic.** An account that has not paid is a free trial. Every topic in the learner's year is listed, and the learner chooses one to study free: its lessons, worked examples, practice and exam questions, progress, and up to `TRIAL_MODEL_CALLS` (default 10) tutor replies that reach the model. The choice cannot be changed. The placement check and every other topic need the subscription.
+4. **Subscribe** at £14.99 per month through Stripe checkout, from the "Unlock every topic" prompts. The subscription itself has no trial period, so the first payment is taken immediately. Setup, the free topic and its progress carry over.
 
-Stripe returns the customer before its webhook necessarily has, so the app waits and re-checks the subscription rather than showing the paywall to somebody who has just paid.
+The API enforces the trial, not the app: `getLearningAccess()` reports `trial` for a set-up, unpaid account, and the routes that serve a topic (content, narration, progress, tutor) admit it only for its `freeTopicId` through `mayStudyTopic()`. Any route that does not opt in stays closed to a trial. The free topic is chosen with `POST /api/billing/free-topic`, which takes only a topic in the learner's own year and keeps the first choice.
+
+Stripe returns the customer before its webhook necessarily has, so the app waits and re-checks the subscription rather than showing the free trial to somebody who has just paid.
 
 Learner setup used to happen through a one-time signup link emailed after payment, valid for 48 hours. That put a deadline and a spam filter between a paying customer and the product. The `/api/signup/{token}` route still accepts any link already sent, but no new invitations are issued.
 
@@ -345,6 +367,7 @@ instances:
 ```
 MODEL_CALLS_PER_MINUTE=12    catches a script or a stuck retry loop
 MODEL_CALLS_PER_DAY=200      catches the slow, patient version
+TRIAL_MODEL_CALLS=10         a free trial's tutor replies, in all
 ```
 
 Two properties are deliberate. It is checked **only where a call reaches the

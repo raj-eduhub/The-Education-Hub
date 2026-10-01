@@ -2,8 +2,11 @@ import { app } from "@azure/functions";
 import Stripe from "stripe";
 import { developmentBypass, getPrincipal, isAdministrator, principalEmail } from "../lib/auth.js";
 import { emailForCheckoutGrant } from "../lib/passwordAuth.js";
+import { curriculum } from "../../../src/data/curriculumCatalog.js";
+import { getProfile } from "../lib/signupStore.js";
 import {
   accountKey,
+  claimFreeTopic,
   getSubscription,
   getSubscriptionEntity,
   grantsAccess,
@@ -136,6 +139,7 @@ app.http("billing", {
               cancelling: counted((row) => row.status === "active" && row.cancelAtPeriodEnd),
               cancelled: counted((row) => ["canceled", "unpaid"].includes(row.status)),
               pending: counted((row) => row.status === "checkout_pending"),
+              trial: counted((row) => row.status === "trial"),
               setupIncomplete: counted((row) => grantsAccess(row.status) && !row.onboardingComplete),
             },
           },
@@ -143,6 +147,28 @@ app.http("billing", {
       }
 
       if (request.method !== "POST") return { status: 405 };
+
+      // An unpaid account's one free topic. It has to be a topic in the
+      // learner's own year, and the first choice stands - the store refuses to
+      // overwrite it - so the reply always names the topic that is actually free.
+      if (action === "free-topic") {
+        if (admin) return { status: 400, jsonBody: { error: "Administrator access already covers every topic." } };
+        const subscription = await getSubscription(email);
+        if (grantsAccess(subscription?.status)) return { status: 409, jsonBody: { error: "Your subscription already covers every topic." } };
+        if (!subscription?.onboardingComplete) return { status: 409, jsonBody: { error: "Finish learner setup first." } };
+        const body = await request.json().catch(() => ({}));
+        const profile = await getProfile(email);
+        const topic = curriculum.find((entry) => entry.id === body.topicId);
+        if (!topic || !profile || topic.year !== profile.year) {
+          return { status: 400, jsonBody: { error: "Choose a topic from the learner's own year." } };
+        }
+        const freeTopicId = await claimFreeTopic(email, topic.id);
+        if (freeTopicId !== topic.id) {
+          return { status: 409, jsonBody: { error: "A free topic has already been chosen.", freeTopicId } };
+        }
+        return { jsonBody: { freeTopicId } };
+      }
+
       const stripe = stripeClient();
       const origin = process.env.APP_BASE_URL ?? new URL(request.url).origin;
 

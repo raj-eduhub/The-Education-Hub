@@ -2,9 +2,11 @@ import { app } from "@azure/functions";
 import { developmentBypass, getPrincipal, principalEmail } from "../lib/auth.js";
 import { validateLearnerDetails } from "../lib/learnerDetails.js";
 import { saveLearnerProfile } from "../lib/signupStore.js";
-import { getSubscription, accountKey, updateSubscriptionByAccountKey } from "../lib/subscriptionStore.js";
+import { completeOnboarding } from "../lib/subscriptionStore.js";
+import { userCanAccess } from "../lib/userStore.js";
 
-// Learner setup, completed in the app immediately after payment.
+// Learner setup, completed in the app before or after payment. A free trial
+// needs it first: the free topic is chosen from the learner's year.
 //
 // This replaces the emailed one-time link. The account already exists and is
 // signed in by the time anyone reaches checkout, so sending them out to their
@@ -22,10 +24,11 @@ app.http("onboarding", {
       const email = principalEmail(principal) || (developmentBypass() ? "local@example.com" : "");
       if (!email) return { status: 401, jsonBody: { error: "Sign in to complete learner setup." } };
 
-      // Onboarding follows payment, so an unpaid account has nothing to set up.
-      const subscription = await getSubscription(email);
-      if (!developmentBypass() && subscription?.status !== "active") {
-        return { status: 402, jsonBody: { error: "An active subscription is required before learner setup." } };
+      // Open to any account on the roster, paid or not. Getting on the roster
+      // takes a confirmed email address, so an unproven sign-up still cannot
+      // attach a child's details to an address it does not own.
+      if (!developmentBypass() && !(await userCanAccess(email))) {
+        return { status: 403, jsonBody: { error: "Confirm your email address before learner setup." } };
       }
 
       const body = await request.json();
@@ -33,7 +36,7 @@ app.http("onboarding", {
       if (!checked.valid) return { status: 400, jsonBody: { error: checked.error } };
 
       const profile = await saveLearnerProfile(email, checked.value);
-      await updateSubscriptionByAccountKey(accountKey(email), { onboardingComplete: true });
+      await completeOnboarding(email);
       return { status: 201, jsonBody: { profile } };
     } catch (error) {
       context.error("Learner onboarding failure", error.message);

@@ -1,7 +1,7 @@
 import { app } from "@azure/functions";
 import { callFoundry, deployment } from "../lib/foundry.js";
 import { checkModelBudget } from "../lib/modelBudget.js";
-import { getLearningAccess } from "../lib/learningAccess.js";
+import { getLearningAccess, mayStudyTopic, trialRefusal } from "../lib/learningAccess.js";
 import { contentKey, getContent, saveContent } from "../lib/contentStore.js";
 import { allowsFormulae, contentTypes, isQuestionBank, mayUseModel, routeFor, supportsQuestionBank, usesMathsNotation, variesByBoard, variesByTier, warrantsWorkedExample } from "../lib/contentPolicy.js";
 import { parseQuestion, questionPrompt } from "../lib/questionBank.js";
@@ -17,11 +17,14 @@ app.http("content", {
   handler: async (request, context) => {
     try {
       const access = await getLearningAccess(request);
-      if (!access.allowed) {
+      if (!access.allowed && !access.trial) {
         return { status: 403, jsonBody: { error: "Your Y7to11.AI access is inactive or has not been added yet." } };
       }
 
       const body = await request.json();
+      // A trial reaches only its free topic. Checked against the id the stored
+      // row is keyed on, so the explicit-key lookup below is held to it too.
+      if (!mayStudyTopic(access, body.topic?.id)) return trialRefusal(access);
       const { topic, subtopic, refresh = false } = body;
       const requested = body.type;
       const type = Object.values(contentTypes).includes(requested) ? requested : contentTypes.EXAMPLE;

@@ -69,6 +69,9 @@ function toSubscription(entity) {
     paymentFailedAt: entity.paymentFailedAt || null,
     paymentAttemptCount: entity.paymentAttemptCount ?? 0,
     nextPaymentAttempt: entity.nextPaymentAttempt || null,
+    // The one topic an unpaid account may study. Kept after payment, so it is
+    // still known if the subscription later ends.
+    freeTopicId: entity.freeTopicId || null,
     updatedAt: entity.updatedAt,
   };
 }
@@ -118,6 +121,10 @@ export async function findSubscriptionByCustomerId(customerId) {
 export async function savePendingSubscription(email, details) {
   const current = await readyClient();
   const now = new Date().toISOString();
+  // Starting a checkout must not undo learner setup. A free trial sets up
+  // before it pays, and someone resubscribing set up long ago; writing false
+  // here sent both back through setup once the payment cleared.
+  const existing = await getSubscriptionEntity(email);
   await current.upsertEntity({
     partitionKey,
     rowKey: accountKey(email),
@@ -125,8 +132,8 @@ export async function savePendingSubscription(email, details) {
     plan: details.plan,
     billingPeriod: details.billingPeriod,
     status: "checkout_pending",
-    onboardingComplete: false,
-    createdAt: now,
+    onboardingComplete: existing?.onboardingComplete === true,
+    createdAt: existing?.createdAt ?? now,
     updatedAt: now,
   }, "Merge");
 }
@@ -139,6 +146,45 @@ export async function updateSubscriptionByAccountKey(key, details) {
     ...details,
     updatedAt: new Date().toISOString(),
   }, "Merge");
+}
+
+// Learner setup done by an account that has not paid. The row is created here
+// for a trial, so it is marked as one: without a status the payments view would
+// list it as a subscription in no state at all. A row that already has a status
+// - a cancelled subscriber setting up again, say - keeps it.
+export async function completeOnboarding(email) {
+  const existing = await getSubscriptionEntity(email);
+  await updateSubscriptionByAccountKey(accountKey(email), {
+    email: email.trim().toLowerCase(),
+    onboardingComplete: true,
+    ...(existing?.status ? {} : { status: "trial", createdAt: new Date().toISOString() }),
+  });
+}
+
+// Fixes an unpaid account's one free topic. The first choice stands: the etag
+// makes a second, simultaneous choice fail rather than overwrite it, so two
+// tabs cannot claim two topics. Returns the topic that is actually free, which
+// is the earlier one if a choice had already been made.
+export async function claimFreeTopic(email, topicId) {
+  const current = await readyClient();
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const entity = await getSubscriptionEntity(email);
+    if (!entity) return null;
+    if (entity.freeTopicId) return entity.freeTopicId;
+    try {
+      await current.updateEntity({
+        partitionKey,
+        rowKey: entity.rowKey,
+        freeTopicId: topicId,
+        freeTopicChosenAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }, "Merge", { etag: entity.etag });
+      return topicId;
+    } catch (error) {
+      if (error.statusCode !== 412) throw error;
+    }
+  }
+  return (await getSubscriptionEntity(email))?.freeTopicId ?? null;
 }
 
 // Every subscription, for the administrator's payments view. The table holds one

@@ -138,10 +138,13 @@ export function PasswordReset({ token }) {
 // Arriving from the website, where the username, email and consent were given.
 //
 // No password is asked for: the account is created without one and the password
-// is set later, from the one-time link emailed when payment clears. So this is
-// a confirmation rather than a form - check the two details, then pay.
+// is set later, from a one-time emailed link. So this is a confirmation rather
+// than a form - check the two details, then either start free (the link is
+// sent now) or pay (the link is sent when payment clears).
 export function SignupHandoff({ username, email }) {
   const [busy, setBusy] = useState(false);
+  // Set once a free start has sent the set-password email.
+  const [freeStarted, setFreeStarted] = useState(false);
   const [message, setMessage] = useState("");
   // Set when the details belong to an account that already exists, so the
   // way forward is a button rather than advice in a sentence.
@@ -151,6 +154,29 @@ export function SignupHandoff({ username, email }) {
   // page redirected to.
   const [paying, setPaying] = useState(false);
   const formRef = useRef(null);
+
+  async function startFree() {
+    setBusy(true);
+    setMessage("");
+    setConflict("");
+    try {
+      const response = await apiFetch("/api/auth/reserve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, email, consent: true, start: "free" }),
+      });
+      const data = await readJson(response);
+      if (!response.ok) {
+        if (response.status === 409) setConflict(data.code ?? "existing");
+        throw new Error(data.error ?? "The account could not be created.");
+      }
+      setFreeStarted(true);
+    } catch (failure) {
+      setMessage(failure.message);
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function create(event) {
     event.preventDefault();
@@ -203,10 +229,20 @@ export function SignupHandoff({ username, email }) {
     }
   }
 
+  if (freeStarted) {
+    return <main className="password-login"><div className="login-box">
+      <div className="password-brand"><BrandLogo /></div>
+      <h1>Check your email</h1>
+      <p>We have sent a link to <strong>{email}</strong> to set your password. It works for seven days.</p>
+      <p className="login-no-account">Once it is set, sign in with the username <strong>{username}</strong>, tell us about the learner, and choose one topic to study free.</p>
+      <button type="button" className="login-link" onClick={() => window.location.assign("/?forgot=1")}>Didn't get the email? Send another link</button>
+    </div></main>;
+  }
+
   return <main className="password-login"><div className="login-box">
     <div className="password-brand"><BrandLogo /></div>
     <h1>Check your details</h1>
-    <p>These came across from Y7to11.AI. Payment is next, and we email you a link to set your password as soon as it goes through.</p>
+    <p>These came across from Y7to11.AI. Start with one topic free, or subscribe now for every topic. Either way we email you a link to set your password.</p>
     <form className="password-form" onSubmit={create}>
       <label>Username<input autoComplete="username" name="username" readOnly value={username} /></label>
       <label>Email<input autoComplete="email" name="email" readOnly type="email" value={email} /></label>
@@ -217,7 +253,10 @@ export function SignupHandoff({ username, email }) {
       {paying ? null : conflict ? <>
         <button type="button" onClick={() => window.location.assign("/")}>Sign in</button>
         <button type="button" className="login-link" onClick={() => window.location.assign("/?forgot=1")}>Forgot your password?</button>
-      </> : <button type="submit" disabled={busy}>{busy ? "Please wait..." : "Continue to payment"}</button>}
+      </> : <>
+        <button type="button" disabled={busy} onClick={startFree}>{busy ? "Please wait..." : "Start with a free topic"}</button>
+        <button type="submit" className="secondary-button" disabled={busy}>Subscribe now - £14.99/month</button>
+      </>}
       <button type="button" className="login-link" onClick={() => window.location.assign("/")}>These are wrong - start again</button>
     </form>
   </div></main>;

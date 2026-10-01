@@ -1,13 +1,14 @@
 import React, { useRef, useState } from "react";
-import { BadgeCheck, BookOpenCheck, Check, LockKeyhole, LogOut, ShieldCheck } from "lucide-react";
+import { ArrowLeft, BadgeCheck, BookOpenCheck, Check, LockKeyhole, LogOut, ShieldCheck } from "lucide-react";
 import { mountCheckoutForm } from "./stripeCheckout.js";
 import { BrandLogo } from "./BrandLogo.jsx";
 
-// One plan, one price, billed monthly. There is no trial: the subscription
-// starts and is charged today, and it can be cancelled at any time.
+// One plan, one price, billed monthly. The free trial is a topic, not a period:
+// the subscription itself starts and is charged today, and it can be cancelled
+// at any time.
 const price = { amount: "£14.99", suffix: "/month", note: "Billed monthly from today. Cancel any time." };
 
-export function SubscriptionPage({ checkoutState, currentUser, onCheckout, onPrivacy, onSignOut }) {
+export function SubscriptionPage({ checkoutState, currentUser, freeTopic = null, onBack, onCheckout, onPrivacy, onSignOut }) {
   const [terms, setTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [paying, setPaying] = useState(false);
@@ -36,14 +37,17 @@ export function SubscriptionPage({ checkoutState, currentUser, onCheckout, onPri
     <main className="subscription-page">
       <header className="subscription-nav">
         <div><BrandLogo height={36} /></div>
-        <div><small>{currentUser.email}</small><button onClick={onSignOut} type="button"><LogOut size={17} /> Sign out</button></div>
+        <div>
+          {onBack && <button onClick={onBack} type="button"><ArrowLeft size={17} /> {freeTopic ? "Back to my free topic" : "Back to the topics"}</button>}
+          <small>{currentUser.email}</small><button onClick={onSignOut} type="button"><LogOut size={17} /> Sign out</button>
+        </div>
       </header>
 
       <section className="subscription-content">
         <div className="subscription-intro">
           <p className="eyebrow">Y7to11.AI subscription</p>
           <h1>A focused learning plan for Years 7 to 11</h1>
-          <p>One subscription covering the complete curriculum, diagnostics, Sonia the AI tutor, and progress tracking. Learner setup takes a minute and happens right after payment.</p>
+          <p>One subscription covering the complete curriculum, diagnostics, Sonia the AI tutor, and progress tracking. {freeTopic ? `Everything from ${freeTopic.title} carries over.` : "Your learner setup and any progress carry over."}</p>
           <div className="subscription-benefits">
             <div><BookOpenCheck size={19} /><span><strong>Seven subjects</strong><small>Year-specific KS3 and GCSE pathways</small></span></div>
             <div><BadgeCheck size={19} /><span><strong>Adaptive support</strong><small>Learn, Practice, Exam, and Review modes</small></span></div>

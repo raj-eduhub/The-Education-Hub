@@ -7298,3 +7298,55 @@ span.brand-logo.brand-logo.brand-logo {
   box-shadow: 0 12px 28px -16px rgba(10, 17, 32, 0.8);
 }
 .admin-brand { align-items: center; display: inline-flex; gap: 12px; }
+
+/* Free trial. The banner and the locked-topic offer read from the workspace's
+   own tokens, so they follow the subject colour and both themes without rules
+   of their own for each. */
+.trial-banner {
+  align-items: center;
+  background: color-mix(in srgb, var(--subject, #4c8dff) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--subject, #4c8dff) 40%, transparent);
+  border-radius: var(--radius-md, 10px);
+  color: var(--ink);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  padding: 12px 16px;
+}
+.trial-banner > svg { color: var(--subject, #4c8dff); flex: none; }
+.trial-banner p { flex: 1 1 260px; margin: 0; }
+.trial-banner strong { color: var(--ink-bright); }
+.trial-topic-link {
+  background: none;
+  border: 0;
+  color: var(--ink-bright);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.trial-unlock {
+  align-items: center;
+  background: var(--subject-deep, #2563d6);
+  border: 0;
+  border-radius: var(--radius-pill, 999px);
+  color: #ffffff;
+  cursor: pointer;
+  display: inline-flex;
+  font-weight: 700;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 16px;
+}
+.trial-offer p { color: var(--ink); line-height: 1.6; }
+.trial-offer .panel-heading > svg { color: var(--subject, #4c8dff); }
+.trial-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
+.trial-actions .subscribe-button { margin-top: 0; padding: 0 20px; width: auto; }
+.trial-actions .secondary-button { min-height: 48px; padding: 0 20px; }
+
+@media (max-width: 640px) {
+  .trial-unlock { justify-content: center; width: 100%; }
+  .trial-actions > button { width: 100%; }
+}

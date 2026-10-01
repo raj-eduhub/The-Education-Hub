@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { BookMarked, BookOpen, Brain, Calculator, ChartNoAxesCombined, Check, CheckCircle2, ChevronRight, ClipboardCheck, ClipboardList, Cpu, CreditCard, DraftingCompass, FlaskConical, Landmark, LayoutDashboard, LifeBuoy, ListFilter, LogOut, Map as MapIcon, MonitorPlay, PenLine, Play, Repeat2, RotateCcw, Send, Settings, ShieldAlert, ShieldCheck, Sparkles, Target, Timer, UserRound, Users, X } from "lucide-react";
+import { BookMarked, BookOpen, Brain, Calculator, ChartNoAxesCombined, Check, CheckCircle2, ChevronRight, ClipboardCheck, ClipboardList, Cpu, CreditCard, DraftingCompass, FlaskConical, Gift, Landmark, LayoutDashboard, LifeBuoy, ListFilter, LockKeyhole, LockKeyholeOpen, LogOut, Map as MapIcon, MonitorPlay, PenLine, Play, Repeat2, RotateCcw, Send, Settings, ShieldAlert, ShieldCheck, Sparkles, Target, Timer, UserRound, Users, X } from "lucide-react";
 import { curriculum, subjects, topicsFor } from "./curriculum.js";
 import { exampleBeats, formulaBeats } from "./lessonBeats.js";
 import { AdminDashboard } from "./AdminDashboard.jsx";
@@ -74,6 +74,21 @@ const learningModes = {
 // A sub-topic is ticked once its lesson is finished and the topic has this
 // many answers in both practice and exam. Practice and exam are set on the
 // whole topic, so every sub-topic of it shares the same two counts.
+// The statuses the API treats as paid. past_due is one of them: Stripe is still
+// retrying, and access continues while it does.
+const paidStatuses = ["active", "past_due"];
+
+// A free trial is an account that has not paid: it may study one topic. The
+// API enforces this; the app only follows it, so a locked topic is offered
+// rather than requested and refused.
+function trialFor(isAdmin, subscription) {
+  return !isAdmin && !paidStatuses.includes(subscription?.status);
+}
+
+function topicById(topicId) {
+  return topicId ? curriculum.find((entry) => entry.id === topicId) ?? null : null;
+}
+
 const answersToFinish = 10;
 // How long the end of a worked example must stay on screen to count as read.
 const exampleReadSeconds = 15;
@@ -420,6 +435,13 @@ function App() {
     displayedTopics.find((topic) => topic.id === selectedTopicId) ?? displayedTopics[0];
   const selectedEvidence = selectedTopic ? evidenceByTopic.get(selectedTopic.id) : null;
   const selectedMastery = selectedTopic ? mastery.find((item) => item.topicId === selectedTopic.id) : null;
+  const trial = trialFor(currentUser?.isAdmin, subscription);
+  const freeTopic = trial ? topicById(subscription?.freeTopicId) : null;
+  // Every topic is listed in a trial, so the learner can see what the plan
+  // covers. One that is not their free topic is shown as an offer instead of a
+  // lesson, and nothing is requested for it.
+  const selectedLocked = trial && Boolean(selectedTopic) && selectedTopic.id !== freeTopic?.id;
+  const [freeTopicState, setFreeTopicState] = useState({ busy: false, error: "" });
   const topicOptionGroups = useMemo(() => {
     const groups = new Map();
     for (const topic of displayedTopics) {
@@ -483,15 +505,18 @@ function App() {
       if (!response.ok) throw new Error(data.error ?? "Sign-in could not be verified.");
       setCurrentUser({ ...data.user, isAdmin: data.isAdmin, accessRole: data.accessRole });
       setView(data.isAdmin ? "admin" : "learning");
+      let billingSubscription = null;
       if (data.hasAccess) {
         const billingResponse = await authFetch("/api/billing/status");
         const billingData = await readJson(billingResponse);
         if (!billingResponse.ok) throw new Error(billingData.error ?? "Subscription status could not be loaded.");
-        const billingSubscription = billingData.subscription;
+        billingSubscription = billingData.subscription;
         setSubscription(billingSubscription);
         setBillingChecked(true);
 
-        if (!data.isAdmin && billingSubscription?.status === "active" && billingSubscription.onboardingComplete) {
+        // A free trial is set up before it pays, so the profile is loaded for
+        // any account that has finished setup, not only a paid one.
+        if (!data.isAdmin && billingSubscription?.onboardingComplete) {
           const profileResponse = await authFetch("/api/profile");
           const profileData = await readJson(profileResponse);
           if (!profileResponse.ok || !profileData.profile) throw new Error(profileData.error ?? "The registered learner profile could not be loaded.");
@@ -519,12 +544,16 @@ function App() {
       const storedProfile = loadLearnerProfile(data.user.email);
       setLearnerProfile(storedProfile);
       if (storedProfile) {
-        const storedSubject = storedProfile.subject ?? "Maths";
+        // A trial opens on its free topic, which may be in another subject from
+        // the one last studied.
+        const freeTopic = trialFor(data.isAdmin, billingSubscription) ? topicById(billingSubscription?.freeTopicId) : null;
+        const storedSubject = freeTopic?.subject ?? storedProfile.subject ?? "Maths";
         setSubject(storedSubject);
-        setSelectedTopicId(storedProfile.topicId);
+        setSelectedTopicId(freeTopic?.id ?? storedProfile.topicId);
         const storedDiagnostic = loadDiagnostic(data.user.email, storedProfile.year, storedSubject);
         setDiagnostic(storedDiagnostic);
-        setShowDiagnostic(!storedDiagnostic);
+        // The placement check spans the whole year, so it is part of the paid plan.
+        setShowDiagnostic(!storedDiagnostic && !trialFor(data.isAdmin, billingSubscription));
       }
       setAuthStatus(data.hasAccess ? "signed-in" : "pending");
     } catch (error) {
@@ -603,6 +632,34 @@ function App() {
     setExamSeconds(0);
   }
 
+  // Spends the trial's one free topic, so it asks first. The API keeps the
+  // first choice whatever happens, and says which topic that was.
+  async function chooseFreeTopic(topic) {
+    if (!topic || freeTopicState.busy) return;
+    if (!window.confirm(`Make "${topic.title}" your free topic? You cannot change it later.`)) return;
+    setFreeTopicState({ busy: true, error: "" });
+    try {
+      const response = await appRequest("/api/billing/free-topic", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topicId: topic.id }),
+      });
+      const data = await readJson(response);
+      if (data.freeTopicId) setSubscription((current) => ({ ...current, freeTopicId: data.freeTopicId }));
+      if (!response.ok) throw new Error(data.error ?? "The free topic could not be saved. Please try again.");
+      setFreeTopicState({ busy: false, error: "" });
+    } catch (failure) {
+      setFreeTopicState({ busy: false, error: failure.message });
+    }
+  }
+
+  function openFreeTopic() {
+    if (!freeTopic) return;
+    if (freeTopic.subject !== subject) chooseSubject(freeTopic.subject);
+    setUnitFilter("All");
+    chooseTopic(freeTopic.id);
+  }
+
   function storeProfile(profile) {
     const profileToStore = learnerProfile?.yearLocked
       ? { ...profile, year: learnerProfile.year, yearLocked: true }
@@ -622,7 +679,7 @@ function App() {
     setSelectedTopicId(nextTopic?.id);
     const storedDiagnostic = loadDiagnostic(currentUser.email, stored.year, nextSubject);
     setDiagnostic(storedDiagnostic);
-    setShowDiagnostic(!storedDiagnostic);
+    setShowDiagnostic(!storedDiagnostic && !trial);
   }
 
   function completeDiagnostic(result) {
@@ -730,10 +787,10 @@ function App() {
   }, [requestContent]);
 
   useEffect(() => {
-    if (view !== "learning" || !learnerProfile || !selectedTopic) return;
+    if (view !== "learning" || !learnerProfile || !selectedTopic || selectedLocked) return;
     if (learningMode !== "practice" && learningMode !== "exam") return;
     loadBankItem(learningMode, selectedTopic, bankIndex);
-  }, [bankIndex, learnerProfile, learningMode, loadBankItem, selectedTopic, view]);
+  }, [bankIndex, learnerProfile, learningMode, loadBankItem, selectedLocked, selectedTopic, view]);
 
   const loadReviewQueue = useCallback(async () => {
     setReviewQueue((current) => ({ ...current, status: "loading" }));
@@ -860,14 +917,14 @@ function App() {
   }, [requestContent]);
 
   useEffect(() => {
-    if (view !== "learning" || !learnerProfile || !selectedTopic) return;
-    loadExplanation(selectedTopic);
-  }, [learnerProfile, loadExplanation, selectedTopic, view]);
+    if (view !== "learning" || !learnerProfile || !selectedTopic || selectedLocked) return;
+    loadExplanation(selectedTopic, selectedSubtopic);
+  }, [learnerProfile, loadExplanation, selectedLocked, selectedTopic, selectedSubtopic, view]);
 
   useEffect(() => {
-    if (view !== "learning" || !learnerProfile || !selectedTopic || !selectedSubtopic) return;
+    if (view !== "learning" || !learnerProfile || !selectedTopic || !selectedSubtopic || selectedLocked) return;
     loadWorkedExample(selectedTopic, selectedSubtopic);
-  }, [learnerProfile, loadWorkedExample, selectedSubtopic, selectedTopic, view]);
+  }, [learnerProfile, loadWorkedExample, selectedLocked, selectedSubtopic, selectedTopic, view]);
 
   // Time on task and engagement are recorded for every mode. They never carry
   // accuracy, so they cannot move a mastery score.
@@ -896,13 +953,14 @@ function App() {
   }, [appRequest, learnerYear, learningMode]);
 
   useEffect(() => {
-    if (view !== "learning" || !learnerProfile || !selectedTopic) return undefined;
+    // Looking at a locked topic's offer is not study, so it is not recorded.
+    if (view !== "learning" || !learnerProfile || !selectedTopic || selectedLocked) return undefined;
     activity.current = {
       startedAt: Date.now(), questionsAsked: 0, examplesOpened: 0,
       topicId: selectedTopic.id, topicTitle: selectedTopic.title, subject,
     };
     return () => flushActivity();
-  }, [flushActivity, learnerProfile, selectedTopic, subject, view]);
+  }, [flushActivity, learnerProfile, selectedLocked, selectedTopic, subject, view]);
 
   // A submitted answer is marked by the tutor against the stored question, which
   // is also what triggers the automatic progress record.
@@ -1000,7 +1058,11 @@ Mark my answer.`,
 
       const data = await readJson(response);
       if (!response.ok) {
-        throw new Error(data.error ?? "The tutor could not answer right now.");
+        const refusal = new Error(data.error ?? "The tutor could not answer right now.");
+        // A limit or a locked topic is an answer the learner should read, not a
+        // connection fault.
+        refusal.fromServer = Boolean(data.error) && [403, 429].includes(response.status);
+        throw refusal;
       }
 
       setMessages((items) => [...items, { role: "assistant", text: data.answer, source: data.source, guard: data.guard }]);
@@ -1012,13 +1074,14 @@ Mark my answer.`,
         setActivityStartedAt(Date.now());
         setHabitKey((key) => key + 1);
       }
-    } catch {
+    } catch (failure) {
       setMessages((items) => [
         ...items,
         {
           role: "assistant",
-          text:
-            "Sonia could not be reached yet. Check the backend environment variables and your sign-in, then try again.",
+          text: failure.fromServer
+            ? failure.message
+            : "Sonia could not be reached yet. Check the backend environment variables and your sign-in, then try again.",
         },
       ]);
     } finally {
@@ -1170,20 +1233,30 @@ Mark my answer.`,
   const subscriptionActive = subscription?.status === "active";
   const setupIncomplete = !currentUser?.isAdmin && !subscription?.onboardingComplete;
 
-  // Learner setup happens here, in the app, straight after payment. It used to
-  // be an emailed one-time link, which added a 48-hour deadline and a spam
-  // filter between a paying customer and the thing they had just bought.
-  if (authStatus === "signed-in" && billingChecked && subscriptionActive && setupIncomplete) {
-    return <SubscriberSignup account={currentUser} onComplete={completeOnboarding} />;
-  }
+  // Back from Stripe before its webhook: wait for the payment rather than show
+  // a free trial to somebody who has just paid.
   if (authStatus === "signed-in" && billingChecked && !subscriptionActive && checkoutState === "success") {
     return <CheckoutConfirming email={currentUser.email} onRecheck={recheckBilling} onSignOut={signOut} />;
   }
-  if (authStatus === "signed-in" && billingChecked && !subscriptionActive) {
+  // Learner setup happens here, in the app, before anything else - paid or
+  // not, because a free trial chooses its topic from the learner's year. It
+  // used to be an emailed one-time link, which added a 48-hour deadline and a
+  // spam filter between a parent and the thing they had signed up for.
+  if (authStatus === "signed-in" && billingChecked && setupIncomplete) {
+    return <SubscriberSignup account={currentUser} onComplete={completeOnboarding} />;
+  }
+  // A trial reaches the subscription page when it asks to, and can go back.
+  if (authStatus === "signed-in" && billingChecked && trial && (view === "subscribe" || checkoutState === "cancelled")) {
     return <>
       <SubscriptionPage
         checkoutState={checkoutState}
         currentUser={currentUser}
+        freeTopic={freeTopic}
+        onBack={() => {
+          // Clears ?checkout= as well, so going back does not land here again.
+          window.history.replaceState(null, "", "/");
+          chooseView("learning");
+        }}
         onCheckout={beginCheckout}
         onPrivacy={setLegalSection}
         onSignOut={signOut}
@@ -1333,7 +1406,7 @@ Mark my answer.`,
       ) : view === "support" ? (
         <SupportTickets />
       ) : view === "account" ? (
-        <AccountSettings currentUser={currentUser} onDeleted={finishAccountDeletion} request={appRequest} subscription={subscription} />
+        <AccountSettings currentUser={currentUser} freeTopic={freeTopic} onDeleted={finishAccountDeletion} onSubscribe={() => chooseView("subscribe")} request={appRequest} subscription={subscription} trial={trial} />
       ) : view === "progress" ? (
         <ProgressDashboard learner={learnerProfile} onOpenTopic={openTrackedTopic} request={appRequest} />
       ) : <section className="workspace" data-subject={subject}>
@@ -1349,15 +1422,17 @@ Mark my answer.`,
                 {availableUnits.map((unit) => <option key={unit}>{unit}</option>)}
               </select>
             </label>
-            <button className="retake-check" onClick={() => setShowDiagnostic(true)} type="button">
+            {!trial && <button className="retake-check" onClick={() => setShowDiagnostic(true)} type="button">
               <Target size={15} />
               <span>{activeDiagnostic ? "Retake check" : "Take the check"}</span>
-            </button>
+            </button>}
             <button
               aria-controls="sonia-chat"
               aria-expanded={tutorOpen}
               className="model-pill"
+              disabled={selectedLocked && learningMode !== "review"}
               onClick={openTutor}
+              title={selectedLocked && learningMode !== "review" ? "Sonia is available in your free topic" : undefined}
               type="button"
             >
               <Sparkles size={16} />
@@ -1406,6 +1481,17 @@ Mark my answer.`,
           </div>}
         </div>
 
+        {trial && <section className="trial-banner" aria-label="Free trial">
+          <Gift size={18} />
+          <p>
+            <strong>Free trial.</strong>{" "}
+            {freeTopic
+              ? <>Your free topic is <button className="trial-topic-link" onClick={openFreeTopic} type="button">{freeTopic.title}</button>{freeTopic.subject !== subject ? ` in ${freeTopic.subject}` : ""}.</>
+              : "Choose any one topic to study free: lessons, practice, exam questions and a few questions to Sonia."}
+          </p>
+          <button className="trial-unlock" onClick={() => chooseView("subscribe")} type="button"><LockKeyholeOpen size={16} /> Unlock every topic</button>
+        </section>}
+
         <DailyGoal refreshKey={habitKey} request={appRequest} />
 
 
@@ -1427,15 +1513,19 @@ Mark my answer.`,
                 <optgroup key={unit} label={unit}>
                   {unitTopics.map((topic) => {
                     const evidence = evidenceByTopic.get(topic.id);
+                    const label = evidence ? `${topic.title} - ${checkLabels[evidence.classification] ?? "checked"}` : topic.title;
+                    // Before a free topic is chosen every topic is a candidate,
+                    // so none is marked locked yet.
+                    const trialNote = !trial ? "" : topic.id === freeTopic?.id ? " (free)" : freeTopic ? " (locked)" : "";
                     return <option key={topic.id} value={topic.id}>
-                      {evidence ? `${topic.title} - ${checkLabels[evidence.classification] ?? "checked"}` : topic.title}
+                      {label}{trialNote}
                     </option>;
                   })}
                 </optgroup>
               ))}
             </select>
           </label>
-          {learningMode === "learn" && <div className="subtopic-grid" aria-label="Sub-topics">
+          {learningMode === "learn" && !selectedLocked && <div className="subtopic-grid" aria-label="Sub-topics">
             {subtopics.map((subtopic) => {
               const answers = topicAnswers(subtopic.topicId);
               const lessonDone = lessonsDone.has(subtopic.id);
@@ -1465,7 +1555,32 @@ Mark my answer.`,
         </section>
 
         <section className="learning-layout">
-          {learningMode === "review" ? <ReviewPanel
+          {selectedLocked && learningMode !== "review" ? <article className="lesson-panel trial-offer" aria-live="polite">
+            <div className="panel-heading">
+              <LockKeyhole size={20} />
+              <div>
+                <p className="eyebrow">{selectedTopic.exam} / {selectedTopic.unit}</p>
+                <h3>{freeTopic ? `${selectedTopic.title} is part of the full plan` : `Try ${selectedTopic.title} free`}</h3>
+              </div>
+            </div>
+            <p className="lesson-goal">{selectedTopic.title} — {selectedTopic.goal}</p>
+            {freeTopic ? <>
+              <p>Your free topic is <strong>{freeTopic.title}</strong>{freeTopic.subject !== subject ? ` in ${freeTopic.subject}` : ""}. Subscribe to open this topic and every other topic in Year {learnerYear}.</p>
+              <div className="trial-actions">
+                <button className="subscribe-button" onClick={() => chooseView("subscribe")} type="button"><LockKeyholeOpen size={17} /> Unlock every topic</button>
+                <button className="secondary-button" onClick={openFreeTopic} type="button">Go to my free topic</button>
+              </div>
+            </> : <>
+              <p>You can study one topic free, with its lessons, worked examples, practice and exam questions, and a few questions to Sonia, your AI tutor. Pick the one that matters most: the choice cannot be changed afterwards.</p>
+              <div className="trial-actions">
+                <button className="subscribe-button" disabled={freeTopicState.busy} onClick={() => chooseFreeTopic(selectedTopic)} type="button">
+                  <Gift size={17} /> {freeTopicState.busy ? "Saving..." : "Make this my free topic"}
+                </button>
+                <button className="secondary-button" onClick={() => chooseView("subscribe")} type="button">Subscribe for every topic</button>
+              </div>
+            </>}
+            {freeTopicState.error && <p className="login-error" role="alert">{freeTopicState.error}</p>}
+          </article> : learningMode === "review" ? <ReviewPanel
             error={bankItem.error}
             item={bankItem}
             marking={marking}
@@ -1660,7 +1775,7 @@ Mark my answer.`,
             />}
           </article>}
 
-          {tutorOpen && <section className="tutor-panel" aria-label="Chat with Sonia, your AI tutor" id="sonia-chat" ref={tutorPanelRef}>
+          {tutorOpen && !(selectedLocked && learningMode !== "review") && <section className="tutor-panel" aria-label="Chat with Sonia, your AI tutor" id="sonia-chat" ref={tutorPanelRef}>
             <div className="chat-header">
               <Sparkles size={20} />
               <div>

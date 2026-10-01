@@ -1,5 +1,5 @@
 import { app } from "@azure/functions";
-import { getLearningAccess } from "../lib/learningAccess.js";
+import { getLearningAccess, mayStudyTopic, trialRefusal } from "../lib/learningAccess.js";
 import { getHabit, getProgress, getReviewQueue, recordActivity, recordAttempt, recordLesson } from "../lib/progressStore.js";
 
 const modes = ["learn", "practice", "exam", "review", "diagnostic"];
@@ -11,8 +11,8 @@ app.http("progress", {
   handler: async (request, context) => {
     try {
       const access = await getLearningAccess(request);
-      const { allowed, email } = access;
-      if (!allowed) return { status: 403, jsonBody: { error: "Your Y7to11.AI access is inactive." } };
+      const { allowed, trial, email } = access;
+      if (!allowed && !trial) return { status: 403, jsonBody: { error: "Your Y7to11.AI access is inactive." } };
 
       if (request.method === "GET") {
         const yearValue = access.profile?.year ?? Number(request.query.get("year"));
@@ -32,6 +32,9 @@ app.http("progress", {
       }
 
       const body = await request.json();
+      // Reading progress is open to a trial, which can only have made it in
+      // its free topic. Recording it is held to that topic.
+      if (!mayStudyTopic(access, body.topicId)) return trialRefusal(access);
       const registeredYear = access.profile?.year ?? body.year;
 
       // Engagement is recorded separately and never carries attainment data.

@@ -20,12 +20,14 @@ if (!process.env.AZURE_STORAGE_CONNECTION_STRING) {
 // application settings.
 process.env.MODEL_CALLS_PER_MINUTE = "4";
 process.env.MODEL_CALLS_PER_DAY = "6";
+process.env.TRIAL_MODEL_CALLS = "2";
 
 const { checkModelBudget, modelUsage } = await import("../src/lib/modelBudget.js");
 const { authTable, digest } = await import("../src/lib/passwordAuth.js");
 
 const learner = `budget-test-${Date.now()}@example.test`;
 const other = `budget-other-${Date.now()}@example.test`;
+const trialist = `budget-trial-${Date.now()}@example.test`;
 let failures = 0;
 const check = (ok, label, detail) => {
   if (!ok) failures += 1;
@@ -35,7 +37,7 @@ const check = (ok, label, detail) => {
 async function cleanup(email) {
   const client = await authTable();
   const id = digest(email).slice(0, 32);
-  for (const window of ["burst", "daily"]) {
+  for (const window of ["burst", "daily", "trial"]) {
     await client.deleteEntity("auth", `model-${window}-${id}`).catch((error) => {
       if (error.statusCode !== 404) throw error;
     });
@@ -57,6 +59,16 @@ check(typeof refused?.jsonBody?.error === "string" && !/limit|quota|budget/i.tes
 // --- one learner cannot spend another's --------------------------------------
 check((await checkModelBudget(other)) === null, "a different learner is unaffected");
 
+// --- a free trial gets a few tutor replies in all ----------------------------
+const trialCalls = [];
+for (let call = 0; call < 3; call += 1) trialCalls.push(await checkModelBudget(trialist, { trial: true }));
+check(trialCalls.filter((result) => result === null).length === 2, "a trial's allowance is its own, smaller cap",
+  `${trialCalls.filter((result) => result === null).length} allowed of 3`);
+const spent = trialCalls.find((result) => result !== null);
+check(spent?.jsonBody?.code === "trial-tutor-used" && !spent?.headers?.["Retry-After"],
+  "a spent trial is told to subscribe, not to wait", `code=${spent?.jsonBody?.code}`);
+check((await checkModelBudget(trialist)) === null, "paying lifts the trial cap", "same learner, not a trial");
+
 // --- usage is readable --------------------------------------------------------
 const usage = await modelUsage(learner);
 check(usage?.burst?.used === 4, "usage reports what was spent", `${usage?.burst?.used} of ${usage?.burst?.limit}`);
@@ -76,6 +88,7 @@ process.env.AZURE_STORAGE_CONNECTION_STRING = connection;
 
 await cleanup(learner);
 await cleanup(other);
+await cleanup(trialist);
 
 console.log(failures ? `\n${failures} check(s) FAILED` : "\nPASS: model calls are capped per learner, per minute and per day");
 process.exit(failures ? 1 : 0);

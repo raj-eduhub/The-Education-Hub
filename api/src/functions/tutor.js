@@ -1,7 +1,7 @@
 import { app } from "@azure/functions";
 import { callFoundry, deployment } from "../lib/foundry.js";
 import { checkModelBudget } from "../lib/modelBudget.js";
-import { getLearningAccess } from "../lib/learningAccess.js";
+import { getLearningAccess, mayStudyTopic, trialRefusal } from "../lib/learningAccess.js";
 import { checkAnswer, checkQuestion, guardInstructions, verdicts } from "../lib/tutorGuard.js";
 import { findStoredAnswer, loadStudyMaterial, materialText } from "../lib/tutorRetrieval.js";
 import { recordAttempt } from "../lib/progressStore.js";
@@ -85,8 +85,8 @@ app.http("tutor", {
   handler: async (request, context) => {
     try {
       const access = await getLearningAccess(request);
-      const { allowed } = access;
-      if (!allowed) {
+      const { allowed, trial } = access;
+      if (!allowed && !trial) {
         return {
           status: 403,
           jsonBody: { error: "Your Y7to11.AI access is inactive or has not been added yet." },
@@ -94,6 +94,7 @@ app.http("tutor", {
       }
 
       const body = await request.json();
+      if (!mayStudyTopic(access, body.topic?.id)) return trialRefusal(access);
       const year = access.profile?.year ?? body.year;
       const stage = year <= 9 ? "KS3" : "KS4";
       const examBoard = access.profile?.examBoard ?? body.examBoard;
@@ -155,7 +156,7 @@ app.http("tutor", {
       // Counted here rather than at the top of the handler: a guarded message
       // and one answered from stored material never reach the model, so neither
       // should spend a learner's budget.
-      const overBudget = await checkModelBudget(access.email, { context });
+      const overBudget = await checkModelBudget(access.email, { context, trial: !allowed });
       if (overBudget) return overBudget;
 
       const recentHistory = history

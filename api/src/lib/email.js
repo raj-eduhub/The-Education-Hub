@@ -76,6 +76,25 @@ Once your password is set you will be asked for the learner's details, including
   });
 }
 
+// Sent at sign-up when the parent starts with the free topic rather than
+// paying. The same seven-day, one-time link as after payment, and for the same
+// reason: it is the way in, and setting the password is what proves the address.
+export async function sendFreeStartEmail({ email, username, setUrl }) {
+  await send({
+    email,
+    subject: "Set your password to start your free topic",
+    plainText: `Your Y7to11.AI account "${username}" is ready.
+
+Set your password here: ${setUrl}
+
+The link works once and expires in seven days. If it expires, use "Forgot your password?" on the sign-in page and we will send another.
+
+Once your password is set you will be asked for the learner's details, including the school year, which cannot be changed afterwards. Then choose one topic to study free. Nothing is charged unless you decide to subscribe.`,
+    html: `<h1>Your account is ready</h1><p>Set the password for your account <strong>${username}</strong>.</p><p><a href="${setUrl}">Set your password</a></p><p>The link works once and expires in seven days. If it expires, use "Forgot your password?" on the sign-in page and we will send another.</p><p>Once your password is set you will be asked for the learner's details, including the school year, which cannot be changed afterwards. Then choose one topic to study free. Nothing is charged unless you decide to subscribe.</p>`,
+    undelivered: "The set-password email could not be delivered.",
+  });
+}
+
 // Sent on registration, before the account can do anything. The address is the
 // identity everything else is keyed on, so it has to be proven before it grants
 // access to a roster, a subscription or a child's profile.

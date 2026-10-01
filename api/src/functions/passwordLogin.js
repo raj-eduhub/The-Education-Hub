@@ -1,8 +1,11 @@
 import { app } from "@azure/functions";
 import { authTable, findAuth, digest, hashPassword, checkPassword, createSession, sessionToken, createPasswordReset, completePasswordReset, createEmailVerification, completeEmailVerification, createCheckoutGrant } from "../lib/passwordAuth.js";
-import { sendPasswordResetEmail, sendVerificationEmail } from "../lib/email.js";
+import { sendFreeStartEmail, sendPasswordResetEmail, sendVerificationEmail } from "../lib/email.js";
 import { getUserByEmail, saveUser } from "../lib/userStore.js";
 import { getSubscription, grantsAccess } from "../lib/subscriptionStore.js";
+
+// As long as the link sent after payment: it may not be opened until evening.
+const setPasswordWindowMs = 7 * 24 * 3600000;
 
 app.http("passwordLogin", {
   methods: ["POST"], authLevel: "anonymous", route: "auth/{action}",
@@ -65,6 +68,16 @@ app.http("passwordLogin", {
         const outcome = await completePasswordReset(token, body.password, username);
         if (outcome === "wrong-username") return fail(400, "That username does not match this link. Use the username in the email the link came in.");
         if (outcome !== "reset") return fail(410, "This reset link is invalid, expired, or already used.");
+        // The link was only ever sent to this address, so using it proves the
+        // address - which is what the roster row stands for. A paid account is
+        // already on the roster from its payment. One that started free, or
+        // never finished paying, joins it here and signs in to a free trial.
+        // An existing row is left alone: an account an administrator has made
+        // inactive must not be reactivated by resetting its password.
+        const owner = await findAuth(`user-${digest(username)}`);
+        if (owner?.email && !(await getUserByEmail(owner.email))) {
+          await saveUser({ name: owner.name ?? username, email: owner.email, role: "parent" });
+        }
         return { status: 200, jsonBody: { ok: true }, headers: { "Set-Cookie": cookie("", 0), "Cache-Control": "no-store" } };
       }
       const username = typeof body.username === "string" ? body.username.trim().toLowerCase() : "";
@@ -108,10 +121,30 @@ app.http("passwordLogin", {
       // refuses a session whose address is not proven, and nothing here has
       // proven it. The grant authorises one Stripe checkout for this address
       // and expires in an hour.
+      //
+      // With start: "free" there is no checkout. The set-password link is sent
+      // now instead of after payment, and setting the password is what proves
+      // the address and opens the free trial.
       if (action === "reserve") {
         const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) return fail(400, "Enter an email address we can reach you on.");
         if (body.consent !== true) return fail(400, "Confirm you are the parent, guardian or carer.");
+        const startFree = body.start === "free";
+        // A free start sends an email, so it is counted per address as well as
+        // per username: otherwise a new username each time would let anyone
+        // send this address as many emails as they liked.
+        if (startFree && !await withinLimit(`rate-free-${digest(email)}`, 3)) return fail(429, "Too many attempts. Try again in 15 minutes.");
+        const sendFreeStart = async (resumed) => {
+          const reset = await createPasswordReset(email, setPasswordWindowMs);
+          const appUrl = process.env.APP_BASE_URL ?? new URL(request.url).origin;
+          try {
+            await sendFreeStartEmail({ email, username, setUrl: `${appUrl}/?reset=${encodeURIComponent(reset.token)}` });
+          } catch (error) {
+            context.error("Free start email failure", error.code ?? error.name);
+            return fail(503, "Your account is ready but the email could not be sent. Use Forgot your password to request a new link.");
+          }
+          return { status: 201, jsonBody: { ok: true, username, email, awaitingPassword: true, free: true, ...(resumed ? { resumed: true } : {}) }, headers: { "Cache-Control": "no-store" } };
+        };
         if (account || await findAuth(`email-${digest(email)}`) || await getUserByEmail(email)) {
           const refuse = (code, error) => ({ status: 409, jsonBody: { error, code }, headers: { "Cache-Control": "no-store" } });
           // The same parent coming back to a sign-up they did not finish: this
@@ -124,6 +157,7 @@ app.http("passwordLogin", {
           const sameSignup = account && account.email === email && !account.passwordHash;
           const paid = sameSignup && grantsAccess((await getSubscription(email))?.status);
           if (sameSignup && !paid) {
+            if (startFree) return sendFreeStart(true);
             return {
               status: 201,
               jsonBody: { ok: true, username, email, awaitingPassword: true, resumed: true, checkoutToken: await createCheckoutGrant(email) },
@@ -143,6 +177,7 @@ app.http("passwordLogin", {
           ["create", account],
           ["create", { partitionKey: "auth", rowKey: `email-${digest(email)}`, accountId }],
         ]);
+        if (startFree) return sendFreeStart(false);
         return {
           status: 201,
           jsonBody: { ok: true, username, email, awaitingPassword: true, checkoutToken: await createCheckoutGrant(email) },
@@ -151,7 +186,7 @@ app.http("passwordLogin", {
       }
 
       if (action === "login") {
-        if (account && !account.passwordHash) return fail(403, "Your password has not been set yet. Use the link in the email we sent when your payment went through, or Forgot your password to get another.");
+        if (account && !account.passwordHash) return fail(403, "Your password has not been set yet. Use the link we emailed you, or Forgot your password to get another.");
         if (!await checkPassword(body.password, account)) return fail(401, "Username or password is incorrect.");
         if (account.emailVerified !== true) return fail(403, "Confirm your email address before signing in. Check your inbox for the confirmation link.");
         const user = await getUserByEmail(account.email);
