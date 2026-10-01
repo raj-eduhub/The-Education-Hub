@@ -1,5 +1,5 @@
 import { app } from "@azure/functions";
-import { callFoundry, deployment } from "../lib/foundry.js";
+import { callFoundryWithModel, deployment } from "../lib/foundry.js";
 import { checkModelBudget } from "../lib/modelBudget.js";
 import { getLearningAccess, mayStudyTopic, trialRefusal } from "../lib/learningAccess.js";
 import { contentKey, getContent, saveContent } from "../lib/contentStore.js";
@@ -177,7 +177,8 @@ app.http("content", {
       const userPrompt = isQuestionBank(type)
         ? questionPrompt(type, topic, subtopic, { board: contentYear >= 9 ? examBoard : null, tier: contentYear >= 10 && variesByTier(subject) ? tier : null, year: contentYear, notation, index: bankIndex })
         : workedExamplePrompt(topic, subtopic, { notation });
-      const answer = await callFoundry({
+      // The backup model can answer instead, so the row records whichever did.
+      const { text: answer, model: author } = await callFoundryWithModel({
         model: deployment,
         input: [
           { role: "system", content: exampleSystemPrompt(contentYear <= 9 ? "KS3" : "KS4", contentYear, examBoard, tier, subject, formulaeAllowed) },
@@ -198,7 +199,7 @@ app.http("content", {
         topicTitle: topic.title,
         subtopicTitle: subtopic?.title ?? "",
         origin: "model",
-        model: deployment,
+        model: author,
       });
       return { jsonBody: { content: { ...payload, rowKey: key.rowKey, source: "model" }, route, generated: true } };
     } catch (error) {

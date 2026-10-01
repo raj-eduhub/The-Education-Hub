@@ -7,7 +7,7 @@
 import { readFileSync } from "node:fs";
 import { curriculumByYear } from "../../src/data/curriculumCatalog.js";
 import { getAuthoredExample, getTopicGuide } from "../../src/topicGuides.js";
-import { callFoundry, deployment } from "../src/lib/foundry.js";
+import { callFoundryWithModel, deployment } from "../src/lib/foundry.js";
 import { contentKey, getContent, saveContent } from "../src/lib/contentStore.js";
 import { allowsFormulae, contentTypes, mayUseModel, routeFor, supportsQuestionBank, usesMathsNotation, variesByBoard, variesByTier, warrantsWorkedExample } from "../src/lib/contentPolicy.js";
 import { parseQuestion, questionPrompt } from "../src/lib/questionBank.js";
@@ -168,7 +168,8 @@ async function runJob(job) {
     const userPrompt = contentType === contentTypes.EXAMPLE
       ? workedExamplePrompt(topic, { title: outcome, index }, { notation })
       : questionPrompt(contentType, topic, { title: outcome, index }, { board, tier: variantTier, year, notation, index });
-    const answer = await callFoundry({
+    // The backup model can answer instead, so the row records whichever did.
+    const { text: answer, model: author } = await callFoundryWithModel({
       model: deployment,
       input: [
         { role: "system", content: exampleSystemPrompt(year <= 9 ? "KS3" : "KS4", year, board, variantTier, subject, formulaeAllowed) },
@@ -179,7 +180,7 @@ async function runJob(job) {
     if (!parsed) { counts.failed += 1; console.log(`WARN  unparsed response for ${label}`); return; }
     await saveContent(key, { ...parsed, notation }, {
       type: contentType, subject, year, topicTitle: topic.title, subtopicTitle: outcome,
-      origin: "model", model: deployment,
+      origin: "model", model: author,
     });
     counts.generated += 1;
     console.log(`WROTE ${label}`);

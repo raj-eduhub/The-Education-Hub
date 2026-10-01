@@ -8,7 +8,15 @@ Last updated: 1 October 2026
 
 Keep this section current after each meaningful implementation session so work can resume without reconstructing the latest state from scratch. The entries describe files saved in the working tree; they do not imply that the changes have been committed to Git. Before continuing, run `git status --short` and inspect the relevant diff so existing work is preserved.
 
-Latest saved update (1 October 2026, later):
+Latest saved update (1 October 2026, evening):
+
+- **The Azure subscription was disabled and is now Pay-As-You-Go.** The free trial had ended (`ReadOnlyDisabledSubscription`, every model and speech call 401). It is upgraded, the spending limit is off, and the model and speech endpoints answer again.
+- **Costs kept down.** Narration now uses a free F0 Speech resource, `education-hub-speech-free` in `rg-educationhub` (UK South); `AZURE_SPEECH_KEY`, `AZURE_SPEECH_REGION=uksouth` and `AZURE_SPEECH_ENDPOINT=https://uksouth.tts.speech.microsoft.com/cognitiveservices/v1` point at it, and existing recordings remain valid. A subscription budget, `education-hub-monthly`, emails the Azure sign-in at 50%, 80% and 100% of £20 actual spend and at 100% forecast. Speech previously accounted for £33.34 of £56.66 spent; models are the only metered cost left, plus email at a fraction of a penny per message.
+- **Main model gpt-6-luna, backup gpt-5-nano.** `api/src/lib/foundry.js` asks `AZURE_AI_MODEL_DEPLOYMENT` first, with one retry, then `AZURE_AI_FALLBACK_DEPLOYMENT` with the full retries, if the main one fails or returns no text. A 401 or 403 is not passed to the backup, since both share the key. `callFoundryWithModel()` returns the model that answered, and stored content records it as `model`. Global Standard prices per million tokens (Azure retail price list, GBP): Luna £0.0755 input, £0.0075 cached input, £0.0943 cache writes, £0.3774 output; nano £0.0377 input, £0.0038 cached input, £0.3019 output. Output is most of the bill, so Luna costs roughly 1.25 times nano for the same tokens. Checked live: Luna answered; a call to a missing deployment fell back to nano.
+- **Key rotated.** Key 1 of `rajkumaraiexpert-0649-resource` was exposed in a chat, so the app was moved to key 2 (`AZURE_AI_API_KEY` in `api/local.settings.json`) and key 1 was then regenerated; the old key is refused. Anything else that used key 1 needs the new one.
+- The other resource in the subscription, `divalidate-hzmnqj4iayp7w` (PostgreSQL B1ms, `rg-dealintel-local`), belongs to another project and runs on the 12-month free allowance of 750 hours a month; it will be charged once that ends.
+
+Earlier update (1 October 2026, later):
 
 - **The free trial is now one topic for one week, with no card.** The week starts when the learner chooses the topic (`TRIAL_DAYS`, default 7), not at sign-up, so all of it is study time. When it ends everything locks and only the subscription page shows. The tutor allowance in the trial is now `TRIAL_MODEL_CALLS_PER_DAY` (default 20) a day instead of 10 in all. An account Stripe has ever billed gets no trial.
 - **Paid and trial are separate records.** Onboarding no longer writes `status: "trial"`: `status` is Stripe's alone. The trial lives in `freeTopicId`, `trialStartedAt` and `trialEndsAt`, written together by `claimFreeTopic()` in `api/src/lib/subscriptionStore.js`, and `getSubscription()` adds `everPaid`. `getLearningAccess()` returns `trialEnded`, and `trialRefusal()` answers it with `code: "trial-ended"`; the topic routes now send every refusal through it. The payments dashboard shows "Free trial to <date>", "Trial ended" and "Trial not started" from those fields, with a free-trial count.
@@ -56,7 +64,7 @@ Use this setup first:
 | --- | --- | --- |
 | Frontend | Azure Static Web Apps Free | Free hosting for a small personal app |
 | Backend | Managed Functions inside Static Web Apps | No separate Function App required |
-| Model | Azure AI Foundry deployment of `gpt-5-nano` | Lowest-cost GPT-5 family default for tutoring |
+| Model | Azure AI Foundry deployment of `gpt-6-luna`, with `gpt-5-nano` as the automatic backup | Luna costs about twice nano's input price and 1.25 times its output price; nano answers whenever Luna is throttled, unavailable or returns nothing |
 | App data | Azure Table Storage on Standard LRS | Low-cost per-operation storage for access, attempts, mastery, and worked examples |
 | Billing | Stripe Checkout and customer portal | Transaction fees apply to successful payments |
 | Email | Azure Communication Services Email | Consumption-priced signup email delivery |
@@ -134,7 +142,8 @@ Set these in Azure Static Web Apps application settings:
 
 ```bash
 AZURE_AI_FOUNDRY_ENDPOINT=https://your-foundry-resource.services.ai.azure.com/openai/v1
-AZURE_AI_MODEL_DEPLOYMENT=gpt-5-nano
+AZURE_AI_MODEL_DEPLOYMENT=gpt-6-luna
+AZURE_AI_FALLBACK_DEPLOYMENT=gpt-5-nano
 AZURE_AI_API_KEY=your-server-side-foundry-key
 GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 ADMIN_EMAILS=admin@example.com
@@ -360,6 +369,14 @@ AZURE_STORAGE_NARRATION_CONTAINER=narration
 
 Without `AZURE_SPEECH_KEY` nothing is recorded and every lesson uses the browser
 voice, which is a degraded experience rather than a broken one.
+
+Use a **free (F0) Speech resource** for the key. It includes 0.5 million neural
+characters a month, always free, and the whole curriculum is about 209,000, so
+even a full re-recording fits in one month. Only one F0 resource is allowed per
+subscription. Its limits are lower than the paid tier's, which the scripts
+absorb by honouring the service's 429 and `Retry-After`; `--concurrency 2` keeps
+a large run smooth. Recordings are keyed by text and voice, not by resource, so
+moving between Speech resources never invalidates them.
 
 ## Limiting model spend
 
