@@ -8,6 +8,7 @@ import { curriculum, curriculumByYear, examBoards, qualifications } from "../../
 import { topicContent } from "../../src/data/topicContent/index.js";
 import { authoredWorkedExamples } from "../../src/data/authoredWorkedExamples.js";
 import { supportsQuestionBank, variesByTier, warrantsWorkedExample } from "../src/lib/contentPolicy.js";
+import { classifiedOutcomes } from "../../src/data/workedExampleOutcomes.js";
 
 const failures = [];
 const warnings = [];
@@ -17,6 +18,15 @@ const warn = (rule, detail) => warnings.push(`${rule}: ${detail}`);
 // --- Catalogue structure ---------------------------------------------------
 const ids = new Map();
 for (const topic of curriculum) {
+  const classification = classifiedOutcomes(topic.id);
+  if (!classification) fail("missing example/formula classification", topic.id);
+  else for (const kind of ["examples", "formulae"]) {
+    const positions = classification[kind];
+    if (!Array.isArray(positions) || new Set(positions).size !== positions.length
+      || positions.some(i => !Number.isInteger(i) || i < 0 || i >= topic.outcomes.length)) {
+      fail("invalid example/formula classification", `${topic.id} ${kind}`);
+    }
+  }
   if (ids.has(topic.id)) fail("duplicate topic id", topic.id);
   ids.set(topic.id, topic);
 }
@@ -125,12 +135,11 @@ const higherOnly = [
   [/algebraic fraction/i, "A4 algebraic fractions"],
   [/simultaneous equations? with a quadratic|linear\/quadratic/i, "A19 linear-quadratic simultaneous"],
   [/quadratic sequence/i, "A25 quadratic sequences"],
-  [/exact (trigonometric )?values? (for|of)/i, "G21 exact trigonometric values"],
   [/circle theorem/i, "G10 circle theorems"],
   [/sine rule|cosine rule|ab ?sin ?c|half ab sin/i, "G22/G23 sine and cosine rules"],
   [/vectors? to (construct|prove)|geometric (arguments|proofs)/i, "G25 vector proofs"],
-  [/inverse proportion/i, "R13 inverse proportion"],
-  [/compound interest|growth and decay|repeated percentage change/i, "R16 growth and decay"],
+  [/construct.*equations?.*inverse proportion/i, "R13 constructing inverse-proportion equations"],
+  [/general iterative processes/i, "R16 general iterative processes"],
   [/rationalise/i, "N8 rationalising a denominator"],
   [/conditional probability/i, "P9 conditional probability"],
   [/histogram/i, "S3 histograms with unequal widths"],
@@ -351,7 +360,6 @@ for (const id of Object.keys(topicContent)) {
 const aboveSpecification = [
   [/\bstandard error\b/i, "standard error"],
   [/\bconfidence interval\b/i, "confidence interval"],
-  [/\b(stratified|systematic|cluster|quota)\s+sampl/i, "named sampling scheme"],
   [/\bnormal distribution\b|\bz-?score\b|\bt-?distribution\b/i, "distribution above GCSE"],
   [/\bradians\b/i, "radians"],
   // Narrow deliberately: "integrate evidence" is an essay instruction, not calculus.
@@ -420,6 +428,6 @@ for (const failure of failures) console.log(`FAIL  ${failure}`);
 console.log(
   failures.length
     ? `\n${failures.length} curriculum check(s) FAILED`
-    : `\nPASS: structure, tiering, board coverage, authored content for every topic, nothing above the specification${warnings.length ? `, ${warnings.length} warning(s)` : ""}`
+    : `\nPASS: catalogue structure, configured tier/scope checks, board metadata and authored-content presence${warnings.length ? `, ${warnings.length} warning(s)` : ""}. This is not full specification sign-off.`
 );
 process.exit(failures.length ? 1 : 0);

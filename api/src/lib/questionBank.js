@@ -16,7 +16,6 @@ const labels = {
 // that with standard errors, confidence intervals and named sampling schemes.
 const outOfScope = [
   "standard error, confidence intervals, significance tests or p-values",
-  "named sampling schemes such as stratified, systematic, cluster or quota sampling",
   "standard deviation, variance, the normal distribution or z-scores",
   "t-distributions, finite population corrections or regression equations",
   "radians, calculus, matrices, logarithms or the factor theorem",
@@ -26,7 +25,7 @@ const outOfScope = [
 // reliably than from the middle of the prompt. Stating the rule once near the
 // top still produced sample-proportion questions using standard-error notation.
 const scopeReminder =
-  "Reminder: this is a GCSE question. Do not use standard error, confidence intervals, p-hat notation, standard deviation, named sampling schemes, radians or calculus anywhere in the question, the working, the mark scheme or the answer.";
+  "Reminder: stay within the stated subject, year and qualification. Do not use standard error, confidence intervals, p-hat notation, standard deviation, radians or calculus anywhere in the question, the working, the mark scheme or the answer. Geography fieldwork may use random, systematic and stratified sampling where relevant.";
 
 export function questionPrompt(type, topic, subtopic, { board, tier, year, notation = false, index = 0 }) {
   const focus = subtopic?.title ? `the sub-topic "${subtopic.title}" within ` : "";
@@ -34,13 +33,18 @@ export function questionPrompt(type, topic, subtopic, { board, tier, year, notat
     `Current school year: Year ${year}. Stay strictly within the demand of this year group.`,
     board ? `Exam board: ${board}. Match that board's question style and command words.` : "",
     tier ? `Tier: ${tier}. Pitch the demand for this tier.` : "",
+    topic.subject === 'Science' ? 'GCSE Science does not require acid dissociation constants (Ka), logarithmic pH calculations, the ideal gas law PV=nRT, Faraday-law electrolysis calculations, reaction orders or rate laws. Use only the selected Combined Science content. Detailed helper-T-cell signalling, GLUT transporters and gluconeogenesis are unnecessary here.' : '',
+    topic.subject === 'Science' && tier === 'Foundation' ? 'Foundation Science: do not require mole calculations, molar gas volumes, mole-based rates, half-equations, glucagon mechanisms, inverse-square light calculations or predictions using Le Chatelier’s principle. Use mass/volume rates, particle ratios in balanced equations and appropriate qualitative explanations.' : '',
     `Write question number ${index + 1} for ${focus}the topic "${topic.title}". Make it different from a question numbered differently.`,
     "Write an original question. Never reproduce a real exam paper question.",
+    `Subject: ${topic.subject}. Assess the stated learning objective, not an unrelated skill suggested by a word in its title. In History, rates of change means the pace and extent of historical change, not speed, growth-rate calculations or invented importance scores. In English, organise and analyse language or presentations rather than turning the task into arithmetic.`,
+    "Include calculations only when they directly teach or assess this outcome. Reasoning may be qualitative: do not force equations, numerical worked solutions or formula panels into non-quantitative tasks. Label invented historical teaching scenarios as fictional; do not invent quotations attributed to real sources.",
     // The learner answers in a text box and is shown no images, so a question
     // that points at a picture cannot be answered at all.
     "The question must be answerable from its own text. Do not refer to a diagram, figure, graph, grid or table unless you state every value it would contain inside the question itself.",
     "Do not ask the learner to draw, sketch, construct with a ruler and compasses, measure, or produce anything that cannot be typed as text.",
     "Every quantity must be realistic and internally consistent. A length given to the nearest 0.5 cm must be a multiple of 0.5 cm, and the context must make sense at the scale stated.",
+    "Preserve paragraph breaks in prose. Put runnable code in fenced blocks with correct newlines and indentation. Deliberately faulty code belongs only in a clearly identified debugging stimulus; the model answer must be complete and runnable. Count words when the task specifies a range.",
     `Use only methods and vocabulary taught at or below Year ${year} in the English national curriculum. Do not use ${outOfScope.join("; ")}.`,
     // Maths is typeset in the browser, so its expressions are requested as LaTeX.
     notation
@@ -66,7 +70,7 @@ export function questionPrompt(type, topic, subtopic, { board, tier, year, notat
     "Replace each description with real content. Never repeat the description itself.",
     "QUESTION: the practice question",
     "HINT: one short nudge that does not give the answer away",
-    "WORKING: one step of the solution, on its own line for each step, in order. At least two steps are required.",
+    "WORKING: explain the reasoning in at least two short points, each on its own line. Use textual analysis, evidence or planning where appropriate; numerical steps are needed only for a relevant calculation.",
     "ANSWER: the final answer",
     scopeReminder,
   ].join("\n");

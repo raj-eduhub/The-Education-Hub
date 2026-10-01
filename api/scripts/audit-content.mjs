@@ -13,7 +13,7 @@
 import { readFileSync } from "node:fs";
 import { curriculum } from "../../src/data/curriculumCatalog.js";
 import { deleteContent, listContent } from "../src/lib/contentStore.js";
-import { supportsQuestionBank } from "../src/lib/contentPolicy.js";
+import { supportsQuestionBank, warrantsWorkedExample, warrantsFormulae } from "../src/lib/contentPolicy.js";
 
 if (!process.env.AZURE_STORAGE_CONNECTION_STRING) {
   try {
@@ -30,7 +30,7 @@ const byId = new Map(curriculum.map((topic) => [topic.id, topic]));
 const rows = [];
 let cursor = "";
 do {
-  const page = await listContent({ cursor });
+  const page = await listContent({ cursor, withPayload: true });
   rows.push(...page.rows);
   cursor = page.cursor;
 } while (cursor);
@@ -44,11 +44,22 @@ for (const row of rows) {
     problems.push([row, "the topic is no longer in the catalogue"]);
     continue;
   }
+  if (row.subtopicTitle && !topic.outcomes.includes(row.subtopicTitle)) {
+    problems.push([row, "the recorded sub-topic is no longer in the catalogue"]);
+    continue;
+  }
 
   const example = /^example-(\d{1,2})-/.exec(row.rowKey);
   if (example) {
     examples += 1;
     const index = Number(example[1]);
+    if (!warrantsWorkedExample(topic.id, index)) {
+      problems.push([row, "the outcome does not warrant a worked example"]);
+      continue;
+    }
+    if (!warrantsFormulae(topic.id, index) && row.payload?.formulae?.length) {
+      problems.push([row, "the outcome does not warrant a formula list"]);
+    }
     const current = topic.outcomes[index];
     if (current === undefined) {
       problems.push([row, `outcome ${index} no longer exists (the topic has ${topic.outcomes.length})`]);

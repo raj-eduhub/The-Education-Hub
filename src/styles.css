@@ -513,6 +513,20 @@ button {
   font-size: 1.05em;
 }
 
+.content-prose { white-space: pre-wrap; }
+.content-code {
+  display: block;
+  white-space: pre;
+  overflow-x: auto;
+  margin: 0.5em 0;
+  padding: 0.65em;
+  border: 1px solid currentColor;
+  border-radius: 0.3em;
+  font-family: Consolas, monospace;
+  font-size: 0.95em;
+  line-height: 1.5;
+}
+
 .example-raw {
   line-height: 1.55;
   white-space: pre-wrap;

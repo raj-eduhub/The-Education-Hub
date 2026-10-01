@@ -1,0 +1,12 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import assert from 'node:assert/strict';
+const dir='output/curriculum-review/pass-20',plan=JSON.parse(readFileSync(`${dir}/correction-plan.json`));
+assert.equal(480*1.7,816);assert.equal(5*7*60*.9,1890);assert.equal(8*3+8*.1,24.8);assert.equal(60*8.5,510);
+writeFileSync(`${dir}/correction-adjudication.json`,JSON.stringify({adjudicatedAt:new Date().toISOString(),method:'Independently checked explicit database uniqueness rules, memory-management scope, algorithm block structure, validation condition, process times and missing plan components. Distinguishes provisional design choices from verified product performance. No teacher approval inferred.',payloadHashes:Object.fromEntries(plan.changes.map(c=>[c.ref,createHash('sha256').update(JSON.stringify(c.payload)).digest('hex')])),flagDecisions:{
+'y10-design-technology-materials-and-their-properties/practice-7-AQA-core':'Retain: the revised question explicitly requests a provisional choice. The answer explicitly says polymer name does not establish food-contact or dishwasher suitability and requires grade/product documentation and testing. The model allegation that it assumes approval contradicts the actual text. Relative property statements already use generally/may and require exact-grade comparison; do not invent a Grade X or foreign regulatory approval.',
+'y10-design-technology-processes-and-quality/practice-0-Edexcel-core':'The answer explicitly states no extra capacity required. Its maximum-capacity calculation is labelled idealised and includes floor rounding. All arithmetic is correct; extra relevant explanation does not replace the requested answer.',
+'y11-design-technology-materials-processes-and-manufacture/exam-1-AQA-core':'The tooling caveat explains why the question supplies that assumption and avoids the former unsupported economic claim. Both requested justifications are present.',
+'y11-design-technology-materials-processes-and-manufacture/practice-4-AQA-core':'Exactly two shaping processes are selected and explained. The additional need for a protective finish directly addresses the prompt\'s outdoor-use requirement and is clearly separate.',
+'y9-design-technology-precision-manufacture/practice-6-Edexcel-core':'Nano conflated this row with practice-9. This exact answer explicitly says numerical tolerances are not supplied. The other row labels its targets proposed and subject to fit requirements.'
+}},null,2));console.log(`Adjudicated ${plan.changes.length} payloads.`);

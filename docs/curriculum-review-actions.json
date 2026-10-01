@@ -1,0 +1,220 @@
+[
+  {
+    "id": "CR01",
+    "priority": "P1",
+    "subject": "All",
+    "status": "Applied locally",
+    "finding": "Unnecessary formula panels and forced examples",
+    "evidence": "237 example formula lists cleared; 9 examples removed; 13 authored explanation updates. Full content snapshot and per-change backup retained.",
+    "recommendation": "Keep formula and example decisions independent and tied to a stable outcome identifier. Never reintroduce a formula simply because the subject is mathematical."
+  },
+  {
+    "id": "CR02",
+    "priority": "P1",
+    "subject": "Maths",
+    "status": "Applied to local DB and source",
+    "finding": "Incorrect Foundation exclusions",
+    "evidence": "The validator previously rejected all compound interest, inverse proportion and exact trigonometric values at Foundation.",
+    "recommendation": "Retain the corrected Foundation scope and both added warranted examples. Maintain exact specification mapping rather than blanket exclusions.",
+    "source": "https://www.aqa.org.uk/subjects/mathematics/gcse/mathematics-8300/specification/subject-content/3.3-ratio-proportion-and-rates-of-change"
+  },
+  {
+    "id": "CR03",
+    "priority": "P1",
+    "subject": "Science",
+    "status": "Applied locally; integrity check passes",
+    "finding": "52 stale question-bank labels across Maths and Science",
+    "evidence": "All 52 stale labels resolved: 12 percentage questions mapped to the current outcome and 40 Science questions rewritten. Higher mole/equilibrium teaching remains in the dedicated Higher topic. Arithmetic errors in two of the percentage tasks were also corrected.",
+    "recommendation": "Keep stable outcome identifiers and validate question metadata whenever the catalogue changes; complete board-specific statement mapping."
+  },
+  {
+    "id": "CR04",
+    "priority": "P1",
+    "subject": "Science",
+    "status": "Core/Higher explanation selection implemented and tested",
+    "finding": "Higher material in shared Foundation/Higher teaching",
+    "evidence": "Shared explanations store a separate Higher extension. API, preview and narration choose the learner tier before presenting the text. Foundation no longer receives the identified inverse-square, strong/weak-acid and other Higher extensions.",
+    "recommendation": "Continue exact board/outcome mapping and subject review; the tier selector is a safeguard, not proof that every statement is correctly classified.",
+    "source": "https://www.aqa.org.uk/subjects/science/gcse/science-8464/specification/chemistry-subject-content"
+  },
+  {
+    "id": "CR05",
+    "priority": "P1",
+    "subject": "Science",
+    "status": "Identified content corrected locally; full specification mapping remains",
+    "finding": "Separate Chemistry teaching in Combined Science",
+    "evidence": "The identified separate-Chemistry ion-test examples and unnecessary alkene formula recall were removed or rewritten for the Combined pathway.",
+    "recommendation": "Map explicitly to AQA 8464 and Edexcel 1SC0 statement IDs. Retain required gas tests and hydrocarbon/cracking content; keep separate-Chemistry ion tests and unnecessary alkene formula recall out of the AQA Combined pathway.",
+    "source": "https://www.aqa.org.uk/subjects/chemistry/gcse/chemistry-8462/specification/subject-content/organic-chemistry"
+  },
+  {
+    "id": "CR06",
+    "priority": "P1",
+    "subject": "History",
+    "status": "Confirmed; qualification mapping proposed",
+    "finding": "Ancient History units assigned to GCSE History qualifications",
+    "evidence": "Greece and Persia, Alexander the Great, Rome and its Neighbours, and Hannibal and the Second Punic War are assigned AQA 8145/Edexcel 1HI0 through blanket board metadata.",
+    "recommendation": "Move these four units to an explicitly optional enrichment pathway or separately support Ancient History with its own qualification/options. Do not present them as required AQA 8145 or Edexcel 1HI0 units.",
+    "source": "https://www.ocr.org.uk/qualifications/gcse/ancient-history-j198-from-2017/planning-and-teaching/"
+  },
+  {
+    "id": "CR07",
+    "priority": "P1",
+    "subject": "History",
+    "status": "Named examples and question-bank tasks corrected locally",
+    "finding": "Historical explanation replaced by arithmetic",
+    "evidence": "The initial cleanup removed the WW1 importance score. This batch rewrote ten y10-history-change-across-time rate questions and y8-history-transatlantic-slavery-and-empire/practice-4-core-core using qualitative analysis. Invented teaching scenarios are explicitly labelled fictional.",
+    "recommendation": "Use historical evidence, causation, continuity, significance and substantiated judgement. Quantitative evidence may support an argument, but should not replace the stated historical skill."
+  },
+  {
+    "id": "CR08",
+    "priority": "P1",
+    "subject": "English",
+    "status": "Named task corrected; generation prompt improved",
+    "finding": "English tasks can become calculation exercises",
+    "evidence": "y10-english-spoken/practice-9-AQA-core now assesses sequencing ideas, audience signposting and a closing request. Generation guidance explicitly avoids replacing English objectives with arithmetic.",
+    "recommendation": "Assess ordering ideas, audience, signposting and delivery. Keep useful punctuation demonstrations and model paragraphs. Do not force step-by-step numerical solutions or formula panels into literary or rhetorical work."
+  },
+  {
+    "id": "CR09",
+    "priority": "P1",
+    "subject": "English / History / Geography",
+    "status": "Confirmed design gap",
+    "finding": "Board selection does not select texts, historical options or case studies",
+    "evidence": "Generic topics such as Shakespeare, The 19th-century Novel, British Society in Depth and Case Studies and Exam Skills have no exact school-selected text/option in the curriculum metadata.",
+    "recommendation": "Add qualification version, exam series, paper/component, option, set text/anthology and case-study identifiers to enrolment and content. Build coverage against the selected course rather than a generic subject label.",
+    "source": "https://www.aqa.org.uk/subjects/history/gcse/history-8145/specification/specification-at-a-glance"
+  },
+  {
+    "id": "CR10",
+    "priority": "P1",
+    "subject": "All GCSE subjects",
+    "status": "Confirmed design gap",
+    "finding": "Uniform 1–6-mark exam format cannot represent full GCSE demand",
+    "evidence": "questionBank.js requests one creditworthy point per mark and clamps all exam questions to six marks. This cannot represent the extended essays and level-based marking used in GCSE English and History.",
+    "recommendation": "Label existing short items as short practice. Add board/paper-specific question types, maximum marks, assessment objectives and level-based rubrics before claiming full exam preparation.",
+    "source": "https://www.aqa.org.uk/subjects/english/gcse/english-8702/specification/specification-at-a-glance"
+  },
+  {
+    "id": "CR11",
+    "priority": "P1",
+    "subject": "Maths / Design & Technology",
+    "status": "Applied locally",
+    "finding": "Questions missing necessary input data",
+    "evidence": "The Maths comparison example now supplies both datasets. The DT energy task states its assumptions and electricity tariff, has six creditworthy marking points, corrects annual cost to £21,880 and explains why unknown capital costs prevent a full first-year cost comparison.",
+    "recommendation": "Supply every input, extract, diagram or dataset in the question itself. Independently solve from the prompt only before approving a row."
+  },
+  {
+    "id": "CR12",
+    "priority": "P1",
+    "subject": "Science",
+    "status": "Applied to local DB and source",
+    "finding": "Removing a formula list does not cure an irrelevant example",
+    "evidence": "The identified immune-response example was rewritten without antibody-concentration arithmetic or post-GCSE signalling detail.",
+    "recommendation": "Replace with an appropriate GCSE explanation of pathogens, antibodies, vaccination and a faster secondary response; remove contrived calculations and unnecessary post-GCSE mechanisms."
+  },
+  {
+    "id": "CR13",
+    "priority": "P2",
+    "subject": "Geography",
+    "status": "Confirmed coverage gap in explicit outcomes",
+    "finding": "KS3 regional coverage is incomplete",
+    "evidence": "KS3 outcomes cover West Africa and South Asia, but do not explicitly teach Russia, the Middle East or China.",
+    "recommendation": "Add locational knowledge and human/physical comparisons for these required regions, with map activities; retain the existing African and Asian regional studies.",
+    "source": "https://assets.publishing.service.gov.uk/media/5da7291840f0b6598f806433/Secondary_national_curriculum_corrected_PDF.pdf"
+  },
+  {
+    "id": "CR14",
+    "priority": "P2",
+    "subject": "Science",
+    "status": "Coverage additions proposed",
+    "finding": "KS3 Science has weak explicit coverage of some required strands",
+    "evidence": "No explicit Science outcomes for the rock cycle/Earth structure or recreational-drug effects; rocks appear in Geography and nutrition partly in Design & Technology.",
+    "recommendation": "Add Science outcomes or explicit cross-subject mappings, with evidence of learning. Check nutrition/deficiency, breathing/health, static electricity and domestic-energy costs against the complete KS3 programme.",
+    "source": "https://www.gov.uk/government/publications/national-curriculum-in-england-science-programmes-of-study/national-curriculum-in-england-science-programmes-of-study"
+  },
+  {
+    "id": "CR15",
+    "priority": "P2",
+    "subject": "English",
+    "status": "Coverage evidence proposed",
+    "finding": "Required reading breadth is not evidenced by topic names",
+    "evidence": "Two KS3 Shakespeare topic labels do not record which two whole plays are studied; author and independent-reading coverage is not tracked.",
+    "recommendation": "Record two Shakespeare plays, whole-book reading, world literature and two authors studied in depth per year; distinguish a skill lesson from evidence that a whole text has been studied.",
+    "source": "https://www.gov.uk/government/publications/national-curriculum-in-england-english-programmes-of-study/national-curriculum-in-england-english-programmes-of-study"
+  },
+  {
+    "id": "CR16",
+    "priority": "P2",
+    "subject": "Computing",
+    "status": "Coverage/version controls proposed",
+    "finding": "Practical programming and specification versions need explicit evidence",
+    "evidence": "Practical programming and specification-version evidence remain necessary. The identified logarithmic/Big-O tasks have been removed or rewritten; repaired Python answers preserve indentation and executable syntax.",
+    "recommendation": "Require practical work in two languages, at least one textual; keep GCSE algorithm comparison informal; map SQL/networking and other board differences to the correct specification version.",
+    "source": "https://www.aqa.org.uk/gcse-computer-science-specification-changes-for-summer-2027"
+  },
+  {
+    "id": "CR17",
+    "priority": "P2",
+    "subject": "Design & Technology / Geography / Science",
+    "status": "Assessment additions proposed",
+    "finding": "Text answers cannot evidence all practical requirements",
+    "evidence": "The question generator prohibits drawings, construction and practical outputs. DT has design/make outcomes; Geography requires fieldwork; Science has required practicals.",
+    "recommendation": "Add practical-task records, safe teacher-led instructions, portfolio/diagram uploads and suitable rubrics. Preserve relevant quantitative work: AQA DT assesses mathematics and science as well as design.",
+    "source": "https://www.aqa.org.uk/subjects/design-and-technology/gcse/design-and-technology-8552/specification/specification-at-a-glance"
+  },
+  {
+    "id": "CR18",
+    "priority": "P2",
+    "subject": "All",
+    "status": "Audit tooling corrected",
+    "finding": "Coverage and scope validators gave misleading assurance",
+    "evidence": "Coverage previously requested every outcome's example, both tiers even on single-tier topics, and the obsolete any key for KS3 banks. Pruning treated SE map labels as standard error and banned named sampling across subjects.",
+    "recommendation": "Use live content-key and outcome policies for coverage. Treat heuristic hits as candidates; retain legitimate Geography sampling and verify context before deleting anything."
+  },
+  {
+    "id": "CR19",
+    "priority": "P1",
+    "subject": "All",
+    "status": "Publication workflow proposed",
+    "finding": "Most rows have no recorded approval",
+    "evidence": "Current local review flags: 8796 pending and 2 pre-existing approved. All 8798 current payloads have a hash-matched nano review. No teacher approval was assigned by this work.",
+    "recommendation": "Track reviewer, date, evidence, specification reference and content hash. Model review should create a review task, never automatically approve or publish a row."
+  },
+  {
+    "id": "CR20",
+    "priority": "P2",
+    "subject": "All",
+    "status": "Catalogue/DB migration proposed",
+    "finding": "Outcome positions are unstable content identifiers",
+    "evidence": "Examples use example-index-tier keys while question banks retain old outcome labels after curriculum edits.",
+    "recommendation": "Introduce immutable outcome IDs and content revision IDs; migrate indexed rows explicitly, invalidate related narration and run coverage/integrity checks after every curriculum edit."
+  },
+  {
+    "id": "CR21",
+    "priority": "P2",
+    "subject": "Geography",
+    "status": "Applied locally",
+    "finding": "Unsupported comparison of disaster response speed",
+    "evidence": "The disaster-response question now identifies fictional scenarios, compares the actual milestones and explicitly avoids claiming one evacuation or recovery was faster.",
+    "recommendation": "Compare each stated milestone accurately and explain the limits of comparing different response measures. Do not adopt Nano's alternative claim that earthquake evacuation took 25 minutes: that was team arrival."
+  },
+  {
+    "id": "CR22",
+    "priority": "P2",
+    "subject": "All",
+    "status": "Model flags adjudicated; qualified subject review remains",
+    "finding": "Heuristic anomalies need contextual decisions",
+    "evidence": "0 current model suggestions remain unadjudicated, alongside 801 heuristic findings. Neither number is a confirmed defect count. Exact-hash retained decisions document rejected model suggestions.",
+    "recommendation": "Check these against their full payloads. Do not equate alternative mark-scheme points with wrong totals, supplied extracts with missing extracts, or the same valid example at two tiers with an error."
+  },
+  {
+    "id": "CR23",
+    "priority": "P1",
+    "subject": "Computing / Science / Maths / Geography",
+    "status": "Corrections applied locally; further review tracked",
+    "finding": "Additional demand, equation, arithmetic and stimulus errors",
+    "evidence": "853 backed-up editorial write operations across 813 distinct current records; 259 initial policy operations recorded separately. Current authored-explanation and editorial-source drift: 0.",
+    "recommendation": "Use the generated report, applied-change ledger and outstanding-model-flags.json for current record-level evidence. Do not present automated review as 100% certification."
+  }
+]

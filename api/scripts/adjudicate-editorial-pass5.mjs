@@ -1,0 +1,6 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+const dir='output/curriculum-review/pass-5';
+const plan=JSON.parse(readFileSync(`${dir}/correction-plan.json`));
+writeFileSync(`${dir}/correction-adjudication.json`,JSON.stringify({adjudicatedAt:new Date().toISOString(),method:'Independently inspected all 17 questions, answers and source corrections. Recomputed the arithmetic and traced Python. The wording distinguishes motion from force, tissues from organs and pollen from gametes. Model suggestions are advisory; no teacher approval inferred.',payloadHashes:Object.fromEntries(plan.changes.map(c=>[c.ref,createHash('sha256').update(JSON.stringify(c.payload)).digest('hex')])),flagDecisions:{'y7-maths-number/exam-4-core-core':'Reject: paired dollar signs are the application math delimiters, not dollar currency. The question explicitly says prices are in pounds; both monetary answers are correct.','y7-science-reproduction/example-4-core':'Retain the KS3 account: pollen carries male reproductive cells and is not itself a gamete. The suggestion that mature sperm are never present in pollen is itself overgeneralised; developmental timing varies. Gametophyte terminology is unnecessary for the stated KS3 objective.'}},null,2));
+console.log(`Adjudicated ${plan.changes.length} payloads.`);

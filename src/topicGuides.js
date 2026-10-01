@@ -1,5 +1,9 @@
 import { contentFor } from "./data/topicContent/index.js";
+import { explanationForTier } from './data/explanationTier.js';
+import { subtopicLessons } from './data/subtopicLessons.js';
 import { authoredWorkedExample } from "./data/authoredWorkedExamples.js";
+import { editorialExamples } from './data/editorialExamples.js';
+import { warrantsFormulae, warrantsWorkedExample } from "./data/workedExampleOutcomes.js";
 
 const mathsExamples = {
   "y7-maths-number": {
@@ -265,16 +269,19 @@ const subjectMethods = {
   "Design & Technology": ["Identify the user's need and the design requirement.", "Choose a material, process, or mechanism and justify it using its properties.", "Evaluate the result against the requirement and suggest a measurable improvement."],
 };
 
-export function getTopicGuide(subject, topic) {
+export function getTopicGuide(subject, topic, tier = null) {
   // Authored teaching text first. Until this existed, every explanation was the
   // topic's one-line goal restated, which told a learner what the topic was for
   // and nothing about the topic itself.
-  const authored = contentFor(topic.id);
+  const raw = contentFor(topic.id);
+  const authored = raw && tier ? explanationForTier(raw, tier) : raw;
   const keyIdeas = authored?.keyIdeas?.length
     ? authored.keyIdeas
     : topic.outcomes.map((outcome) => `${outcome}.`);
   const explanation = authored?.explanation ?? topic.goal;
   const formulae = authored?.formulae ?? [];
+  const lessons = subtopicLessons[topic.id];
+  const subtopics = lessons ? { subtopics: lessons } : {};
 
   const maths = subject === "Maths" ? mathsExamples[topic.id] : null;
   if (maths) {
@@ -284,7 +291,7 @@ export function getTopicGuide(subject, topic) {
     // maths topics served "Rounded value - half unit <= true value" in place of
     // the authored, typeset "$x - \frac{u}{2} \le \text{true value}$", and the
     // authored formulae reached no learner at all.
-    return { explanation, keyIdeas, ...maths, formulae: formulae.length ? formulae : (maths.formulae ?? []) };
+    return { explanation, keyIdeas, ...maths, formulae: authored ? formulae : (maths.formulae ?? []), ...(authored?.higher ? {higher: authored.higher} : {}), ...subtopics };
   }
 
   const method = subjectMethods[subject] ?? [
@@ -293,9 +300,11 @@ export function getTopicGuide(subject, topic) {
     "Check the result against the learning goal.",
   ];
   return {
+    ...subtopics,
     explanation,
     keyIdeas,
     formulae,
+    ...(authored?.higher ? {higher: authored.higher} : {}),
     question: `Show how you would ${topic.outcomes[0].charAt(0).toLowerCase()}${topic.outcomes[0].slice(1)} in a question about ${topic.title}.`,
     steps: method,
     answer: `A strong response demonstrates ${topic.outcomes[0].toLowerCase()} and explains each decision using accurate subject knowledge.`,
@@ -309,23 +318,25 @@ export function getTopicGuide(subject, topic) {
 // in authoredWorkedExamples.js are checked first; the older one-per-topic Maths
 // examples below only ever covered the first outcome.
 export function getAuthoredExample(subject, topic, index = 0, tier = null) {
-  const perOutcome = authoredWorkedExample(topic.id, index, tier);
-  if (perOutcome) return { formulae: perOutcome.formulae ?? [], question: perOutcome.question, steps: perOutcome.steps, answer: perOutcome.answer };
+  if (!warrantsWorkedExample(topic.id, index)) return null;
+  const perOutcome = editorialExamples[`${topic.id}/example-${index}-${tier ?? 'core'}`] ?? authoredWorkedExample(topic.id, index, tier);
+  if (perOutcome) return { formulae: warrantsFormulae(topic.id, index) ? perOutcome.formulae ?? [] : [], question: perOutcome.question, steps: perOutcome.steps, answer: perOutcome.answer };
   if (index !== 0) return null;
   const authored = subject === "Maths" ? mathsExamples[topic.id] : null;
   if (!authored?.question || !authored.steps?.length) return null;
-  return { formulae: authored.formulae ?? [], question: authored.question, steps: authored.steps, answer: authored.answer };
+  return { formulae: warrantsFormulae(topic.id, index) ? authored.formulae ?? [] : [], question: authored.question, steps: authored.steps, answer: authored.answer };
 }
 
-export function formatTopicGuide(subject, topic) {
-  const guide = getTopicGuide(subject, topic);
+export function formatTopicGuide(subject, topic, tier = null) {
+  const guide = getTopicGuide(subject, topic, tier);
+  const example = getAuthoredExample(subject, topic, 0, tier);
   const formulaSection = guide.formulae.length
     ? `\n\nKEY FORMULAS\n${guide.formulae.map((formula) => `- ${formula}`).join("\n")}`
     : "";
   return [
     `CLEAR EXPLANATION\n${guide.explanation}`,
     `KEY IDEAS\n${guide.keyIdeas.map((idea) => `- ${idea}`).join("\n")}${formulaSection}`,
-    `WORKED EXAMPLE\nQuestion: ${guide.question}\n${guide.steps.map((step, index) => `${index + 1}. ${step}`).join("\n")}\nAnswer: ${guide.answer}`,
+    ...(example ? [`WORKED EXAMPLE\nQuestion: ${example.question}\n${example.steps.map((step, index) => `${index + 1}. ${step}`).join("\n")}\nAnswer: ${example.answer}`] : []),
     `CHECK YOUR UNDERSTANDING\nWhich step would you like me to explain, or would you like a similar question to try?`,
   ].join("\n\n");
 }

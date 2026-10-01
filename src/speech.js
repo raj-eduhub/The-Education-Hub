@@ -25,6 +25,8 @@ function spokenMaths(expression) {
   // to the end and be read as "backslash".
   text = text.replace(/\\%/g, " percent ");
   text = text.replace(/\^\{?\\circ\}?/g, " degrees ");
+  text = text.replace(/\\circ\b|∘/g, " composed with ");
+  text = text.replace(/\\overline\{(\d+)\}/g, "$1 recurring");
 
   // One level of nesting is allowed inside an argument. Almost every fraction
   // in the authored content is \frac{\text{mass}}{\text{volume}} or has a
@@ -58,7 +60,7 @@ function spokenMaths(expression) {
   const words = [
     [/\\times/g, " times "], [/\\div/g, " divided by "], [/\\cdot/g, " times "],
     [/\\pm/g, " plus or minus "], [/\\leq?\b/g, " is less than or equal to "],
-    [/\\geq?\b/g, " is greater than or equal to "], [/\\neq/g, " does not equal "],
+    [/\\geq?\b/g, " is greater than or equal to "], [/\\ne(?:q)?\b/g, " does not equal "],
     [/\\approx/g, " is approximately "], [/\\propto/g, " is proportional to "],
     [/\\rightarrow|\\to\b/g, " gives "], [/\\sim\b/g, " is similar to "],
     [/\\pi\b/g, " pi "], [/\\theta\b/g, " theta "], [/\\alpha\b/g, " alpha "],
@@ -66,6 +68,12 @@ function spokenMaths(expression) {
     [/\\mu\b/g, " mu "], [/\\lambda\b/g, " lambda "], [/\\Delta\b/g, " delta "],
     [/\\angle/g, " angle "], [/\\infty/g, " infinity "],
     [/\\cap/g, " intersect "], [/\\cup/g, " union "], [/\\mid/g, " given "],
+    [/\\sum\b/g, " sum of "], [/\\prod\b/g, " product of "],
+    [/\\gcd\b/g, " greatest common divisor "],
+    [/\\arcsin\b/g, " inverse sine "], [/\\arccos\b/g, " inverse cosine "], [/\\arctan\b/g, " inverse tangent "],
+    [/\\sin\b/g, " sine "], [/\\cos\b/g, " cosine "], [/\\tan\b/g, " tangent "],
+    [/\\land\b/g, " and "], [/\\lor\b/g, " or "], [/\\lnot\b/g, " not "],
+    [/\\Rightarrow\b/g, " implies "], [/\\parallel\b/g, " is parallel to "], [/\\perp\b/g, " is perpendicular to "],
     [/\\circ/g, " degrees "], [/\\ldots|\\dots/g, " and so on "],
     [/\\left|\\right|\\!|\\;|\\:|\\,/g, " "],
     [/=/g, " equals "], [/</g, " is less than "], [/>/g, " is greater than "],
@@ -89,10 +97,26 @@ function spokenMaths(expression) {
 // Turns a mixed string of prose and LaTeX into something worth listening to.
 export function toSpoken(text) {
   return String(text ?? "")
+    .replace(/```[^\n]*\n([\s\S]*?)```/g, (match, code) => code
+      .replace(/==/g, ' is equal to ').replace(/!=/g, ' is not equal to ')
+      .replace(/\^/g, ' caret ')
+      .replace(/\{/g, ' open brace ').replace(/\}/g, ' close brace '))
+    .replace(/`/g, '')
     .replace(/\$([^$]+)\$/g, (match, expression) => spokenMaths(expression))
     // Pseudocode. Assignment is read the way it is taught, and an identifier
     // such as RANDOM_INT is read as its words rather than "underscore".
     .replace(/\s*←\s*/g, " becomes ")
+    .replace(/(?:≤|<=)/g, ' is less than or equal to ')
+    .replace(/(?:≥|>=)/g, ' is greater than or equal to ')
+    .replace(/(?:→|->)/g, ' gives ')
+    .replace(/×/g, ' times ').replace(/÷/g, ' divided by ')
+    .replace(/−/g, ' minus ').replace(/±/g, ' plus or minus ')
+    .replace(/≈/g, ' is approximately ').replace(/≠/g, ' does not equal ')
+    .replace(/°\s*C\b/g, ' degrees Celsius ').replace(/°/g, ' degrees ')
+    .replace(/²/g, ' squared ').replace(/³/g, ' cubed ')
+    .replace(/\^\{?(-?\d+)\}?/g, (match, power) => ordinalPowers[power] ? ` ${ordinalPowers[power]} ` : ` to the power ${power} `)
+    .replace(/√/g, ' square root of ').replace(/π/g, ' pi ')
+    .replace(/=/g, ' equals ').replace(/\+/g, ' plus ')
     .replace(/([A-Za-z0-9])_(?=[A-Za-z0-9])/g, "$1 ")
     .replace(/\s{2,}/g, " ")
     .trim();

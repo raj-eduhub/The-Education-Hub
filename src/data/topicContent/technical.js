@@ -24,8 +24,9 @@ export const technicalContent = {
       "Input arrives as text and must be converted for arithmetic.",
       "Selection chooses a path; a condition is true or false.",
       "FOR loops repeat a known number of times.",
+      "FOR i = 1 TO 10 ... NEXT i", "IF condition THEN ... ELSE ... ENDIF",
     ],
-    formulae: ["FOR i = 1 TO 10 ... NEXT i", "IF condition THEN ... ELSE ... ENDIF"],
+    formulae: [],
   },
   "y7-computing-binary-and-data-representation": {
     explanation:
@@ -59,8 +60,9 @@ export const technicalContent = {
       "Parameters pass data in; local variables stay inside.",
       "A list holds many values under one name, accessed by index.",
       "Test each subprogram alone before testing the whole.",
+      "FUNCTION name(parameter) ... RETURN value ... ENDFUNCTION",
     ],
-    formulae: ["FUNCTION name(parameter) ... RETURN value ... ENDFUNCTION"],
+    formulae: [],
   },
   "y8-computing-hardware-and-software": {
     explanation:
@@ -86,10 +88,10 @@ export const technicalContent = {
   },
   "y8-computing-threats-and-defences": {
     explanation:
-      "Most successful attacks target people rather than technology. Phishing uses a convincing message to get credentials, social engineering manipulates someone into granting access, and malware covers viruses, worms, trojans, spyware and ransomware. Defences work in layers: authentication proves who you are, encryption makes intercepted data unreadable without the key, firewalls filter traffic, and updates close the weaknesses attackers rely on. A proportionate control matches the value of what is protected, since security that is too inconvenient will simply be bypassed by the people using it.",
+      "Most successful attacks target people rather than technology. Phishing uses a convincing message to get credentials, social engineering manipulates someone into granting access, and malware covers viruses, worms, trojans, spyware and ransomware. Defences work in layers: authentication proves who you are, encryption makes intercepted data unreadable without the key, firewalls filter traffic, anti-malware software helps detect and remove malicious software, and updates close the weaknesses attackers rely on. A proportionate control matches the value of what is protected, since security that is too inconvenient will simply be bypassed by the people using it.",
     keyIdeas: [
       "Most attacks target people, not technology.",
-      "Encryption protects data that has already been intercepted.",
+      "Encryption protects confidentiality by making data unreadable without the key, including if it is intercepted.",
       "Defences work in layers, not as a single barrier.",
       "Security too inconvenient to use will be bypassed.",
     ],
@@ -174,8 +176,9 @@ export const technicalContent = {
       "Bubble sort is simple and slow; merge sort is faster on large lists.",
       "Compare algorithms by steps taken and memory used.",
       "Trace with a table to demonstrate behaviour.",
+      "Binary search halves the list each pass", "Linear search checks up to $n$ items",
     ],
-    formulae: ["Binary search halves the list each pass", "Linear search checks up to $n$ items"],
+    formulae: [],
   },
   "y10-computing-programming-techniques": {
     explanation:
@@ -186,12 +189,11 @@ export const technicalContent = {
       "Arrays are indexed, usually from zero.",
       "Subprograms make code reusable and self-documenting.",
       "Random numbers are generated within a range; test that results stay inside it.",
-    ],
-    formulae: [
       "WHILE condition ... ENDWHILE",
       "array[index] accesses one element",
       "RANDOM_INT(1, 6) gives a whole number from 1 to 6",
     ],
+    formulae: [],
   },
   "y10-computing-data-representation": {
     explanation:
@@ -223,9 +225,9 @@ export const technicalContent = {
   },
   "y10-computing-networks-protocols-and-security": {
     explanation:
-      "Networks are described by their scale, LAN or WAN, and by their topology: a star topology connects every device to a central switch and keeps working if one cable fails, while a mesh connects devices to each other and has no single point of failure. Protocols are agreed rules that let different systems communicate, and the common ones are worth knowing by job: HTTP and HTTPS for web pages, TCP/IP for routing and reliable delivery, SMTP, IMAP and POP for mail. Layering separates those jobs so one layer can change without breaking the others. Security controls include firewalls, encryption, authentication, access levels and penetration testing, and the right recommendation matches the threat.",
+      "Networks are described by their scale, LAN or WAN, and by their topology: a star topology connects every device to a central switch and keeps working if one cable fails, but failure of the central switch can stop communication across the star. A mesh connects devices through multiple paths, which can allow traffic to reroute around a failed link. Protocols are agreed rules that let different systems communicate, and the common ones are worth knowing by job: HTTP and HTTPS for web pages, TCP/IP for routing and reliable delivery, SMTP, IMAP and POP for mail. Layering separates those jobs so one layer can change without breaking the others. Security controls include firewalls, encryption, authentication, access levels and penetration testing, and the right recommendation matches the threat.",
     keyIdeas: [
-      "Star topology fails gracefully; mesh has no single point of failure.",
+      "In a star, one cable failure usually isolates one device, but failure of the central switch can stop the network. A mesh provides alternative paths; resilience depends on its connections and equipment.",
       "Each protocol has a specific job.",
       "Layering lets one layer change without breaking others.",
       "Match the security control to the threat.",
@@ -253,8 +255,9 @@ export const technicalContent = {
       "A foreign key matches a primary key in another table.",
       "SELECT fields FROM table WHERE condition.",
       "Validation checks plausibility, not truth.",
+      "SELECT field FROM table WHERE condition ORDER BY field",
     ],
-    formulae: ["SELECT field FROM table WHERE condition ORDER BY field"],
+    formulae: [],
   },
   "y11-computing-boolean-logic-and-translators": {
     explanation:
@@ -462,8 +465,9 @@ export const technicalContent = {
       "A user profile makes decisions testable.",
       "Use percentile ranges, not the average, for fit.",
       "Evaluate accessibility by testing with real users.",
+      "Design between the 5th and 95th percentile to fit most users",
     ],
-    formulae: ["Design between the 5th and 95th percentile to fit most users"],
+    formulae: [],
   },
   "y9-design-technology-product-analysis-and-improvement": {
     explanation:

@@ -1,0 +1,5 @@
+import {readFileSync} from 'node:fs';
+const s=JSON.parse(readFileSync(new URL('../local.settings.json',import.meta.url),'utf8').replace(/^\uFEFF/,'')).Values;
+const endpoint=s.AZURE_SPEECH_ENDPOINT??`https://${s.AZURE_SPEECH_REGION??'uksouth'}.tts.speech.microsoft.com/cognitiveservices/v1`;
+const url=new URL(endpoint);console.log(JSON.stringify({host:url.hostname,path:url.pathname,hasKey:!!s.AZURE_SPEECH_KEY}));
+try{const r=await fetch(endpoint,{method:'POST',headers:{'Ocp-Apim-Subscription-Key':s.AZURE_SPEECH_KEY,'Content-Type':'application/ssml+xml','X-Microsoft-OutputFormat':'audio-24khz-48kbitrate-mono-mp3'},body:'<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-GB"><voice name="en-GB-SoniaNeural">Speech connection check.</voice></speak>',signal:AbortSignal.timeout(20000)});console.log(JSON.stringify({status:r.status,bytes:(await r.arrayBuffer()).byteLength}));}catch(e){console.log(JSON.stringify({message:e.message,cause:e.cause?.code}));process.exitCode=1;}

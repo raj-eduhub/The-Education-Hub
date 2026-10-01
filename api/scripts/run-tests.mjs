@@ -28,6 +28,11 @@ async function apiIsUp() {
 const running = await apiIsUp();
 const suites = [
   { name: "curriculum", script: "validate-curriculum.mjs", needsApi: false },
+  { name: "curriculum policy", script: "test-curriculum-policy.mjs", needsApi: false },
+  { name: "explanation tiers", script: "test-explanation-tiers.mjs", needsApi: false },
+  { name: "subtopic lessons", script: "test-subtopic-lessons.mjs", needsApi: false },
+  { name: "all subtopic coverage", script: "test-subtopic-coverage.mjs", needsApi: false },
+  { name: "content formatting", script: "test-content-formatting.mjs", needsApi: false },
   // The narrated lesson is built from the authored content at render time, so
   // the content has to survive being turned into speech and into beats.
   { name: "speech", script: "test-speech.mjs", needsApi: false },
@@ -47,6 +52,7 @@ const suites = [
   // Proves the stored-first contract against the running API: every explanation
   // comes from storage, and the model is reached only where nothing is stored.
   { name: "content routing", script: "test-content-routing.mjs", needsApi: true },
+  { name: "subtopic routing", script: "test-subtopic-routing.mjs", needsApi: true },
   // The narration cache: keyed, access-gated, and absent without failing.
   { name: "narration", script: "test-narration.mjs", needsApi: true },
 ];

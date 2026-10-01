@@ -1,0 +1,8 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import assert from 'node:assert/strict';
+const dir='output/curriculum-review/pass-19',plan=JSON.parse(readFileSync(`${dir}/correction-plan.json`));
+const shape=(ref,expected)=>{const p=plan.changes.find(c=>c.ref===ref).payload;assert.deepEqual(p.question.split('\n\n').slice(1).map(s=>s.split('\n').length),expected);};
+shape('y11-english-poetry/practice-1-Edexcel-core',[6,6]);shape('y11-english-poetry/practice-7-AQA-core',[3,3,3,3]);shape('y11-english-unseen/exam-4-Edexcel-core',[8,6]);shape('y11-english-unseen/practice-6-AQA-core',[4,4]);shape('y11-english-unseen/practice-9-Edexcel-core',[6,6]);
+writeFileSync(`${dir}/correction-adjudication.json`,JSON.stringify({adjudicatedAt:new Date().toISOString(),method:'Read displayed poems against all structural and quotation claims; verified stanza lengths. Compared the public-domain Macbeth lines and Magwitch business history with primary literary texts. Checked exact quotation and simile terminology. No teacher approval inferred.',payloadHashes:Object.fromEntries(plan.changes.map(c=>[c.ref,createHash('sha256').update(JSON.stringify(c.payload)).digest('hex')])),flagDecisions:{'y10-english-poetry/practice-9-Edexcel-core':'Retain corrected analysis. A semicolon supplies a grammatical and punctuated pause at the line ending; a sentence need not end for a line to be end-stopped. Nano confuses sentence continuation with uninterrupted enjambment. Poetry Foundation glossary explicitly includes semicolons among end-stop punctuation: https://www.poetryfoundation.org/education/glossary/end-stopped'}},null,2));
+console.log(`Adjudicated ${plan.changes.length} payloads.`);

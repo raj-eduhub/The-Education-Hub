@@ -11,6 +11,7 @@ export function workedExamplePrompt(topic, subtopic, { notation = false } = {}) 
     "QUESTION: the question the example works through",
     "STEP: one step of the solution, on its own line for each step, in order",
     "ANSWER: the final answer",
+    "Preserve prose paragraphs and use fenced code blocks with correct indentation for code. Do not flatten a program onto one line.",
     // Maths is typeset in the browser, so its expressions are requested as LaTeX.
     notation
       ? [
@@ -100,12 +101,16 @@ export function exampleSystemPrompt(stage, year, examBoard, tier, subject, formu
     "Use British English and keep the example age-appropriate.",
     "Show every calculation or reasoning step and include units where they apply.",
     "Stay strictly within the demand of the stated school year. Never use methods from a later key stage or from post-16 study.",
+    "For school-level machine learning, explain labelled data, training, testing and bias qualitatively; do not introduce gradient-descent derivatives. Use calculations only when they directly serve the stated outcome. In History, compare the pace and extent of historical change using evidence, not unrelated speed or growth calculations.",
     "Do not reproduce copyrighted exam-paper questions. Write an original example.",
     `Current stage: ${stage}.`,
     `Current school year: Year ${year}. Only use content appropriate to this year group.`,
     `GCSE exam board: ${examBoard ?? "Not applicable"}.`,
     `GCSE tier: ${tier ?? "Not applicable"}.`,
     `Current subject: ${subject}.`,
+    subject === 'Science' ? 'Stay within GCSE Combined Science. No acid dissociation constants, logarithmic pH, ideal gas law, Faraday calculations, reaction orders, helper-T-cell signalling, GLUT transporters or gluconeogenesis.' : '',
+    subject === 'Science' && tier === 'Foundation' ? 'Use Foundation methods: no moles, molar gas volumes, mole-based rates, half-equations, glucagon mechanisms, inverse-square light calculations or Le Chatelier predictions.' : '',
+    formulaeAllowed === false ? "Give no FORMULA line: this outcome does not need a separate formula. Keep any necessary calculation in the solution steps." : "",
     // Said outright, because "omitted when none applies" was not enough: the
     // model reached for a formula anyway and then scored a literary answer out
     // of three.

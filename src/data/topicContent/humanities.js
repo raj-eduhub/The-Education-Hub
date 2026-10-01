@@ -41,11 +41,11 @@ export const humanitiesContent = {
   },
   "y7-history-britain-before-1066": {
     explanation:
-      "Britain did not begin in 1066. Rome ruled the province for nearly four hundred years, leaving roads, towns, walls and Latin, and when the legions withdrew around 410 those towns emptied rather than falling in a single catastrophe. Peoples from northern Europe, the Angles, Saxons and Jutes, settled over the following centuries and their small kingdoms - Northumbria, Mercia, Wessex and others - fought, absorbed one another and gradually converted to Christianity. From the 790s Viking raids became Viking settlement, until half of England was under Danish law, and it was the resistance and reorganisation that followed, under Alfred of Wessex and his successors, that produced a single kingdom of England with shires, burhs and a common coinage. That is the kingdom William took in 1066. Knowing this makes the conquest a change of ruler over an already organised state, not the start of English history.",
+      "Britain did not begin in 1066. Rome ruled the province for nearly four hundred years, leaving roads, towns, walls and Latin, and when the legions withdrew around 410 those towns emptied rather than falling in a single catastrophe. Peoples from northern Europe, the Angles, Saxons and Jutes, settled over the following centuries and their small kingdoms - Northumbria, Mercia, Wessex and others - fought, absorbed one another and gradually converted to Christianity. From the 790s Viking raids became Viking settlement, and areas of northern and eastern England came under Scandinavian rule and influence, later associated with the Danelaw; their boundaries and rulers changed over time, and it was the resistance and reorganisation that followed, under Alfred of Wessex and his successors, that produced a single kingdom of England with shires, burhs and a common coinage. That is the kingdom William took in 1066. Knowing this makes the conquest a change of ruler over an already organised state, not the start of English history.",
     keyIdeas: [
       "Roman Britain ended gradually, not in a single collapse.",
       "Anglo-Saxon England was many kingdoms before it was one.",
-      "Viking raids became settlement, and settlement forced English unification.",
+      "Viking settlement and warfare contributed to the changing relationships among English kingdoms.",
       "England was already a governed kingdom when the Normans arrived.",
     ],
     formulae: [],
@@ -110,7 +110,7 @@ export const humanitiesContent = {
   },
   "y8-history-the-age-of-enlightenment": {
     explanation:
-      "The Enlightenment was an argument, running through the eighteenth century, that questions about the world should be settled by reason and evidence rather than by tradition or authority. It grew out of the scientific revolution: if Newton could explain the motion of the planets with a few laws anyone could check, then perhaps government, law and belief could be examined the same way. Locke argued that rulers govern by consent and may be removed; Montesquieu argued for separating the powers of government so none could dominate; Voltaire attacked censorship and religious persecution; Rousseau argued that sovereignty belongs to the people. These ideas spread in printed books, pamphlets and newspapers, and were argued over in coffee houses and salons by people who were not aristocrats. They shaped the American and French Revolutions and later reform movements in Britain. They also had limits their authors rarely admitted: many Enlightenment thinkers defended slavery or profited from it, and few extended their arguments about liberty to women, which Mary Wollstonecraft pointed out at the time.",
+      "The Enlightenment was an argument, running through the eighteenth century, that questions about the world should be settled by reason and evidence rather than by tradition or authority. It grew out of the scientific revolution: if Newton could explain the motion of the planets with a few laws anyone could check, then perhaps government, law and belief could be examined the same way. Locke argued that rulers govern by consent and may be removed; Montesquieu argued for separating the powers of government so none could dominate; Voltaire attacked censorship and religious persecution; Rousseau argued that sovereignty belongs to the people. These ideas spread in printed books, pamphlets and newspapers, and were argued over in coffee houses and salons involving both aristocratic patrons and educated people from other social groups. They shaped the American and French Revolutions and later reform movements in Britain. Their application of equality was inconsistent: some thinkers defended slavery or benefited from it, while others challenged it. Women were often excluded from political rights. In A Vindication of the Rights of Woman (1792), Mary Wollstonecraft argued for women's rational education and challenged assumptions about their inferiority.",
     keyIdeas: [
       "Reason and evidence were set against tradition and authority.",
       "The scientific revolution supplied the method the political arguments borrowed.",
@@ -249,47 +249,47 @@ export const humanitiesContent = {
   // ---- History, Year 11 (GCSE) -------------------------------------------
   "y10-history-greece-and-persia": {
     explanation:
-      "Wider reading, beyond the AQA and Edexcel specifications. By 500 BC the Persian empire ran from the Aegean to the Indus, governed through satraps who collected tribute and kept order while leaving local custom largely alone: it was tolerant by the standards of the age and vastly richer than Greece. The Greek world was the opposite, hundreds of small independent cities that fought each other as readily as anyone else. When Ionian Greeks under Persian rule revolted and Athens sent help, Darius came for Athens and was beaten at Marathon in 490. Ten years later Xerxes returned with an army and fleet on a scale nothing in Greece could match, held for three days at Thermopylae, took and burned Athens, and then lost his fleet in the narrows at Salamis where numbers counted against him. The land army was destroyed at Plataea the following year. Almost everything we know comes from Herodotus, who wrote within living memory, interviewed participants, and also reported marvels he had not checked - which is why he has to be read closely rather than simply believed.",
+      "Wider reading, beyond the AQA and Edexcel specifications. By 500 BC the Persian empire ran from the Aegean to the Indus, governed through satraps who collected tribute and kept order while leaving local custom largely alone: it was tolerant by the standards of the age and vastly richer than Greece. The Greek world was the opposite, hundreds of small independent cities that fought each other as readily as anyone else. When Ionian Greeks under Persian rule revolted and Athens sent help, Darius came for Athens and was beaten at Marathon in 490. Ten years later Xerxes returned with an army and fleet on a scale nothing in Greece could match, held for three days at Thermopylae, took and burned Athens, and then lost his fleet in the narrows at Salamis where numbers counted against him. The Persian army remaining in Greece was defeated at Plataea the following year. Herodotus provides a major surviving narrative, written decades after the events. Archaeology, inscriptions and other writers also contribute evidence; accounts must be compared and their perspectives assessed.",
     keyIdeas: [
       "Persia was the larger, richer and more organised power throughout.",
-      "The Greek cities were rivals who cooperated only under direct threat.",
-      "Terrain and narrow water cancelled Persian numbers at Thermopylae and Salamis.",
+      "Greek cities could cooperate, compete or support Persia; their responses were not uniform.",
+      "Terrain and narrow waters could limit numerical advantages; the Greek defenders still lost at Thermopylae.",
       "Herodotus is the main source, close to events and not always reliable.",
     ],
     formulae: [],
   },
   "y10-history-alexander-the-great": {
     explanation:
-      "Wider reading, beyond the AQA and Edexcel specifications. Alexander inherited rather than invented his advantage: his father Philip II had turned Macedon into the strongest military power in Greece, with the pike phalanx and companion cavalry Alexander would use. Taking the throne at twenty in 336 BC, he crossed into Asia and beat Persian armies at the Granicus, at Issus and finally at Gaugamela in 331, where Darius III fled and the empire fell to him. He kept going, through Bactria and over the Hindu Kush into the Punjab, until his own army refused to march further east. He founded cities, most famously Alexandria in Egypt, and governed partly through the Persian administration he had defeated, adopting Persian dress and court practice in ways that angered his Macedonian veterans. He died at Babylon in 323, aged thirty-two, leaving no viable heir, and his generals divided the empire between them within a generation. Verdicts have always differed: a genius who spread Greek culture across three continents, or a destructive conqueror whose empire could not outlive him.",
+      "Wider reading, beyond the AQA and Edexcel specifications. Alexander inherited rather than invented his advantage: his father Philip II had turned Macedon into the strongest military power in Greece, with the pike phalanx and companion cavalry Alexander would use. Taking the throne at twenty in 336 BC, he crossed into Asia and beat Persian armies at the Granicus, at Issus and finally at Gaugamela in 331, where Darius III fled and the empire fell to him. He kept going, through Bactria and over the Hindu Kush into the Punjab, until his own army refused to march further east. He founded cities, most famously Alexandria in Egypt, and governed partly through the Persian administration he had defeated, adopting Persian dress and court practice in ways that angered his Macedonian veterans. He died at Babylon in 323, aged thirty-two, leaving a disputed succession, including an unborn son, and his generals divided the empire between them within a generation. Verdicts have always differed: a genius who spread Greek culture across three continents, or a destructive conqueror whose empire could not outlive him.",
     keyIdeas: [
       "Philip II built the army and the position Alexander used.",
       "Gaugamela in 331 BC decided the Persian empire.",
       "He ruled through existing Persian administration, which divided his own men.",
-      "Nothing held the empire together once he died without an heir.",
+      "Disputed succession and rival generals fractured the empire after his death.",
       "The verdict on him has been contested since antiquity.",
     ],
     formulae: [],
   },
   "y11-history-rome-and-its-neighbours": {
     explanation:
-      "Wider reading, beyond the AQA and Edexcel specifications. Rome began as one city among many in Italy and spent two centuries subduing the rest, not mainly because its soldiers were better but because of what it did after winning. Defeated peoples were not usually destroyed or simply taxed; they were bound to Rome by treaty, left to run their own affairs, and required to supply troops. Some were granted Roman citizenship, in full or in part, and citizenship could be extended further over time. The result was that every victory enlarged the pool of manpower Rome could draw on, so defeats could be absorbed and wars outlasted, which is exactly what happened against Hannibal. The army itself was organised in legions of citizens, drilled, engineered and supplied to a standard no neighbour matched, and able to build roads and camps as it advanced. Romans explained their expansion to themselves as defensive, a series of just wars fought against aggressors, a claim worth examining against the pattern of who actually attacked whom.",
+      "Wider reading, beyond the AQA and Edexcel specifications. Rome began as one city among many in Italy and expanded across Italy over centuries through warfare, alliances, settlements and changing citizenship arrangements. Treatment of defeated communities varied: some retained local government under treaties and supplied troops, while others lost land or faced harsher terms. Some were granted Roman citizenship, in full or in part, and citizenship could be extended further over time. Alliances and incorporation enlarged the manpower available to Rome. This helped it recover from defeats against Hannibal, alongside leadership, strategy and resources. The army itself was organised in legions of citizens, supported by training, engineering and organised supply, and able to build roads and camps as it advanced. Romans explained their expansion to themselves as defensive, a series of just wars fought against aggressors, a claim worth examining against the pattern of who actually attacked whom.",
     keyIdeas: [
       "Rome absorbed defeated peoples rather than only extracting from them.",
       "Extending citizenship turned former enemies into a source of soldiers.",
       "That manpower let Rome lose battles and still win wars.",
-      "The legions' advantage was drill, engineering and supply, not individual prowess.",
+      "Training, engineering and supply contributed to Roman military effectiveness.",
       "Rome's own account of its wars as defensive should be tested, not accepted.",
     ],
     formulae: [],
   },
   "y11-history-hannibal-and-the-second-punic-war": {
     explanation:
-      "Wider reading, beyond the AQA and Edexcel specifications. Carthage lost the First Punic War and with it Sicily, and rebuilt its strength in Spain, where Hannibal took command. War came again in 218 BC over the city of Saguntum, and Hannibal did what Rome did not expect: rather than wait to be invaded he marched an army, with elephants, from Spain across the Alps into Italy, losing many thousands on the way. Then he beat Roman armies repeatedly - at the Trebia, at Lake Trasimene, and at Cannae in 216, where he encircled and destroyed a much larger force in what is still studied as a model of battlefield manoeuvre. And yet he could not win. Rome's Italian allies mostly did not defect, so he could not replace losses while Rome could; he was never able to take the city itself; and Rome eventually carried the war to Spain and then to Africa, forcing him home to be beaten at Zama in 202. The war shows that winning battles and winning a war are different problems.",
+      "Wider reading, beyond the AQA and Edexcel specifications. Carthage lost the First Punic War and with it Sicily, and rebuilt its strength in Spain, where Hannibal took command. War came again in 218 BC over the city of Saguntum, and Hannibal did what Rome did not expect: rather than wait to be invaded he marched an army, with elephants, from Spain across the Alps into Italy, losing many thousands on the way. Then he beat Roman armies repeatedly - at the Trebia, at Lake Trasimene, and at Cannae in 216, where he encircled and destroyed a much larger force in what is still studied as a model of battlefield manoeuvre. And yet he could not win. Many of Rome's Italian allies remained loyal, helping Rome replace losses; Hannibal gained some allies but faced persistent reinforcement and supply difficulties; he was never able to take the city itself; and Rome eventually carried the war to Spain and then to Africa, forcing him home to be beaten at Zama in 202. The war shows that winning battles and winning a war are different problems.",
     keyIdeas: [
-      "The war grew out of the settlement of the first one.",
-      "Crossing the Alps was costly but achieved complete surprise.",
-      "Cannae is a model of encirclement and still destroyed nothing decisive.",
-      "Rome's allies held, so Rome could replace losses and Hannibal could not.",
+      "Earlier rivalry and disputes over power in Iberia contributed to renewed war.",
+      "Crossing the Alps was costly and brought the war into Italy by a difficult route.",
+      "Cannae was a devastating tactical victory that did not secure victory in the war.",
+      "Continued support from many allies helped Rome sustain its armies despite heavy defeats.",
       "Battlefield victory did not translate into winning the war.",
     ],
     formulae: [],

@@ -9,6 +9,7 @@
 // Every figure below was worked through, and every question carries all the
 // data it needs, because the learner is shown no diagram or graph. Written with
 // String.raw so LaTeX needs no doubled backslashes; none may contain "${".
+import { reviewedWorkedExamples } from './reviewedWorkedExamples.js';
 const r = String.raw;
 
 export const authoredWorkedExamples = {
@@ -576,6 +577,9 @@ export const authoredWorkedExamples = {
 // The example for one sub-topic at one tier, or null. A tiered entry with no
 // example for the tier asked for returns null rather than the other tier's.
 export function authoredWorkedExample(topicId, index, tier = null) {
+  const reviewed = reviewedWorkedExamples[`${topicId}#${index}`];
+  if (reviewed && !(reviewed.Foundation || reviewed.Higher)) return reviewed;
+  if (reviewed && tier && reviewed[tier]) return reviewed[tier];
   const entry = authoredWorkedExamples[`${topicId}#${index}`];
   if (!entry) return null;
   if (entry.Foundation || entry.Higher) return (tier && entry[tier]) || null;

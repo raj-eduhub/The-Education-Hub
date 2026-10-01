@@ -1,0 +1,6 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+const dir='output/curriculum-review/pass-4';
+const plan=JSON.parse(readFileSync(`${dir}/correction-plan.json`));
+writeFileSync(`${dir}/correction-adjudication.json`,JSON.stringify({adjudicatedAt:new Date().toISOString(),method:'All 86 candidate questions inspected in context. Eleven retained; six already corrected in pass 3; 69 rewrites independently checked against their outcomes and Foundation scope. Chemical atom counts, relative formula masses, rates and rounding recomputed. No teacher approval inferred.',payloadHashes:Object.fromEntries(plan.changes.map(c=>[c.ref,createHash('sha256').update(JSON.stringify(c.payload)).digest('hex')])),flagDecisions:{'y11-science-quantitative/exam-3-AQA-Foundation':'Retain: the wording explicitly states both the coefficients (2 to 2) and their equivalent simplified ratio (1 to 1). Eight hydrogen molecules give eight water molecules. This is correct and directly explains the given equation.'},sources:['https://www.aqa.org.uk/subjects/science/gcse/science-8464/specification/chemistry-subject-content','https://www.aqa.org.uk/subjects/science/gcse/science-8464/specification/biology-subject-content']},null,2));
+console.log(`Adjudicated ${plan.changes.length} corrected payloads.`);

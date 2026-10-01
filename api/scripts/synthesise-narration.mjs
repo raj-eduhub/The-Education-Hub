@@ -9,13 +9,17 @@
 // Beats already stored are skipped, so a re-run after editing one sentence
 // synthesises that sentence and nothing else. The whole curriculum is around
 // 209,000 characters; run narration-cost.mjs for what that costs today.
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { createHash } from 'node:crypto';
 import { curriculum } from "../../src/data/curriculumCatalog.js";
 import { getTopicGuide } from "../../src/topicGuides.js";
-import { beatSpeech, lessonBeats } from "../../src/lessonBeats.js";
+import { beatSpeech, lessonBeats, exampleBeats } from "../../src/lessonBeats.js";
+import { explanationForTier } from '../../src/data/explanationTier.js';
+import { selectExplanation } from '../../src/data/selectExplanation.js';
+import { warrantsWorkedExample, warrantsFormulae } from '../../src/data/workedExampleOutcomes.js';
 import { toSpoken } from "../../src/speech.js";
-import { contentKey, getContent } from "../src/lib/contentStore.js";
-import { hasNarration, narrationKey, saveNarration } from "../src/lib/narrationStore.js";
+import { contentKey, getContent, listTopicContent } from "../src/lib/contentStore.js";
+import { listNarration, narrationKey, saveNarration } from "../src/lib/narrationStore.js";
 
 if (!process.env.AZURE_SPEECH_KEY || !process.env.AZURE_STORAGE_CONNECTION_STRING) {
   try {
@@ -36,11 +40,12 @@ for (let i = 2; i < process.argv.length; i += 1) {
 
 const dryRun = args.has("dry-run");
 const force = args.has("force");
+const includeExamples = args.has('examples');
 const onlyTopic = args.get("topic");
 const onlyYear = args.has("year") ? Number(args.get("year")) : null;
 const onlySubject = args.get("subject");
 const limit = Number(args.get("limit") ?? Infinity);
-const concurrency = Math.max(1, Math.min(8, Number(args.get("concurrency") ?? 4)));
+const concurrency = Math.max(1, Math.min(32, Number(args.get("concurrency") ?? 4)));
 
 const region = process.env.AZURE_SPEECH_REGION ?? "uksouth";
 const voice = process.env.AZURE_SPEECH_VOICE ?? "en-GB-SoniaNeural";
@@ -76,6 +81,10 @@ async function synthesise(text, attempt = 0) {
       "User-Agent": "EducationHub",
     },
     body: ssml(text),
+    signal: AbortSignal.timeout(30000),
+  }).catch(error => {
+    if (['EACCES','EPERM','ENOTFOUND'].includes(error.cause?.code)) error.fatal = true;
+    throw error;
   });
   if (response.ok) return Buffer.from(await response.arrayBuffer());
 
@@ -88,7 +97,9 @@ async function synthesise(text, attempt = 0) {
     return synthesise(text, attempt + 1);
   }
   const detail = await response.text().catch(() => "");
-  throw new Error(`speech service returned ${response.status} ${detail.slice(0, 160)}`);
+  const error = new Error(`speech service returned ${response.status} ${detail.slice(0, 160)}`);
+  error.fatal = response.status === 401 || response.status === 403;
+  throw error;
 }
 
 // Runs jobs with a fixed number in flight. Kept small by default: the point is
@@ -124,10 +135,22 @@ if (!dryRun && !process.env.AZURE_SPEECH_KEY) {
 console.log(`voice ${voice} via ${region}${dryRun ? "   (dry run: nothing is called or stored)" : ""}`);
 console.log(`${topics.length} topic(s)\n`);
 
-const counts = { beats: 0, skipped: 0, made: 0, failed: 0, characters: 0, bytes: 0, stale: 0, unseeded: 0 };
+const counts = { topics: 0, examples: 0, beats: 0, skipped: 0, made: 0, failed: 0, characters: 0, bytes: 0, stale: 0, unseeded: 0 };
+const manifest=[];
+const reportDir='output/curriculum-review';mkdirSync(reportDir,{recursive:true});
+const reportTag=args.get('report-tag');
+if(reportTag&&!/^[a-z0-9-]+$/.test(reportTag))throw Error('Report tag must contain only lowercase letters, digits and hyphens');
+const reportPath=`${reportDir}/narration-${reportTag??(dryRun?'dry-run':'run')}.json`;
+const saveReport=()=>writeFileSync(reportPath,JSON.stringify({updatedAt:new Date().toISOString(),dryRun,voice,includeExamples,counts,manifest},null,2));
 let done = 0;
+let halted = false;
+// One inventory avoids a storage round trip for every beat. This is a single
+// writer; completed uploads extend the snapshot, and interrupted runs resume
+// from a fresh inventory. Empty blobs are regenerated rather than skipped.
+const cachedKeys = new Set((await listNarration()).filter(b=>b.bytes>100).map(b=>b.name));
 
 for (const topic of topics) {
+  if (halted) break;
   // Read the stored content, not the authored file. The player builds its beats
   // from what the API serves, which is the stored row - so synthesising from
   // the source file voiced sentences the player would never ask for. Where the
@@ -143,7 +166,7 @@ for (const topic of topics) {
   // file directly: the guide fills in a fallback where a topic has no authored
   // formulae, so comparing with the raw file reports drift that is not drift.
   const guide = getTopicGuide(topic.subject, topic);
-  const stale = ["explanation", "keyIdeas", "formulae"].some(
+  const stale = ["explanation", "keyIdeas", "formulae", "higher", "subtopics"].some(
     (field) => JSON.stringify(content[field] ?? null) !== JSON.stringify(guide[field] ?? null));
   if (stale) {
     // Voicing this would record content the authored source has already moved
@@ -155,52 +178,82 @@ for (const topic of topics) {
   if (done >= limit) break;
   done += 1;
 
-  const beats = lessonBeats(topic, content);
+  counts.topics += 1;
+  const beats = lessonBeats(topic, explanationForTier(content, 'Foundation'));
+  if (content.higher) beats.push(...lessonBeats(topic, explanationForTier(content, 'Higher')));
+  for (const [index, lesson] of (content.subtopics ?? []).entries()) {
+    if (!lesson) continue;
+    beats.push(...lessonBeats(topic, selectExplanation(content, index, 'Foundation')));
+    if (lesson.higher) beats.push(...lessonBeats(topic, selectExplanation(content, index, 'Higher')));
+  }
+  if (includeExamples) {
+    for (const row of await listTopicContent(topic.id)) {
+      if (row.type !== 'example') continue;
+      const index=Number(/^example-(\d+)-/.exec(row.rowKey)?.[1]);
+      if (!warrantsWorkedExample(topic.id,index)) continue;
+      const payload={...row.payload,formulae:warrantsFormulae(topic.id,index)?row.payload.formulae??[]:[]};
+      beats.push(...exampleBeats(payload,row.subtopicTitle));
+      counts.examples += 1;
+    }
+  }
+  // Deduplicate the identical core beats shared by both tiers before scheduling.
+  const texts=[...new Set(beats.map(beat=>beatSpeech(beat,toSpoken)).filter(Boolean))];
   let made = 0;
   let skipped = 0;
 
   // Beats within a topic are independent, so they are voiced together. Topics
   // stay sequential, which keeps the progress line meaningful and the load on
   // the service steady rather than spiky.
-  await inParallel(beats, concurrency, async (beat) => {
-    const text = beatSpeech(beat, toSpoken);
-    if (!text) return;
+  await inParallel(texts, concurrency, async (text) => {
+    if (halted) return;
     counts.beats += 1;
     const key = narrationKey(topic.id, text, voice);
+    const entry={topicId:topic.id,key,textHash:createHash('sha256').update(text).digest('hex'),characters:text.length,status:'pending'};
+    manifest.push(entry);
 
     // The cache is checked on a dry run too. Skipping it made every beat look
     // new, so the estimate was of synthesising the curriculum from nothing
     // rather than of the run you were about to make.
-    if (!force && await hasNarration(key)) {
+    if (!force && cachedKeys.has(key)) {
       counts.skipped += 1;
       skipped += 1;
+      entry.status='cached';
       return;
     }
     counts.characters += text.length;
     if (dryRun) {
       counts.made += 1;
       made += 1;
+      entry.status='would-synthesise';
       return;
     }
     try {
       const audio = await synthesise(text);
+      if(audio.length<100)throw new Error('Speech response is empty or too short to be audio');
       await saveNarration(key, audio);
+      cachedKeys.add(key);
       counts.bytes += audio.length;
       counts.made += 1;
       made += 1;
+      entry.status='synthesised';entry.bytes=audio.length;
     } catch (error) {
       counts.failed += 1;
+      entry.status='failed';entry.error=error.message;
+      if (error.fatal) halted = true;
       console.log(`  FAILED ${topic.id} "${text.slice(0, 48)}..." - ${error.message}`);
     }
   });
-  console.log(`  ${topic.id.padEnd(40)} ${String(made).padStart(3)} new, ${String(skipped).padStart(3)} cached`);
+  console.log(`  ${topic.id.padEnd(40)} ${String(made).padStart(3)} ${dryRun ? 'missing' : 'new'}, ${String(skipped).padStart(3)} cached`);
+  saveReport();
 }
 
 const mb = counts.bytes / 1024 / 1024;
-console.log(`\n${counts.beats} beat(s): ${counts.made} synthesised, ${counts.skipped} already cached, ${counts.failed} failed`);
-console.log(`${counts.characters.toLocaleString()} characters billed${mb ? `, ${mb.toFixed(1)} MB stored` : ""}`);
+console.log(`\n${counts.beats} beat(s): ${counts.made} ${dryRun ? 'need synthesis' : 'synthesised'}, ${counts.skipped} already cached, ${counts.failed} failed`);
+console.log(`${counts.characters.toLocaleString()} ${dryRun ? 'uncached characters; no synthesis requests sent' : 'characters scheduled for synthesis'}${mb ? `, ${mb.toFixed(1)} MB stored` : ""}`);
 if (counts.stale || counts.unseeded) {
   console.log(`${counts.stale} topic(s) skipped as stale and ${counts.unseeded} as unseeded. Run "npm run seed:content -- --explanations-only", then this again.`);
 }
 if (dryRun) console.log("\nDry run: pass no --dry-run to synthesise for real.");
+if (halted) console.log('Stopped after a connection or authorization failure; unprocessed clips remain pending.');
+saveReport();
 process.exit(counts.failed ? 1 : 0);

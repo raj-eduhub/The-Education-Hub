@@ -25,12 +25,14 @@ export function formulaBeats(formulae) {
 }
 
 export function lessonBeats(topic, content) {
+  const focused = content.scope === 'subtopic';
+  const title = focused ? content.subtopicTitle : topic.title;
   const beats = [
     {
       kind: "title",
-      text: topic.title,
-      aside: topic.goal,
-      speech: `${topic.title}. ${topic.goal}`,
+      text: title,
+      aside: focused ? topic.title : topic.goal,
+      speech: focused ? `${title}.` : `${topic.title}. ${topic.goal}`,
     },
   ];
 
@@ -40,7 +42,7 @@ export function lessonBeats(topic, content) {
 
   // Authored visuals follow the prose they illustrate. A topic with none plays
   // as narration alone rather than showing an empty stage.
-  for (const visual of visualNarrationFor(topic.id)) {
+  for (const visual of focused ? [] : visualNarrationFor(topic.id)) {
     beats.push({ kind: "visual", id: visual.id, text: visual.speech, speech: visual.speech });
   }
 
@@ -50,7 +52,9 @@ export function lessonBeats(topic, content) {
 
   beats.push(...formulaBeats(content.formulae));
 
-  beats.push({ kind: "end", text: "That is the whole topic.", speech: closingBeat });
+  beats.push(focused
+    ? { kind: 'end', text: 'That completes this subtopic.', speech: 'That completes this subtopic. Try a practice question next.' }
+    : { kind: "end", text: "That is the whole topic.", speech: closingBeat });
   return beats;
 }
 

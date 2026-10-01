@@ -38,7 +38,6 @@ const topicsById = new Map(curriculum.map((topic) => [topic.id, topic]));
 const aboveSpecification = [
   [/\bstandard error\b|\bSE\s*=|\\hat\{p\}/i, "standard error"],
   [/\bconfidence interval\b|\b95%\s*CI\b|\bz\s*=\s*1\.96\b/i, "confidence interval"],
-  [/\b(stratified|systematic|cluster|quota)\s+sampl/i, "named sampling scheme"],
   [/\bnormal distribution\b|\bz-?score\b|\bt-?distribution\b/i, "distribution above GCSE"],
   [/\bstandard deviation\b|\bfinite population correction\b/i, "statistic above GCSE"],
   [/\bradians?\b|\\frac\{\\pi\}\{180\}/i, "radians"],

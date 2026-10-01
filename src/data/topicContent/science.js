@@ -18,7 +18,7 @@ export const scienceContent = {
   },
   "y7-science-substances": {
     explanation:
-      "An element is a substance made of only one kind of atom, and the periodic table lists every one of them with its own symbol, written with a capital first letter and a small second letter, so Co is cobalt but CO is carbon and oxygen joined. A compound is two or more elements chemically bonded, in a fixed ratio, and it behaves as a new substance: sodium is a metal that reacts violently with water and chlorine is a poisonous gas, yet sodium chloride is table salt. A mixture is substances simply put together without bonding, in any proportion, each keeping its own properties, which is why a mixture can be separated by physical means such as filtering or distilling and a compound cannot. Air is a mixture, roughly four-fifths nitrogen and one-fifth oxygen with small amounts of argon and carbon dioxide. A physical change alters form but makes no new substance, so ice melting is still water; a chemical change makes one, and you can often tell by a colour change, a gas given off, a temperature change or a precipitate.",
+      "An element is a substance made of only one kind of atom, and the periodic table lists every one of them with its own symbol, written with a capital first letter and, if present, a lower-case second letter, so Co is cobalt but CO is carbon and oxygen joined. A compound is two or more elements chemically bonded, in a fixed ratio, and it behaves as a new substance: sodium is a metal that reacts violently with water and chlorine is a poisonous gas, yet sodium chloride is table salt. A mixture is substances simply put together without bonding, in any proportion, each keeping its own properties, which is why a mixture can be separated by physical means such as filtering or distilling and a compound cannot. Air is a mixture, roughly four-fifths nitrogen and one-fifth oxygen with small amounts of argon and carbon dioxide. A physical change alters form but makes no new substance, so ice melting is still water; a chemical change makes one, and you can often tell by a colour change, a gas given off, a temperature change or a precipitate.",
     keyIdeas: [
       "An element is one kind of atom; a compound is elements chemically bonded.",
       "A mixture is not bonded, so physical methods can separate it.",
@@ -29,27 +29,28 @@ export const scienceContent = {
     formulae: [],
   },
   "y7-science-space": {
-    explanation:
-      "The Sun is a star, and eight planets orbit it, held in their orbits by gravity: the four rocky inner planets, then the four gas and ice giants, with moons orbiting the planets in the same way. Gravity is a force of attraction between any two masses, stronger for a larger mass and weaker with distance, which is why weight changes from world to world while mass does not; the same astronaut has the same mass on the Moon but weighs about a sixth as much. Day and night come from the Earth spinning once every 24 hours, so the half facing the Sun has day. The seasons come from something different: the Earth's axis is tilted, so for half the year the northern hemisphere leans towards the Sun and gets longer days and light striking more directly, which is summer, while the southern hemisphere has winter at the same time. The Moon takes about 28 days to orbit the Earth, and the phases are how much of its sunlit half we can see from where we are.",
-    keyIdeas: [
+    "explanation": "The Sun is a star, and eight planets orbit it, held in their orbits by gravity: the four rocky inner planets, then the four gas and ice giants, with moons orbiting the planets in the same way. Gravity is a force of attraction between any two masses, stronger for a larger mass and weaker with distance, which is why weight changes from world to world while mass does not; the same astronaut has the same mass on the Moon but weighs about a sixth as much. Day and night come from the Earth spinning once every 24 hours, so the half facing the Sun has day. The seasons come from something different: the Earth's axis is tilted, so for half the year the northern hemisphere leans towards the Sun and gets longer days and light striking more directly, which is summer, while the southern hemisphere has winter at the same time. The Moon orbits Earth in about 27.3 days relative to the distant stars, while a full cycle of phases takes about 29.5 days. The phases show how much of its sunlit half we can see; the periods differ because Earth and the Moon also move around the Sun.",
+    "keyIdeas": [
       "Gravity holds the solar system together and is stronger for larger masses.",
       "Mass stays the same everywhere; weight depends on the gravitational field.",
       "Day and night come from the Earth's rotation, not from its orbit.",
       "The seasons come from the tilt of the Earth's axis, not from distance to the Sun.",
-      "The phases of the Moon are how much of its lit half faces us.",
+      "The phases of the Moon are how much of its lit half faces us."
     ],
-    formulae: ["Weight: $W = m \\times g$", "On Earth: $g = 10\\ \\text{N/kg}$"],
+    "formulae": [
+      "Weight: $W = m \\times g$",
+      "Near Earth’s surface: $g \\approx 9.8\\ \\text{N/kg}$; use $10\\ \\text{N/kg}$ when a question specifies this approximation."
+    ]
   },
   "y7-science-cells": {
-    explanation:
-      "All living things are made of cells. Animal cells have a nucleus controlling the cell, cytoplasm where reactions happen, a cell membrane controlling what enters and leaves, and mitochondria releasing energy. Plant cells have all of those plus a cell wall for support, a permanent vacuole holding sap, and chloroplasts containing the chlorophyll that traps light. Cells become specialised for a job, so a red blood cell loses its nucleus to carry more oxygen and a root hair cell has a long extension to absorb water, and cells of one type group into tissues, tissues into organs, and organs into organ systems.",
-    keyIdeas: [
+    "explanation": "All living things are made of cells. A typical animal cell has a nucleus controlling the cell, cytoplasm where reactions happen, a cell membrane controlling what enters and leaves, and mitochondria releasing energy. A typical plant cell also has a cellulose cell wall and a large permanent vacuole containing cell sap. Photosynthetic plant cells have chloroplasts containing chlorophyll, which absorbs light; many root cells do not have chloroplasts. Cells become specialised for a job, so a red blood cell loses its nucleus to carry more oxygen and a root hair cell has a long extension to absorb water, and cells of one type group into tissues, tissues into organs, and organs into organ systems.",
+    "keyIdeas": [
       "Nucleus controls the cell; mitochondria release energy from respiration.",
-      "Plant cells add a cell wall, vacuole and chloroplasts.",
+      "Typical plant cells have a cellulose wall and a large permanent vacuole; chloroplasts occur in photosynthetic cells.",
       "Specialised cells have shapes that suit their function.",
-      "Cells to tissues to organs to organ systems to organism.",
+      "Cells to tissues to organs to organ systems to organism."
     ],
-    formulae: [],
+    "formulae": []
   },
   "y7-science-particles": {
     explanation:
@@ -165,14 +166,8 @@ export const scienceContent = {
   },
   "y8-science-metals": {
     explanation:
-      "Metals differ in how readily they react, and putting them in order of that gives the reactivity series: potassium, sodium, calcium, magnesium, aluminium, carbon, zinc, iron, copper, silver, gold. The order predicts what happens when metals meet. A more reactive metal displaces a less reactive one from its compound, so magnesium added to copper sulfate takes the sulfate and leaves copper behind, while copper added to magnesium sulfate does nothing at all. The same order explains how metals are obtained. Gold is unreactive enough to be found as the metal itself, but most metals are locked in ores as compounds, usually oxides. Any metal below carbon in the series can be freed by heating its oxide with carbon, which takes the oxygen for itself, and that is how iron is made in a blast furnace. Metals above carbon hold their oxygen too tightly for that, so aluminium is extracted by electrolysis instead, passing electricity through the molten compound to pull it apart. Electrolysis works but costs far more energy, which is why aluminium was once more precious than gold.",
-    keyIdeas: [
-      "The reactivity series orders metals by how readily they react.",
-      "A more reactive metal displaces a less reactive one from its compound.",
-      "An unreactive metal such as gold is found uncombined in the Earth.",
-      "Metals below carbon are extracted by heating the ore with carbon.",
-      "Metals above carbon need electrolysis, which uses far more energy.",
-    ],
+      "The reactivity series orders metals by how readily they react. Carbon and hydrogen are often included as non-metal reference points. A more reactive metal can displace a less reactive metal from a solution of its compound: magnesium reacts with copper sulfate solution to form magnesium sulfate and copper. Carbon can reduce the oxides of many metals below it in the series, removing oxygen to leave the metal. In a blast furnace, carbon monoxide is an important reducing agent for iron oxide. Metals above carbon, such as aluminium, require other extraction methods; aluminium is produced by electrolysis of aluminium oxide dissolved in molten cryolite. Unreactive metals such as gold may occur uncombined. An ore is a rock containing enough of a metal or its compound to make extraction economically worthwhile.",
+    keyIdeas: ["The reactivity series orders metals; carbon and hydrogen can be included as non-metal reference points.","A more reactive metal can displace a less reactive metal from a solution of its compound.","Carbon can reduce many metal oxides below it in the series.","Aluminium extraction uses electrolysis; an unreactive metal such as gold may occur uncombined."],
     formulae: [
       "Displacement: $\\text{magnesium} + \\text{copper sulfate} \\rightarrow \\text{magnesium sulfate} + \\text{copper}$",
       "Extraction with carbon: $\\text{iron oxide} + \\text{carbon} \\rightarrow \\text{iron} + \\text{carbon dioxide}$",
@@ -193,12 +188,12 @@ export const scienceContent = {
   // ---- Year 9 ------------------------------------------------------------
   "y9-science-genetics": {
     explanation:
-      "DNA is a long molecule held in the chromosomes of the nucleus, and a gene is a section of DNA coding for a particular protein. Humans have 23 pairs of chromosomes, one of each pair from each parent, which is the source of inherited variation. Natural selection follows from variation: individuals whose characteristics suit the environment are more likely to survive, reproduce and pass those characteristics on, so over many generations the population changes. Evidence for evolution comes from fossils, from the anatomy of related species, and from observable examples such as antibiotic resistance in bacteria.",
+      "DNA carries inherited information. In the nucleus of a typical plant or animal cell it is packaged into chromosomes, each containing many genes. Most human body cells with a nucleus normally have 23 chromosome pairs; human gametes normally have 23 single chromosomes. Alleles are versions of genes, and inherited variation arises from different alleles and their combinations. Natural selection occurs when inherited differences affect reproductive success in a particular environment, so some alleles become more common over generations. Separated populations may eventually form new species. Evidence for evolution includes fossils, similarities between organisms and observed changes such as the spread of antibiotic resistance in bacterial populations.",
     keyIdeas: [
-      "A gene is a section of DNA coding for a protein.",
-      "Chromosomes come in pairs, one of each pair from each parent.",
-      "Natural selection acts on variation that already exists.",
-      "Antibiotic resistance is natural selection happening quickly enough to watch.",
+      "Genes are sections of DNA; many carry instructions for making proteins.",
+      "Most nucleated human body cells normally have chromosome pairs; gametes have a single set.",
+      "Natural selection acts on existing variation and changes populations over generations.",
+      "Antibiotic resistance can spread when resistant bacteria survive treatment and reproduce.",
     ],
     formulae: [],
   },
@@ -207,7 +202,7 @@ export const scienceContent = {
       "An atom has a tiny nucleus of protons and neutrons surrounded by electrons in shells. The atomic number is the number of protons and identifies the element; the mass number counts protons plus neutrons. Electrons fill shells from the inside out, holding two in the first shell and eight in the next two, and the number in the outer shell determines how the element reacts. Reactivity trends follow from this: group 1 metals become more reactive down the group as the outer electron is further from the nucleus and more easily lost, while group 7 non-metals become less reactive down the group as an electron is harder to attract.",
     keyIdeas: [
       "Atomic number is the proton count and identifies the element.",
-      "Electron shells fill 2, 8, 8 for the first twenty elements.",
+      "For the first twenty elements, use the shell model with up to 2 electrons in the first shell and 8 in the next two; potassium and calcium begin a fourth shell (2,8,8,1 and 2,8,8,2).",
       "Outer-shell electrons determine chemical behaviour.",
       "Group 1 gets more reactive down the group; group 7 gets less.",
     ],
@@ -353,20 +348,18 @@ export const scienceContent = {
     ],
   },
   "y10-science-organic": {
-    explanation:
-      "Crude oil is the remains of ancient plankton, and it is a mixture of hydrocarbons: compounds of hydrogen and carbon only. Because it is a mixture, it can be separated physically, and fractional distillation does it by boiling point. The oil is heated until it vaporises and fed into a column that is hot at the bottom and cool at the top; each fraction rises until it reaches a level cool enough to condense, so the short molecules travel furthest and the long ones drain out low down. Molecule length decides the properties: short chains have weaker forces between them, so they boil at lower temperatures, flow more easily and ignite more readily, which is why petrol is a better fuel than bitumen. The problem is that distillation gives far more long-chain fractions than anyone wants, so cracking breaks them into shorter ones using heat with a catalyst or steam. Cracking produces alkenes as well as alkanes, and alkenes are the starting point for polymers. An alkene decolourises bromine water; an alkane leaves it orange.",
-    keyIdeas: [
+    "explanation": "Crude oil is the remains of ancient plankton, and it is a mixture of hydrocarbons: compounds of hydrogen and carbon only. Because it is a mixture, it can be separated physically, and fractional distillation does it by boiling point. The oil is heated until it vaporises and fed into a column that is hot at the bottom and cool at the top; each fraction rises until it reaches a level cool enough to condense, so the short molecules travel furthest and the long ones drain out low down. Molecule length decides the properties: short chains have weaker forces between them, so they boil at lower temperatures, flow more easily and ignite more readily, which is why petrol is a better fuel than bitumen. The problem is that distillation gives far more long-chain fractions than anyone wants, so cracking breaks them into shorter ones using heat with a catalyst or steam. Cracking produces alkenes as well as alkanes, and alkenes are the starting point for polymers. An alkene decolourises bromine water; an alkane leaves it orange.",
+    "keyIdeas": [
       "A hydrocarbon contains hydrogen and carbon only.",
       "Fractional distillation separates a mixture by boiling point.",
       "Shorter chains boil lower, flow more easily and ignite more readily.",
       "Cracking turns surplus long chains into useful short ones and alkenes.",
-      "Bromine water is decolourised by an alkene, not by an alkane.",
+      "Bromine water is decolourised by an alkene, not by an alkane."
     ],
-    formulae: [
-      "Alkanes: $\\text{C}_{n}\\text{H}_{2n+2}$",
-      "Alkenes: $\\text{C}_{n}\\text{H}_{2n}$",
-      "Complete combustion: $\\text{hydrocarbon} + \\text{oxygen} \\rightarrow \\text{carbon dioxide} + \\text{water}$",
-    ],
+    "formulae": [
+      "Alkanes: $\\mathrm{C}_{n}\\mathrm{H}_{2n+2}$",
+      "Complete combustion: $\\text{hydrocarbon} + \\text{oxygen} \\rightarrow \\text{carbon dioxide} + \\text{water}$"
+    ]
   },
   "y10-science-practicals": {
     explanation:
@@ -380,44 +373,61 @@ export const scienceContent = {
     formulae: ["Mean $= \\frac{\\text{sum of repeats}}{\\text{number of repeats}}$ (excluding anomalies)"],
   },
   "y10-science-bioenergetics": {
-    explanation:
-      "Photosynthesis is endothermic: light energy transferred to chloroplasts converts carbon dioxide and water into glucose and oxygen. Its rate depends on light intensity, carbon dioxide concentration, temperature and the amount of chlorophyll, and at any moment one of these is the limiting factor holding the rate back. The glucose made is used for respiration, converted to starch for storage, used to make cellulose and proteins, or stored as oils. Respiration is exothermic and continuous; aerobic respiration releases much more energy per glucose molecule than anaerobic, and during hard exercise anaerobic respiration in muscle produces lactic acid and creates an oxygen debt. Metabolism is the sum of all the reactions in a cell or the body, and the energy transferred by respiration drives it: joining glucose into starch, glycogen and cellulose, making lipids from fatty acids and glycerol, building amino acids into proteins, and breaking excess protein down into urea for excretion.",
-    keyIdeas: [
-      "Photosynthesis is endothermic; respiration is exothermic.",
-      "The limiting factor is whichever requirement is in shortest supply.",
-      "Light intensity follows an inverse square relationship with distance.",
-      "Anaerobic respiration in muscle produces lactic acid and an oxygen debt.",
-      "Metabolism is the sum of all the reactions in a cell or the body, powered by respiration.",
+    "explanation": "Photosynthesis uses light energy to turn carbon dioxide and water into glucose and oxygen. This is an endothermic process carried out in cells containing chloroplasts. Light intensity, carbon dioxide concentration, temperature and chlorophyll content affect its rate. Increasing light intensity may increase the rate, but eventually further increases may have little effect because another factor limits the process. In a pondweed investigation, measure oxygen produced in a fixed time and control other conditions, such as temperature and carbon dioxide availability. Glucose is used in respiration, converted to starch for storage, used to make cellulose, or converted to fats and oils. Plants also need nitrate ions to make amino acids and proteins. Aerobic respiration uses glucose and oxygen and releases energy for living processes. Anaerobic respiration in muscles releases less energy per glucose molecule and produces lactic acid. After exercise, breathing and heart rate remain raised during recovery. Metabolism is the sum of all chemical reactions in a cell or the body, including building larger molecules and breaking others down.",
+    "keyIdeas": [
+      "Photosynthesis transfers light energy into chemical stores; respiration releases energy for living processes.",
+      "A rate measurement needs a quantity and a time interval.",
+      "Control other variables when investigating the effect of light intensity.",
+      "Nitrate ions supply nitrogen for making amino acids.",
+      "Anaerobic respiration in muscles produces lactic acid."
     ],
-    formulae: [
+    "formulae": [
       "$6\\mathrm{CO_{2}} + 6\\mathrm{H_{2}O} \\rightarrow \\mathrm{C_{6}H_{12}O_{6}} + 6\\mathrm{O_{2}}$",
-      "$\\mathrm{C_{6}H_{12}O_{6}} + 6\\mathrm{O_{2}} \\rightarrow 6\\mathrm{CO_{2}} + 6\\mathrm{H_{2}O}$",
+      "$\\mathrm{C_{6}H_{12}O_{6}} + 6\\mathrm{O_{2}} \\rightarrow 6\\mathrm{CO_{2}} + 6\\mathrm{H_{2}O}$"
     ],
+    "higher": {
+      "explanation": "At Higher tier, use the inverse-square relationship between light intensity and distance from an approximately point-like source: doubling the distance reduces intensity to one quarter. This model assumes other conditions remain the same; photosynthesis rate only follows light intensity while light is the limiting factor. Interpret the interaction of limiting factors rather than assuming that one change always increases the rate. Oxygen debt is the extra oxygen needed after exercise to react with the accumulated lactic acid and remove it; the lactic acid is transported in the blood to the liver and converted back to glucose.",
+      "keyIdeas": [
+        "Doubling distance gives one quarter of the light intensity under the inverse-square model.",
+        "Another limiting factor can prevent photosynthesis rate from increasing."
+      ],
+      "formulae": [
+        "Light intensity is proportional to $1/d^{2}$"
+      ]
+    }
   },
   "y10-science-infection": {
-    explanation:
-      "Communicable diseases are caused by pathogens: bacteria, which often produce toxins; viruses, which reproduce inside cells and damage them; protists, often carried by a vector; and fungi. The body defends itself with physical and chemical barriers, such as skin, mucus and stomach acid, and then with white blood cells that ingest pathogens, produce antibodies specific to the antigen, and produce antitoxins. Vaccination introduces a small quantity of dead or inactive pathogen so that the immune system produces antibodies and memory cells, giving a rapid response if the real pathogen arrives. Antibiotics kill bacteria but have no effect on viruses, and their overuse has selected for resistant strains.",
-    keyIdeas: [
-      "Bacteria, viruses, protists and fungi are all pathogens but act differently.",
-      "Antibodies are specific to one antigen.",
-      "Vaccination produces memory cells without causing the disease.",
-      "Antibiotics do not work on viruses, and overuse breeds resistance.",
+    "explanation": "Communicable diseases are caused by pathogens. Pathogens include some bacteria, viruses, protists and fungi; most microorganisms are not pathogens. Bacteria can multiply rapidly and some produce toxins. Viruses reproduce inside living cells and can damage them. Skin, mucus and stomach acid help stop pathogens entering or surviving in the body. White blood cells defend the body by ingesting pathogens, making antibodies and making antitoxins. Antibodies recognise particular antigens. Vaccination exposes the immune system to antigens in a form designed to stimulate protection without causing the target disease. It can lead to memory cells, allowing a quicker antibody response if the same pathogen is encountered later. Vaccination reduces the risk of disease, but protection is not always complete. Antibiotics treat bacterial infections and do not kill viruses. Antibiotic use can select for resistant bacteria, so these strains become more common; bacteria do not deliberately become resistant because they need to.",
+    "keyIdeas": [
+      "Only disease-causing microorganisms are pathogens.",
+      "White blood cells can ingest pathogens and produce antibodies or antitoxins.",
+      "Vaccination prepares the immune system for later exposure.",
+      "A faster secondary response helps reduce disease risk.",
+      "Antibiotic resistance spreads through selection of resistant bacteria."
     ],
-    formulae: [],
+    "formulae": []
   },
   "y10-science-chemical-changes": {
-    explanation:
-      "The reactivity series orders metals by their tendency to form positive ions, and a more reactive metal displaces a less reactive one from its compound. Metals above carbon are extracted by electrolysis; those below can be reduced with carbon. Electrolysis splits an ionic compound that is molten or in solution, with positive ions attracted to the cathode and negative ions to the anode; in aqueous solutions, hydrogen is produced at the cathode unless the metal is less reactive than hydrogen. Energy changes accompany every reaction: exothermic reactions transfer energy to the surroundings and their products sit lower on a reaction profile, while endothermic reactions take energy in.",
-    keyIdeas: [
-      "A more reactive metal displaces a less reactive one.",
-      "Metals above carbon need electrolysis; below carbon, reduction with carbon works.",
-      "Positive ions go to the cathode; negative ions to the anode.",
-      "Exothermic releases energy; endothermic absorbs it.",
+    "explanation": "The reactivity series places metals in order of their tendency to react. A more reactive metal can displace a less reactive metal from a solution of its salt. Carbon can remove oxygen from oxides of metals below carbon in the reactivity series; more reactive metals need electrolysis for extraction. During electrolysis, an ionic compound must be molten or dissolved so its ions can move. Positive ions move to the negative cathode and negative ions to the positive anode. An exothermic reaction transfers energy to the surroundings, so the products are at a lower energy level than the reactants. An endothermic reaction takes in energy and has products at a higher energy level. The activation energy is the minimum energy needed for a reaction to occur. The pH scale describes acidity and alkalinity: acidic solutions are below 7, neutral solutions are at 7 and alkaline solutions are above 7 at room temperature. Universal indicator estimates pH; a pH probe gives a numerical reading. To prepare a soluble salt from an acid and an insoluble base, add the base in excess, filter off the unreacted solid and crystallise the salt from the solution.",
+    "keyIdeas": [
+      "Use the reactivity series to predict displacement, not the order in which metals are named.",
+      "Positive ions move to the cathode; negative ions move to the anode.",
+      "Reaction profiles show reactant and product energy levels and the activation-energy barrier.",
+      "A lower pH means a more acidic solution; pH alone does not define the degree of acid ionisation.",
+      "Excess insoluble base removes the acid; filtration removes the excess solid."
     ],
-    formulae: [
-      "Reactivity: K, Na, Ca, Mg, Al, (C), Zn, Fe, (H), Cu, Ag, Au",
-      "Energy change $=$ bonds broken $-$ bonds made",
-    ],
+    "formulae": [],
+    "higher": {
+      "explanation": "At Higher tier, distinguish acid strength from concentration. A strong acid is completely ionised in aqueous solution; a weak acid is only partly ionised. Concentration describes the amount of dissolved substance per unit volume. For a given concentration, a stronger acid has a lower pH. A decrease of one pH unit means a tenfold increase in hydrogen-ion concentration; logarithms and acid dissociation constants are not needed here. Bond-energy calculations use the energy needed to break bonds minus the energy released when new bonds form. Breaking bonds requires energy; forming bonds releases energy.",
+      "keyIdeas": [
+        "Strong and weak describe ionisation, not how much acid was dissolved.",
+        "A dilute strong acid and a concentrated weak acid are both possible.",
+        "Count every bond represented in the balanced equation before adding bond energies."
+      ],
+      "formulae": [
+        "Energy change = energy needed to break bonds − energy released when bonds form"
+      ]
+    }
   },
   "y10-science-particles": {
     explanation:
@@ -448,24 +458,31 @@ export const scienceContent = {
 
   // ---- Year 11 (GCSE) ----------------------------------------------------
   "y11-science-homeostasis": {
-    explanation:
-      "Homeostasis keeps internal conditions steady despite changes outside, using receptors to detect change, a coordination centre to process it, and effectors to act; the correction then reduces the original change, which is negative feedback. The nervous system carries fast electrical impulses, and a reflex arc bypasses the conscious brain so that the response is quicker: receptor, sensory neurone, relay neurone in the spinal cord, motor neurone, effector. The endocrine system is slower and longer-lasting, using hormones carried in the blood. Blood glucose is controlled by the pancreas: insulin lowers it by causing glucose to be stored as glycogen, and glucagon raises it again.",
-    keyIdeas: [
-      "Receptor, coordination centre, effector, then negative feedback.",
-      "Reflexes are fast because they do not involve conscious thought.",
-      "Nervous responses are fast and brief; hormonal responses are slower and longer.",
-      "Insulin lowers blood glucose; glucagon raises it.",
+    "explanation": "Homeostasis regulates internal conditions within suitable limits despite changes inside or outside the body. Receptors detect a change, coordination centres process information and effectors produce a response. In a withdrawal reflex, receptors in the skin detect a harmful stimulus. Impulses travel along a sensory neurone to the spinal cord, then through a relay neurone and a motor neurone to a muscle. The muscle contracts before a conscious decision is needed. Not every reflex is coordinated in the spinal cord; some involve the brainstem. The endocrine system uses hormones carried in the blood to target organs. When blood glucose rises, the pancreas releases insulin. Insulin causes glucose to move from the blood into cells and promotes its storage as glycogen in liver and muscle, lowering blood glucose. Type 1 diabetes involves insufficient insulin production; type 2 involves cells responding less effectively to insulin.",
+    "keyIdeas": [
+      "Homeostasis regulates conditions within limits, rather than holding every measurement exactly constant.",
+      "A reflex is rapid and automatic; the withdrawal reflex is coordinated through the spinal cord.",
+      "Hormones travel in blood and act on target organs.",
+      "Insulin lowers blood glucose and promotes glycogen storage."
     ],
-    formulae: ["Reflex arc: stimulus $\\rightarrow$ receptor $\\rightarrow$ sensory $\\rightarrow$ relay $\\rightarrow$ motor $\\rightarrow$ effector"],
+    "formulae": [],
+    "higher": {
+      "explanation": "When blood glucose is too low, the pancreas releases glucagon. Glucagon causes the liver to convert glycogen to glucose and release glucose into the blood. Insulin and glucagon act in a negative feedback system: the response reduces the original change, so the stimulus for hormone release falls as blood glucose returns towards its usual range.",
+      "keyIdeas": [
+        "Glucagon raises blood glucose by promoting release of glucose from the liver.",
+        "Negative feedback reduces the change that triggered the response."
+      ],
+      "formulae": []
+    }
   },
   "y11-science-rates": {
     explanation:
-      "The rate of a reaction is how quickly reactants are used or products formed, and it is found from the gradient of a graph, using a tangent where the graph is curved. Collision theory explains every rate factor: a reaction happens when particles collide with at least the activation energy, so raising the concentration, pressure, surface area or temperature increases the frequency or energy of collisions. A catalyst speeds a reaction by providing a pathway of lower activation energy and is not used up. A reversible reaction in a closed system reaches equilibrium, and Le Chatelier's principle predicts that a change in conditions shifts the position of equilibrium to oppose that change.",
+      "The rate of a reaction describes how quickly reactants are used or products formed. Mean rate is the quantity used or formed divided by the time taken. On an amount-against-time graph, a steeper slope indicates a faster reaction; a tangent helps compare the slopes of a curve. For AQA Combined Science, calculating the gradient of a tangent at a specific time is Higher-tier content. Reactions happen when particles collide with enough energy. Increasing concentration, gas pressure or a solid's exposed surface area increases collision frequency; increasing temperature also makes collisions more energetic. A catalyst provides a pathway with lower activation energy and is not used up overall. In a reversible reaction the products can react to form the original reactants. In a closed system, dynamic equilibrium occurs when forward and reverse reactions have equal rates, so the amounts remain constant but need not be equal. Equilibrium shifts are covered in our dedicated Higher-tier topic.",
     keyIdeas: [
-      "Rate is read from the gradient; use a tangent on a curve.",
+      "Calculate mean rate from quantity divided by time; compare curve slopes using tangents.",
       "More frequent or more energetic collisions mean a faster rate.",
       "A catalyst lowers activation energy and is not consumed.",
-      "Equilibrium shifts to oppose the change you impose.",
+      "At dynamic equilibrium both reactions continue at equal rates in a closed system.",
     ],
     formulae: [
       "Mean rate $= \\frac{\\text{quantity of product formed}}{\\text{time}}$",
@@ -507,7 +524,7 @@ export const scienceContent = {
   },
   "y11-science-inheritance": {
     explanation:
-      "Sexual reproduction involves meiosis, producing gametes with half the chromosome number and genetically varied, while asexual reproduction uses mitosis and produces genetically identical offspring. An allele is a version of a gene; a dominant allele is expressed if one copy is present, a recessive allele needs two. A Punnett square predicts the proportions of genotypes in the offspring, and the phenotype is the characteristic that results. Variation arises from the combination of alleles at fertilisation and from mutation, and selective breeding, genetic engineering and cloning all apply this understanding, each with benefits and risks worth weighing. Living things are classified into groups. Linnaeus sorted them by structure into kingdom, phylum, class, order, family, genus and species, and named each species with two words, its genus then its species, as in Homo sapiens. Microscopes and chemical analysis later showed that some organisms that looked alike were not closely related, so Carl Woese proposed three domains: archaea, primitive bacteria often found in extreme conditions; bacteria; and eukaryota, which includes animals, plants, fungi and protists. Evolutionary trees show how closely organisms are related, built from current classification data and, for extinct species, from fossils.",
+      "Sexual reproduction involves meiosis, producing gametes with half the chromosome number and genetically varied, while asexual reproduction uses mitosis and produces genetically identical offspring. An allele is a version of a gene; a dominant allele is expressed if one copy is present, a recessive allele needs two. A Punnett square predicts the proportions of genotypes in the offspring, and the phenotype is the characteristic that results. Variation arises from the combination of alleles at fertilisation and from mutation, and selective breeding, genetic engineering and cloning all apply this understanding, each with benefits and risks worth weighing. Living things are classified into groups. Linnaeus sorted them by structure into kingdom, phylum, class, order, family, genus and species, and named each species with two words, its genus then its species, as in Homo sapiens. Microscopes and chemical analysis later showed that some organisms that looked alike were not closely related, so Carl Woese proposed three domains: Archaea, a domain distinct from bacteria and including organisms adapted to extreme conditions; Bacteria; and Eukaryota, which includes animals, plants, fungi and protists. Evolutionary trees show how closely organisms are related, built from current classification data and, for extinct species, from fossils.",
     keyIdeas: [
       "Meiosis halves the chromosome number and produces variation.",
       "A recessive characteristic needs two copies of the allele.",
@@ -516,10 +533,9 @@ export const scienceContent = {
       "Linnaeus: kingdom, phylum, class, order, family, genus, species.",
       "A binomial name is the genus followed by the species.",
       "The three domains are archaea, bacteria and eukaryota.",
-    ],
-    formulae: [
       "Genotype: homozygous (BB or bb) or heterozygous (Bb)",
     ],
+    formulae: [],
   },
   "y11-science-quantitative": {
     explanation:
@@ -536,17 +552,17 @@ export const scienceContent = {
     ],
   },
   "y11-science-analysis": {
-    explanation:
-      "A pure substance in chemistry melts and boils at a single fixed temperature, so a range indicates a mixture; a formulation is a mixture designed in measured quantities for a purpose, such as a paint or a fuel. Paper chromatography separates a mixture because components differ in how strongly they are attracted to the stationary and mobile phases, and the R$_{f}$ value identifies a component by comparison with known substances. Gas tests are memorised and specific: hydrogen pops with a lit splint, oxygen relights a glowing splint, carbon dioxide turns limewater milky, and chlorine bleaches damp litmus paper. Potable water is treated by filtering and sterilising, and where fresh water is scarce, desalination by distillation or reverse osmosis is used at greater energy cost.",
-    keyIdeas: [
-      "A pure substance melts and boils at a fixed temperature.",
-      "R$_{f}$ identifies a component by comparing distances travelled.",
-      "Each gas test is specific: pop, relight, milky, bleach.",
-      "Potable water is safe to drink but not chemically pure.",
+    "explanation": "In chemistry, a pure substance contains one element or one compound. A mixture contains substances that are not chemically combined. A formulation is a mixture made with carefully chosen proportions to give useful properties, such as a paint. A pure substance has a characteristic sharp melting point; impurities often lower and broaden the melting range. Measurements must be compared under the same conditions, and a melting point alone is not conclusive identification. Paper chromatography separates dissolved substances because they differ in their attraction to the paper and solvent. Measure both a spot and the solvent front from the same pencil baseline. An Rf value can be compared with reference substances using the same solvent and conditions; a match supports an identification but is not unique proof. Standard gas tests are useful evidence: hydrogen gives a squeaky pop with a lighted splint, oxygen relights a glowing splint, carbon dioxide turns limewater milky and chlorine bleaches damp litmus paper. Potable water is safe to drink and may contain dissolved minerals; it need not be chemically pure. Fresh water can be filtered and sterilised; seawater needs desalination, which requires energy.",
+    "keyIdeas": [
+      "A pure compound is still a pure substance even though it contains more than one element.",
+      "A formulation is a deliberately designed mixture.",
+      "Compare Rf values only under matching conditions.",
+      "Gas identification requires a diagnostic test, not just observing bubbles.",
+      "Potable means safe to drink; it does not mean chemically pure."
     ],
-    formulae: [
-      "$R_{f} = \\frac{\\text{distance moved by substance}}{\\text{distance moved by solvent}}$",
-    ],
+    "formulae": [
+      "$R_f = \\frac{\\text{distance travelled by the substance}}{\\text{distance travelled by the solvent front}}$"
+    ]
   },
   "y11-science-atomic": {
     explanation:

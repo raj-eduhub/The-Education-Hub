@@ -193,16 +193,16 @@ export const mathsContent = {
   // ---- Year 9 ------------------------------------------------------------
   "y9-maths-powers": {
     explanation:
-      "An index tells you how many times a number multiplies by itself, and the index laws follow from that: multiplying adds the indices, dividing subtracts them, and a power of a power multiplies them. Anything to the power zero is 1, and a negative index means a reciprocal. Standard form writes a number as $a \\times 10^{n}$ where $1 \\le a < 10$, which keeps very large and very small numbers readable. When calculating in standard form, deal with the numbers and the powers of ten separately, then adjust so that $a$ is back between 1 and 10.",
+      "A positive integer index counts repeated factors of the base. Multiplying powers of the same base adds their indices; dividing powers of the same non-zero base subtracts them. A power of a power multiplies the indices. A non-zero base raised to zero equals one, and a negative integer index means a reciprocal. Estimate positive roots using nearby squares or cubes and refine by testing. Standard form writes a positive number as $a \\times 10^{n}$, where $1 \\le a < 10$ and $n$ is an integer. Multiplication and division use index laws; addition and subtraction require a common power of ten. Always check the final coefficient and use the correct priority of operations.",
     keyIdeas: [
-      "Multiplying powers adds indices; dividing subtracts them.",
-      "$a^{0} = 1$ and $a^{-n} = \\frac{1}{a^{n}}$.",
-      "In standard form the first part is always between 1 and 10.",
-      "Handle the numbers and the powers of ten separately, then tidy up.",
+      "For powers of the same base, add indices when multiplying and subtract when dividing by a non-zero power.",
+      "$a^{0} = 1$ and $a^{-n} = \\frac{1}{a^{n}}$, for $a \\ne 0$ and positive integer $n$.",
+      "For positive numbers in standard form, the coefficient is at least 1 and less than 10.",
+      "Estimate roots using nearby powers and check the required rounding.",
     ],
     formulae: [
       "$a^{m} \\times a^{n} = a^{m+n}$",
-      "$a^{m} \\div a^{n} = a^{m-n}$",
+      "$a^{m} \\div a^{n} = a^{m-n}$, for $a \\ne 0$",
       "$(a^{m})^{n} = a^{mn}$",
       "Standard form: $a \\times 10^{n}$ with $1 \\le a < 10$",
     ],
@@ -257,8 +257,9 @@ export const mathsContent = {
       "Expand brackets and clear fractions before collecting terms.",
       "Multiplying or dividing an inequality by a negative reverses the sign.",
       "Define the letter before you write the equation.",
+      "An inequality: $-2x > 6$ gives $x < -3$ (sign reversed)",
     ],
-    formulae: ["An inequality: $-2x > 6$ gives $x < -3$ (sign reversed)"],
+    formulae: [],
   },
   "y9-maths-statistics": {
     explanation:
@@ -279,13 +280,13 @@ export const mathsContent = {
     keyIdeas: [
       "Standard form: $a \\times 10^{n}$ with $1 \\le a < 10$.",
       "Rounding to the nearest unit gives an error interval of half a unit each way.",
-      "Upper bounds are written with $<$, because the top value is never reached.",
+      "For positive measurements rounded using the usual GCSE convention, the upper end of the error interval is excluded.",
       "For $a - b$, the maximum uses $a$'s upper bound and $b$'s lower bound.",
     ],
     formulae: [
       "Error interval: $x - \\frac{u}{2} \\le \\text{true value} < x + \\frac{u}{2}$",
-      "Maximum of $a \\times b$: upper bound of $a$ $\\times$ upper bound of $b$",
-      "Maximum of $a \\div b$: upper bound of $a$ $\\div$ lower bound of $b$",
+      "For positive quantities, upper bound of $a \\times b$: upper bound of $a$ $\\times$ upper bound of $b$",
+      "For positive quantities, upper bound of $a \\div b$: upper bound of $a$ $\\div$ lower bound of $b$",
     ],
   },
   "y10-maths-algebra": {
@@ -351,36 +352,42 @@ export const mathsContent = {
     ],
   },
   "y10-maths-graphs": {
-    explanation:
-      "The $n$th term of a linear sequence comes from its constant difference; a quadratic sequence has a constant second difference, and half of it gives the coefficient of $n^{2}$. A straight line is $y = mx + c$, where the gradient $m$ is the change in $y$ divided by the change in $x$, and $c$ is where the line crosses the $y$-axis. Parallel lines share a gradient. On a real-life graph the gradient carries the units of the axes, so on a distance-time graph it is speed, and on a container-filling graph a steeper section means the level rising faster.",
-    keyIdeas: [
+    "explanation": "The $n$th term of a linear sequence comes from its constant difference; a quadratic sequence has a constant second difference, which helps identify its pattern. A straight line is $y = mx + c$, where the gradient $m$ is the change in $y$ divided by the change in $x$, and $c$ is where the line crosses the $y$-axis. Parallel lines share a gradient. On a real-life graph the gradient carries the units of the axes, so on a distance-time graph it is speed, and on a container-filling graph a steeper section means the level rising faster.",
+    "keyIdeas": [
       "Constant first difference means linear; constant second difference means quadratic.",
       "Gradient is the change in $y$ divided by the change in $x$.",
       "Parallel lines have equal gradients.",
-      "On a real-life graph the gradient is a rate with units.",
+      "On a real-life graph the gradient is a rate with units."
     ],
-    formulae: [
+    "formulae": [
       "Straight line: $y = mx + c$",
-      "Gradient $= \\frac{y_{2} - y_{1}}{x_{2} - x_{1}}$",
-      "Quadratic sequence: $n$th term starts with $\\frac{\\text{second difference}}{2}n^{2}$",
+      "Gradient $= \\frac{y_{2} - y_{1}}{x_{2} - x_{1}}$"
     ],
+    "higher": {
+      "explanation": "For Higher-tier quadratic sequences with consecutive term numbers, half the constant second difference gives the coefficient of $n^{2}$. Then find the remaining linear and constant terms; the leading term alone is not usually the full rule.",
+      "keyIdeas": [
+        "A quadratic nth term has the form $an^{2}+bn+c$; determine all needed coefficients."
+      ],
+      "formulae": [
+        "For consecutive term numbers: $a = \\frac{\\text{second difference}}{2}$"
+      ]
+    }
   },
   "y10-maths-probability": {
-    explanation:
-      "A Venn diagram sorts outcomes into overlapping sets, and the notation names the regions: $A \\cap B$ is the overlap, $A \\cup B$ is everything in either set, and $A'$ is everything outside $A$. A tree diagram is better for events in stages, with the probabilities on each set of branches totalling 1; multiply along a path and add the paths that satisfy the question. If events are independent, the first outcome does not change the second; if the object is not replaced, the second set of probabilities changes and the denominator drops by one. Relative frequency estimates a probability from trials, and is the only tool available when outcomes are not equally likely. When outcomes are counted rather than listed, the product rule says that if one choice can be made in $m$ ways and a second in $n$ ways, the two together can be made in $m \\times n$ ways, so a three-digit code using the digits 0 to 9 has $10 \\times 10 \\times 10 = 1000$ possibilities.",
-    keyIdeas: [
+    "explanation": "A sample-space table lists combinations of outcomes for two events, using one event for rows and the other for columns. Count favourable cells out of all cells only when those combined outcomes are equally likely. A Venn diagram sorts outcomes into overlapping sets, and the notation names the regions: $A \\cap B$ is the overlap, $A \\cup B$ is everything in either set, and $A'$ is everything outside $A$. A tree diagram is better for events in stages, with the probabilities on each set of branches totalling 1; multiply along a path and add the paths that satisfy the question. If events are independent, the first outcome does not change the second; in a draw without replacement, one fewer object remains and probabilities must be recalculated for the resulting situation. Relative frequency estimates a probability from trials, and is useful when probabilities are not known theoretically; unequal probabilities can also be given by a model. When outcomes are counted rather than listed, the product rule says that if one choice can be made in $m$ ways and a second in $n$ ways, the two together can be made in $m \\times n$ ways, so a three-digit code using the digits 0 to 9 has $10 \\times 10 \\times 10 = 1000$ possibilities.",
+    "keyIdeas": [
       "$A \\cap B$ is the intersection; $A \\cup B$ is the union; $A'$ is the complement.",
       "Each set of branches on a tree totals 1.",
       "Multiply along branches, add between paths.",
-      "Without replacement, the second probability changes.",
-      "Product rule: $m$ ways then $n$ ways gives $m \\times n$ ways together.",
+      "Without replacement, recalculate using the objects left after the first draw.",
+      "Product rule: $m$ ways then $n$ ways gives $m \\times n$ ways together."
     ],
-    formulae: [
+    "formulae": [
       "$P(A \\cup B) = P(A) + P(B) - P(A \\cap B)$",
       "Independent events: $P(A \\text{ and } B) = P(A) \\times P(B)$",
       "Expected number $= n \\times P(\\text{event})$",
-      "Product rule: $m \\times n$ combined outcomes",
-    ],
+      "Product rule: $m \\times n$ combined outcomes"
+    ]
   },
   "y10-maths-mensuration": {
     explanation:
@@ -401,7 +408,7 @@ export const mathsContent = {
   },
   "y10-maths-constructions": {
     explanation:
-      "Constructions are done with a ruler and a pair of compasses only, and the arcs are left on the page because they are the evidence that the method was used. A perpendicular bisector is the set of points equidistant from two points; an angle bisector is the set of points equidistant from two lines. A locus is the path of every point obeying a rule: a fixed distance from a point gives a circle, a fixed distance from a line gives a pair of parallel lines with rounded ends. Plans and elevations show a solid from above, from the front and from the side, each drawn to the same scale.",
+      "Ruler-and-compass constructions use straight lines and equal-radius arcs to establish geometric relationships. Keep construction arcs visible as evidence of the method. A perpendicular bisector is the set of points equidistant from two fixed points. Points equidistant from two intersecting lines lie on their angle bisectors; within a given angle, use its internal bisector. A locus is the set of points satisfying a condition. At a positive fixed distance from a point it is a circle; at a positive fixed distance from an infinite straight line it is two parallel lines. Distance from a finite segment produces parallel sections joined by semicircular ends. Plans and elevations represent a solid from above, from the front and from a side at a stated scale.",
     keyIdeas: [
       "Keep the compass arcs: they show how the construction was made.",
       "A perpendicular bisector is every point equidistant from two points.",
@@ -511,6 +518,7 @@ export const mathsContent = {
       "Use the perpendicular height in every area formula.",
       "Pythagoras for three sides; trigonometry when an angle appears.",
       "A scale factor between 0 and 1 makes the image smaller.",
+      "For angles 0, 30, 45, 60 and 90 degrees, sine values are 0, 1/2, sqrt(2)/2, sqrt(3)/2 and 1; cosine values are these in reverse order. Tangent at 0, 30, 45 and 60 degrees is 0, sqrt(3)/3, 1 and sqrt(3).",
     ],
     formulae: [
       "Interior angle sum $= (n - 2) \\times 180^\\circ$",
@@ -550,12 +558,14 @@ export const mathsContent = {
   },
   "y11-maths-found-ratio": {
     explanation:
-      "Sharing in a ratio means totalling the parts, dividing to find one part, then multiplying up, and a check is that the shares add back to the original amount. Direct proportion problems are solved by finding the value of one unit first. Compound measures divide one quantity by another, and the triangle layout of speed, distance and time works equally for density and pressure. Converting a rate means converting both of its units, which is why 10 m/s is 36 km/h rather than 600.",
+      "Sharing in a ratio means totalling the parts, dividing to find one part, then multiplying up, and a check is that the shares add back to the original amount. Direct proportion problems are solved by finding the value of one unit first. Compound measures divide one quantity by another, and the triangle layout of speed, distance and time works equally for density and pressure. Converting a rate means converting both of its units, which is why 10 m/s is 36 km/h rather than 600. For compound interest or repeated percentage change, multiply by the same percentage multiplier for each period: an increase of 5% uses 1.05 and a decrease of 5% uses 0.95. With numerical inverse proportion, the product stays constant: doubling the speed halves the time for a fixed distance. Interpret a given equation by substituting the known values.",
     keyIdeas: [
       "Total the parts, find one part, then multiply, and check the total.",
       "Find the value of one unit for direct proportion.",
       "Speed, density and pressure are all one quantity divided by another.",
       "Converting a rate means converting both units.",
+      "Repeated growth or decay uses the percentage multiplier once per period.",
+      "In inverse proportion, multiplying one variable by a factor divides the other by that factor.",
     ],
     formulae: [
       "Speed $= \\frac{\\text{distance}}{\\text{time}}$",
@@ -599,9 +609,9 @@ export const mathsContent = {
   },
   "y11-maths-probability": {
     explanation:
-      "Conditional probability is the probability of one event given that another has already happened, and it appears whenever objects are not replaced. On a tree diagram the second set of branches changes: if one red counter has been removed from ten, only nine remain and one fewer is red. A Venn diagram makes conditional questions readable, because 'given that' restricts attention to one region and that region becomes the new denominator. Careful reading matters, since 'at least one' is usually quickest as one minus the probability of none.",
+      "Conditional probability is the probability of one event given that another has already happened, and it also applies beyond drawing objects without replacement. On a tree diagram the second set of branches changes: if one red counter has been removed from ten, only nine remain and one fewer is red. A Venn diagram makes conditional questions readable, because 'given that' restricts attention to one region and that region becomes the new denominator. Careful reading matters, since 'at least one' is usually quickest as one minus the probability of none.",
     keyIdeas: [
-      "Without replacement, both the numerator and denominator change.",
+      "Without replacement, the total number remaining changes; the number of favourable outcomes depends on what was removed.",
       "'Given that' makes one region the new denominator.",
       "'At least one' is often $1 - P(\\text{none})$.",
       "Probabilities on each set of branches still total 1.",

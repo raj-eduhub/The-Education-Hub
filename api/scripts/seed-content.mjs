@@ -12,6 +12,7 @@ import { contentKey, getContent, saveContent } from "../src/lib/contentStore.js"
 import { allowsFormulae, contentTypes, mayUseModel, routeFor, supportsQuestionBank, usesMathsNotation, variesByBoard, variesByTier, warrantsWorkedExample } from "../src/lib/contentPolicy.js";
 import { parseQuestion, questionPrompt } from "../src/lib/questionBank.js";
 import { exampleSystemPrompt, parseWorkedExample, workedExamplePrompt } from "../src/lib/workedExample.js";
+import { getEditorialContent } from '../src/lib/editorialContent.js';
 
 const args = new Map();
 for (let i = 2; i < process.argv.length; i += 1) {
@@ -80,7 +81,7 @@ for (const year of years) {
       if (explanationKey) {
         const guide = getTopicGuide(subject, topic);
         if (!dryRun) {
-          await saveContent(explanationKey, { explanation: guide.explanation, keyIdeas: guide.keyIdeas, formulae: guide.formulae }, {
+          await saveContent(explanationKey, { explanation: guide.explanation, keyIdeas: guide.keyIdeas, formulae: guide.formulae, ...(guide.higher ? {higher: guide.higher} : {}), ...(guide.subtopics ? {subtopics: guide.subtopics} : {}) }, {
             type: contentTypes.EXPLANATION, subject, year, topicTitle: topic.title, origin: "catalogue",
           });
         }
@@ -122,6 +123,16 @@ async function runJob(job) {
   const route = routeFor(contentType, subject);
   if (!mayUseModel(route)) { counts.skipped += 1; return; }
   const label = `Year ${year} ${subject} / ${topic.title} / ${board ?? "core"} / ${contentType} ${index + 1}`;
+  const editorial = getEditorialContent(key);
+  if (editorial) {
+    if (dryRun) { console.log(`WOULD STORE EDITORIAL ${label}`); return; }
+    await saveContent(key, editorial, {
+      type: contentType, subject, year, topicTitle: topic.title, subtopicTitle: outcome, origin: 'editorial',
+    });
+    counts.authored += 1;
+    console.log(`WROTE ${label} (editorial correction, no model call)`);
+    return;
+  }
 
   // An authored worked example is stored as it is. It costs no tokens, it is
   // already correct, and until now these sat unused in the codebase while the

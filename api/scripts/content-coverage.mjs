@@ -12,8 +12,8 @@
 //   node api/scripts/content-coverage.mjs --per-topic 10  question-bank target
 import { readFileSync } from "node:fs";
 import { curriculumByYear } from "../../src/data/curriculumCatalog.js";
-import { listContent } from "../src/lib/contentStore.js";
-import { contentTypes, supportsQuestionBank, variesByBoard, variesByTier } from "../src/lib/contentPolicy.js";
+import { contentKey, listContent } from "../src/lib/contentStore.js";
+import { contentTypes, supportsQuestionBank, variesByBoard, variesByTier, warrantsWorkedExample } from "../src/lib/contentPolicy.js";
 
 if (!process.env.AZURE_STORAGE_CONNECTION_STRING) {
   try {
@@ -55,12 +55,12 @@ function slotsFor(topic, subject, year) {
   const slots = [];
   slots.push({ type: contentTypes.EXPLANATION, key: "explanation" });
 
-  const tiers = year >= 10 && variesByTier(subject) ? ["Foundation", "Higher"] : [null];
-  const tierPart = (tier) => tier ?? "core";
+  const tiers = year >= 10 && variesByTier(subject) ? topic.tiers : [null];
 
   for (const tier of tiers) {
     for (let index = 0; index < topic.outcomes.length; index += 1) {
-      slots.push({ type: contentTypes.EXAMPLE, key: `example-${index}-${tierPart(tier)}` });
+      if (!warrantsWorkedExample(topic.id, index)) continue;
+      slots.push({ type: contentTypes.EXAMPLE, key: contentKey(contentTypes.EXAMPLE, topic.id, {index,tier}).rowKey });
     }
   }
 
@@ -69,15 +69,15 @@ function slotsFor(topic, subject, year) {
   if (!supportsQuestionBank(topic.id)) return slots;
 
   // KS3 carries no exam boards, so its question rows are stored once under the
-  // "any" board rather than duplicated per board that does not apply yet.
+  // "core" board rather than duplicated per board that does not apply yet.
   const boards = variesByBoard(contentTypes.PRACTICE) && topic.examBoards?.length
     ? topic.examBoards
-    : ["any"];
+    : [null];
   for (const type of [contentTypes.PRACTICE, contentTypes.EXAM]) {
     for (const board of boards) {
       for (const tier of tiers) {
         for (let index = 0; index < perTopic; index += 1) {
-          slots.push({ type, key: `${type}-${index}-${board}-${tierPart(tier)}` });
+          slots.push({ type, key: contentKey(type, topic.id, {index,board,tier}).rowKey });
         }
       }
     }
@@ -148,7 +148,7 @@ for (const type of types) {
 const allHave = types.reduce((sum, type) => sum + totals[type].have, 0);
 const allSlots = types.reduce((sum, type) => sum + totals[type].slots, 0);
 console.log(`  ${"ALL".padEnd(12)} ${String(allHave).padStart(6)} / ${String(allSlots).padEnd(6)}  ${pct(allHave, allSlots)}`);
-console.log(`\nreviewed by a teacher: ${reviewed} / ${rows.length} stored rows`);
+console.log(`\nrows with a reviewed flag: ${reviewed} / ${rows.length} (flag alone does not verify teacher review)`);
 
 // A slot that is empty is a slot where the request reaches the model, except for
 // explanations, which are stored-only and therefore simply fail.

@@ -1,0 +1,23 @@
+import assert from 'node:assert/strict';
+import { curriculum } from '../../src/data/curriculumCatalog.js';
+import { getTopicGuide, getAuthoredExample, formatTopicGuide } from '../../src/topicGuides.js';
+import { allowsFormulae } from '../src/lib/contentPolicy.js';
+import { parseWorkedExample, exampleSystemPrompt } from '../src/lib/workedExample.js';
+import { questionPrompt } from '../src/lib/questionBank.js';
+
+assert.equal(allowsFormulae('Science','y10-science-infection',4),false);
+assert.equal(allowsFormulae('English','y8-english-argument',4),false);
+assert.equal(allowsFormulae('History','y10-history-change-across-time',2),false);
+assert.equal(allowsFormulae('Maths','y11-maths-found-ratio',6),true);
+assert.match(exampleSystemPrompt('KS4',10,'AQA','Higher','Science',false),/Give no FORMULA line/);
+assert.equal(parseWorkedExample('FORMULA: importance = politics + economics\nQUESTION: Rank causes.\nSTEP: Add scores.\nANSWER: 12 points.','History',false),null);
+assert.deepEqual(parseWorkedExample('QUESTION: Calculate the total.\nSTEP: Add 2 and 3.\nANSWER: 5.','Maths',false)?.formulae,[]);
+const foundation=curriculum.find(t=>t.id==='y11-maths-foundation');
+const history=curriculum.find(t=>t.id==='y7-history-crisis-and-change');
+assert(!formatTopicGuide('History',history).includes('WORKED EXAMPLE'),'Preview must not manufacture a generic worked example');
+assert.deepEqual(getTopicGuide('Maths',foundation).formulae,[],'An explicitly empty authored list must not restore a legacy formula');
+const topic=curriculum.find(t=>t.id==='y10-maths-number');
+assert.deepEqual(getAuthoredExample('Maths',topic,0,'Foundation').formulae,[],'Authored examples must honour the outcome policy too');
+const geography=curriculum.find(t=>t.id==='y11-geography-physical-fieldwork');
+assert.match(questionPrompt('practice',geography,{title:geography.outcomes[0]},{year:11,board:'AQA'}),/Geography fieldwork may use random, systematic and stratified sampling/);
+console.log('PASS: unnecessary formulas refused, necessary calculations retained, authored empty lists respected, geography scope preserved.');

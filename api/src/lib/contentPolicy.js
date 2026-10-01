@@ -107,12 +107,11 @@ import { classifiedOutcomes } from "../../../src/data/workedExampleOutcomes.js";
 // it left that sub-topic with no worked example at all. Where an outcome has
 // been judged on its own wording, that judgement wins over the subject rule.
 //
-// Calculated subjects are unaffected: the classification says which outcomes
-// warrant a formula, not which are allowed one, so it must not be used to
-// forbid formulae in maths.
+// A numerical subject does not make a formula relevant to every outcome.
+// Keep calculations in worked steps, but only include a separate formula list
+// where the outcome classification calls for one.
 export function allowsFormulae(subject, topicId, index) {
-  if (usesFormulae(subject)) return true;
   const entry = classifiedOutcomes(topicId);
-  if (!entry) return false;
+  if (!entry) return usesFormulae(subject);
   return entry.formulae.includes(Number(index));
 }

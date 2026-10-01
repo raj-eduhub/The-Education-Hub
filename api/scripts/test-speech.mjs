@@ -11,11 +11,15 @@
 //   node api/scripts/test-speech.mjs
 import { topicContent } from "../../src/data/topicContent/index.js";
 import { splitSentences, toSpoken } from "../../src/speech.js";
+import { explanationForTier } from '../../src/data/explanationTier.js';
 
 let failures = 0;
 const fail = (label, detail) => { failures += 1; console.log(`FAIL ${label}  ${detail}`); };
 
-const topics = Object.entries(topicContent);
+const topics = Object.entries(topicContent).flatMap(([id, content]) => [
+  [id, explanationForTier(content, 'Foundation')],
+  ...(content.higher ? [[`${id}/Higher`, explanationForTier(content, 'Higher')]] : []),
+]);
 const lines = topics.flatMap(([id, content]) => [
   [id, "explanation", content.explanation],
   ...(content.keyIdeas ?? []).map((idea, index) => [id, `keyIdea ${index}`, idea]),
@@ -43,9 +47,19 @@ if (leftovers.length) {
 
 // --- operators are spoken, not swallowed ------------------------------------
 const operators = [
+  ['$(f\\circ g)(x)$', 'composed with'], ['$45^{\\circ}$', 'degrees'],
+  ['$0.\\overline{3}$', '3 recurring'],
+  ['$x \\ne 0$', 'does not equal'], ['$x \\neq 0$', 'does not equal'],
+  ['$\\sum x$', 'sum of'], ['$\\prod x$', 'product of'],
+  ['$\\sin x$', 'sine'], ['$\\cos x$', 'cosine'], ['$\\tan x$', 'tangent'],
   ["$a - b$", "minus"], ["$a + b$", "plus"], ["$a \\times b$", "times"],
   ["$a \\div b$", "divided by"], ["$x = 5$", "equals"], ["$1 \\le a$", "less than or equal"],
   ["$10^{-3}$", "power"], ["$\\frac{u}{2}$", "over"],
+  ['9 × 0.25 = 2.25', '9 times 0.25 equals 2.25'],
+  ['25 °C', '25 degrees Celsius'], ['10 cm²', 'squared'],
+  ['A = pi r^2', 'r squared'],
+  ['T ≥ 25', 'greater than or equal'], ['A → B', 'gives'],
+  ['```python\nif x == 2:\n    print(x)\n```', 'is equal to'],
 ];
 for (const [input, expected] of operators) {
   const spoken = toSpoken(input);

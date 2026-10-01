@@ -20,28 +20,45 @@ export function parseLabelledSections(text, labels) {
   const pattern = new RegExp(`^[*#\\-\\s]*(${labels.join("|")})S?[*\\s]*:\\s*(.*)$`, "i");
   const sections = new Map(labels.map((label) => [label, []]));
   let current = null;
+  let fence = null;
+  const listLabels = new Set(['FORMULA', 'STEP', 'WORKING', 'MARKSCHEME']);
+  function append(value) {
+    const values = sections.get(current);
+    if (/^\s*(```|~~~)/.test(value)) {
+      values.push(value.trim());
+      fence = { marker: value.trim().slice(0, 3), index: values.length - 1 };
+    } else {
+      values.push(clean(value, listLabels.has(current)));
+    }
+  }
 
   for (const rawLine of String(text ?? "").split("\n")) {
     const line = rawLine.trim();
-    if (!line) continue;
+    if (fence) {
+      const values = sections.get(current);
+      // Code is data: preserve indentation, powers, strings and backslashes.
+      values[fence.index] += '\n' + rawLine.replace(/\r$/, '');
+      if (line.startsWith(fence.marker)) fence = null;
+      continue;
+    }
+    if (!line) { if (current) sections.get(current).push(''); continue; }
     const match = line.match(pattern);
     if (match) {
       current = match[1].toUpperCase();
-      const inline = clean(match[2]);
-      if (inline) sections.get(current).push(inline);
+      if (match[2]) append(match[2]);
       continue;
     }
     // A line with no label belongs to the section above it, if there is one.
     if (current) {
-      const value = clean(line);
-      if (value) sections.get(current).push(value);
+      append(rawLine.replace(/\r$/, ''));
     }
   }
   return sections;
 }
 
-function clean(value) {
-  return normaliseLatex(String(value).replace(bullet, "").replace(/\*\*/g, "").trim());
+function clean(value, stripBullet = false) {
+  const text = stripBullet ? String(value).replace(bullet, '') : String(value);
+  return normaliseLatex(text.replace(/\*\*([^*\n]+)\*\*/g, '$1').trimEnd());
 }
 
 // The model frequently doubles its backslashes, so a command arrives as
@@ -57,9 +74,9 @@ export function normaliseLatex(text) {
 // they are joined rather than truncated to the first line.
 export function single(sections, label) {
   const values = sections.get(label) ?? [];
-  return values.join(" ").trim();
+  return values.join("\n").trim();
 }
 
 export function many(sections, label) {
-  return sections.get(label) ?? [];
+  return (sections.get(label) ?? []).filter(value => value.trim());
 }

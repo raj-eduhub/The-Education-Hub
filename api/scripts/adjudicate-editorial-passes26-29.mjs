@@ -1,0 +1,26 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import assert from 'node:assert/strict';
+const decisions={
+26:{
+'y10-geography-coasts-and-rivers/exam-8-AQA-core':'Twelve groynes have eleven gaps, spanning 22 km at 2 km spacing; they need not occupy both endpoints of the 25 km coast. Nano assumes an unstated endpoint requirement. The answer explicitly labels the sums as before replacement/renourishment, rejects a full-lifecycle ranking and identifies missing costs.',
+'y10-geography-natural-hazards/practice-1-Edexcel-core':'Verified current official NWS Katrina figure 1,392 and $125bn in 2005 dollars at https://www.weather.gov/lix/katrina_anniversary . Philippine official death count 6,300 at https://www.pna.gov.ph/articles/1188062 . World Bank damage AND loss $12.9bn at https://blogs.worldbank.org/en/sustainablecities/what-super-typhoon-yolanda-philippines-told-us-about-building-back-better (article title and date in prompt; canonical source URL in report). Nano recalled the superseded 1,833 Katrina count. The answer explicitly rejects a like-for-like cost ratio.',
+'y11-geography-decision-making-exercise/practice-9-Edexcel-core':'The answer deliberately makes a provisional choice under a stated criterion and explains why a uniquely best scheme cannot be inferred. Evaluating limitations is a valid synthesis response, not missing evidence that must be invented.',
+'y9-geography-geographical-enquiry/practice-5-Edexcel-core':'The overgeneralised class conclusion is the object of critique, not the model answer. The answer identifies missing distance data, non-user sampling and repeated observations. It would defeat the evaluation task to replace the flawed claim with its correct answer.',
+'y9-geography-weather-hazards/exam-5-AQA-core':'The question explicitly begins hypothetical and asks whether the data establish effectiveness; the answer and rubric correctly conclude they do not. It does not assert that the fictional comparison describes all real national disaster responses.'},
+27:{
+'y11-english-shakespeare/exam-9-Edexcel-core':'The answer already says Elsewhere in the scene before discussing kinship, subject and host. Folger 1.7 lines 12–16 supports all three. His later agreement in 1.7 and arranging Banquo’s murder are distinct moments outside the extract; the six-mark exercise does not require act numbers. The revised extract uses Folger’s actual ending th’ other—.',
+'y11-english-century/exam-3-Edexcel-core':'Chapter 57 explicitly shows Joe continually at Pip’s bedside, giving him cooling drink and caring for him; the later debt payment is also in that chapter. Verified public-domain primary text: https://www.gutenberg.org/files/1400/1400-h/1400-h.htm#chap57 . Nano wrongly treats a whole-novel connection as needing to occur in Chapter 27.'},
+28:{
+'y10-english-lang-writing/practice-0-AQA-core':'Counted 493 whitespace-delimited words with five paragraphs. Opening 97, middle 320 across three paragraphs, ending 76. This meets every approximate section target. The task does not request headings; adding instructional headings would weaken the model story.',
+'y11-english-creative/practice-6-AQA-core':'The question explicitly asks for an original short-story plan and the dates are labelled fictional. No real councillor is named. Three turning points are supplied; there is no requirement for one in every act. The final decision about presenting evidence is itself a clear change in action.',
+'y9-english-transactional/practice-4-Edexcel-core':'The final separated line invites participation and welcomes new members, meeting the notice brief. A letter closing such as Yours sincerely is not required for a notice.'},
+29:{
+'y10-english-lang-writing/exam-6-AQA-core':'Actual paragraph sequence is present harbour / age-six memory / present rope sound / later school memory / present conclusion. There are precisely two flashbacks; the transition another memory introduces the second, not a third. 544 words meets 520–560.',
+'y11-english-creative/practice-7-AQA-core':'Counted 636 words, within 600–700. Three distinct flashbacks occur yesterday, three winters earlier and last autumn, interleaved with dawn. The final paragraph alone reveals the purpose of correcting a falsely credited rescue. Planning suggestions support the stated structural task rather than requiring identical creative choices.'}
+};
+for(const n of [26,27,28,29]){
+const dir=`output/curriculum-review/pass-${n}`,plan=JSON.parse(readFileSync(`${dir}/correction-plan.json`));
+if(n===28){const p=plan.changes.find(c=>c.ref==='y10-english-lang-writing/practice-0-AQA-core').payload.answer.split('\n\n');assert.equal(p[0].split(/\s+/).length,97);assert(p.slice(1,-1).join(' ').split(/\s+/).length<=320);}
+writeFileSync(`${dir}/correction-adjudication.json`,JSON.stringify({adjudicatedAt:new Date().toISOString(),method:'Independently inspected supplied and revised content, recomputed quantitative claims, counted constrained answers and verified primary-source quotations. Model suggestions adjudicated individually; no teacher approval inferred.',payloadHashes:Object.fromEntries(plan.changes.map(c=>[c.ref,createHash('sha256').update(JSON.stringify(c.payload)).digest('hex')])),flagDecisions:decisions[n]},null,2));
+}

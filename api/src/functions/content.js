@@ -6,6 +6,9 @@ import { contentKey, getContent, saveContent } from "../lib/contentStore.js";
 import { allowsFormulae, contentTypes, isQuestionBank, mayUseModel, routeFor, supportsQuestionBank, usesMathsNotation, variesByBoard, variesByTier, warrantsWorkedExample } from "../lib/contentPolicy.js";
 import { parseQuestion, questionPrompt } from "../lib/questionBank.js";
 import { exampleSystemPrompt, parseWorkedExample, workedExamplePrompt } from "../lib/workedExample.js";
+import { selectExplanation } from '../../../src/data/selectExplanation.js';
+import { curriculum } from '../../../src/data/curriculumCatalog.js';
+import { getEditorialContent } from '../lib/editorialContent.js';
 
 app.http("content", {
   methods: ["POST"],
@@ -26,6 +29,10 @@ app.http("content", {
       const tier = access.profile?.tier ?? body.tier;
       const examBoard = access.profile?.examBoard ?? body.examBoard;
       const subject = typeof body.subject === "string" ? body.subject : "";
+      const canonicalTopic = curriculum.find(entry => entry.id === topic?.id);
+      // Stored variants belong to the topic's year, even when an older learner
+      // revisits it. A Year 9 example must never be looked up as a GCSE tier row.
+      const contentYear = canonicalTopic?.year ?? year;
 
       if (!Number.isInteger(year) || year < 7 || year > 11) {
         return { status: 400, jsonBody: { error: "A valid school year from 7 to 11 is required." } };
@@ -34,8 +41,17 @@ app.http("content", {
         return { status: 400, jsonBody: { error: "A topic, and a sub-topic for an example, are required." } };
       }
 
+      if (subtopic != null && [contentTypes.EXPLANATION, contentTypes.EXAMPLE].includes(type)) {
+        const canonical = canonicalTopic;
+        if (!canonical || canonical.subject !== subject
+          || !Number.isInteger(subtopic.index) || canonical.outcomes[subtopic.index] !== subtopic.title) {
+          return { status: 400, jsonBody: { error: 'That sub-topic reference is not valid.' } };
+        }
+      }
+
       // Years 10 and 11 keep an example per tier because Foundation and Higher
-      // differ in demand. Explanations are the same for both.
+      // differ in demand. Explanation rows contain their authored subtopic and
+      // tier variants; select only the requested lesson from that stored row.
       // Question banks are indexed in their own right, and vary by board from
       // Year 9, when GCSE preparation begins.
       const bankIndex = Math.max(0, Math.min(50, Number(body.index) || 0));
@@ -52,9 +68,9 @@ app.http("content", {
         ? { partitionKey: topic.id, rowKey: explicitRowKey }
         : contentKey(type, topic.id, {
         index: isQuestionBank(type) ? bankIndex : subtopic?.index,
-        board: variesByBoard(type) && year >= 9 ? examBoard : null,
+        board: variesByBoard(type) && contentYear >= 9 ? examBoard : null,
         // Only the tiered subjects split their content by tier.
-        tier: year >= 10 && variesByTier(subject) ? tier : null,
+        tier: contentYear >= 10 && variesByTier(subject) ? tier : null,
       });
       if (!key) return { status: 400, jsonBody: { error: "That topic or sub-topic reference is not valid." } };
       // A question asked for by key must already exist; generating a different
@@ -100,7 +116,8 @@ app.http("content", {
       if (!skipStore) {
         const stored = await getContent(key);
         if (stored && (!reviewedOnly || stored.reviewStatus === "approved")) {
-          return { jsonBody: { content: { ...stored, rowKey: key.rowKey, source: "stored" }, route, generated: false } };
+          const selected = key.rowKey === 'explanation' ? selectExplanation(stored, subtopic?.index, tier) : stored;
+          return { jsonBody: { content: { ...selected, rowKey: key.rowKey, source: "stored" }, route, generated: false } };
         }
         if (stored && reviewedOnly) {
           return {
@@ -135,6 +152,14 @@ app.http("content", {
         };
       }
 
+      const editorial = !skipStore && getEditorialContent(key);
+      if (editorial) {
+        await saveContent(key, editorial, { type, subject, year: contentYear, topicTitle: topic.title,
+          subtopicTitle: subtopic?.title ?? '', origin: 'editorial' });
+        return { jsonBody: { content: { ...editorial, reviewStatus: 'pending', reviewed: false,
+          rowKey: key.rowKey, source: 'editorial' }, route, generated: false } };
+      }
+
       // Only a call that genuinely reaches the model is counted. A learner
       // reading stored content all evening costs nothing and should not be
       // limited for it.
@@ -148,28 +173,26 @@ app.http("content", {
         ? allowsFormulae(subject, topic.id, subtopic?.index)
         : null;
       const userPrompt = isQuestionBank(type)
-        ? questionPrompt(type, topic, subtopic, { board: year >= 9 ? examBoard : null, tier: year >= 10 && variesByTier(subject) ? tier : null, year, notation, index: bankIndex })
+        ? questionPrompt(type, topic, subtopic, { board: contentYear >= 9 ? examBoard : null, tier: contentYear >= 10 && variesByTier(subject) ? tier : null, year: contentYear, notation, index: bankIndex })
         : workedExamplePrompt(topic, subtopic, { notation });
       const answer = await callFoundry({
         model: deployment,
         input: [
-          { role: "system", content: exampleSystemPrompt(year <= 9 ? "KS3" : "KS4", year, examBoard, tier, subject, formulaeAllowed) },
+          { role: "system", content: exampleSystemPrompt(contentYear <= 9 ? "KS3" : "KS4", contentYear, examBoard, tier, subject, formulaeAllowed) },
           { role: "user", content: userPrompt },
         ],
       });
 
       const parsed = isQuestionBank(type) ? parseQuestion(type, answer) : parseWorkedExample(answer, subject, formulaeAllowed);
-      if (isQuestionBank(type) && !parsed) {
+      if (!parsed) {
         context.warn(`Unparsed ${type} question for ${topic.id}`);
         return { status: 503, jsonBody: { error: "That question could not be prepared. Please try again." } };
       }
-      const payload = parsed
-        ? { ...parsed, notation }
-        : { formulae: [], question: "", steps: [], answer: "", raw: answer, notation };
+      const payload = { ...parsed, notation };
       await saveContent(key, payload, {
         type,
         subject,
-        year,
+        year: contentYear,
         topicTitle: topic.title,
         subtopicTitle: subtopic?.title ?? "",
         origin: "model",

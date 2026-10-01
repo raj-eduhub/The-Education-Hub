@@ -1,0 +1,27 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import assert from 'node:assert/strict';
+import {curriculum} from '../../src/data/curriculumCatalog.js';
+import {getTopicGuide} from '../../src/topicGuides.js';
+const root='output/curriculum-review';
+const read=p=>JSON.parse(readFileSync(p,'utf8').replace(/^\uFEFF/,''));
+const coverage=read(`${root}/pass-35/coverage-current.json`);
+const routing=read(`${root}/all-subtopics-routing-verification.json`);
+const followup=read(`${root}/y9-geography-geographical-enquiry-routing-verification.json`);
+const pure=read(`${root}/pass-35/coverage-test.json`);
+const browserText=readFileSync('output/playwright/all-year-subjects-results.txt','utf8');
+const browser=JSON.parse(browserText.split(/\r?\n/).find(l=>l.startsWith('{')));
+assert.equal(coverage.total,1513);assert.equal(coverage.dedicated,coverage.total);assert.equal(coverage.shared,0);assert.equal(coverage.duplicateDedicated,0);assert(coverage.outcomes.every(o=>o.sourceMatch));
+assert.equal(routing.passed,1513);assert.equal(routing.errors.length,0);assert.equal(followup.passed,6);assert.equal(followup.errors.length,0);
+assert.equal(pure.passed,3026);assert.equal(pure.errors,0);assert(browser.passed);assert.equal(browser.yearSubjectGroups,35);assert.equal(browser.cardsChecked,217);
+writeFileSync(`${root}/pass-35/browser-verification.json`,JSON.stringify(browser,null,2));
+writeFileSync(`${root}/pass-35/verification-results.json`,JSON.stringify({recordedAt:new Date().toISOString(),coverage:{total:coverage.total,dedicated:coverage.dedicated,shared:0,sourceMismatches:0,duplicateExplanationsWithinTopic:0},tierVariants:pure.passed,authenticatedApi:{allOutcomes:routing.passed,checkedAt:routing.checkedAt,finalGeographyAmendment:followup.passed,amendmentCheckedAt:followup.checkedAt},browser:{groups:browser.yearSubjectGroups,cards:browser.cardsChecked,checkedAt:browser.checkedAt},limits:'Structural, routing and selected browser checks; independent model review is recorded separately. Not a guarantee of factual perfection or formal qualification sign-off.'},null,2));
+let report=readFileSync(`${root}/subtopic-fix-report.md`,'utf8');
+report=report.replace('Remaining lessons are authored by GPT-5 nano','Replacement lessons were authored with GPT-5 nano');
+report=report.replace('Full-catalogue API verification is recorded in all-subtopics-routing-verification.json when run.','[Authenticated API verification](all-subtopics-routing-verification.json) passed for all 1,513 subtopics. The final Geography amendment also passed its six live checks. [Verification results](pass-35/verification-results.json) record 3,026 passing tier-selection/rendering checks and 217 browser card checks across all 35 year/subject groups. All checks compare substantive lesson text, not only headings.');
+report=report.replace('Flagged drafts are revised; unresolved drafts are excluded from DB updates.','Flagged drafts were revised or explicitly adjudicated against their exact payload hashes; unresolved drafts are excluded from DB updates.');
+const applicability={};
+for(const t of curriculum){const c=applicability[t.subject]??={lessons:0,coreFormulaPanels:0,higherFormulaPanels:0};for(const s of getTopicGuide(t.subject,t).subtopics){c.lessons++;if(s.formulae.length)c.coreFormulaPanels++;if(s.higher?.formulae?.length)c.higherFormulaPanels++;}}
+writeFileSync(`${root}/pass-35/formula-applicability-counts.json`,JSON.stringify(applicability,null,2));
+if(!report.includes('Formula panel counts by subject'))report=report.replace('## Evidence and limits',`## Formula panel counts by subject\n\nThese counts describe the reviewed subtopic lessons; formula and example decisions remain separate. No English or History subtopic has a formula panel.\n\n| Subject | Lessons | Core formula panels | Higher extension formula panels |\n| --- | ---: | ---: | ---: |\n${Object.entries(applicability).map(([s,c])=>`| ${s} | ${c.lessons} | ${c.coreFormulaPanels} | ${c.higherFormulaPanels} |`).join('\n')}\n\n[Corrected Genetics lesson screenshot](../playwright/genetics-corrected-lesson.png).\n\n## Evidence and limits`);
+writeFileSync(`${root}/subtopic-fix-report.md`,report);
+console.log('Recorded complete content coverage, exact routing, tier and cross-subject browser evidence.');

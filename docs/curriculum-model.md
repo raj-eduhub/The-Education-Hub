@@ -1,8 +1,10 @@
 # Curriculum Model
 
+The October 2026 content correction review supersedes historical completion claims below. Its current evidence is in [the generated report](../output/curriculum-review/curriculum-review-report.md), including exact record hashes, applied database changes and unresolved suggestions. The configured database is local Azurite; production has not been modified. Model review is not a certificate of complete factual or specification accuracy.
+
 ## Scope
 
-Education Hub contains a broad curriculum map for Years 7-11 across Maths, Science, English, History, Geography, Computing, and Design & Technology. The catalogue currently contains 240 modules and 1,510 measurable outcomes, with unit names, learning goals, GCSE tier applicability, and exam-board mappings.
+Education Hub contains a broad curriculum map for Years 7-11 across Maths, Science, English, History, Geography, Computing, and Design & Technology. The catalogue currently contains 240 modules and 1,513 measurable outcomes, with unit names, learning goals, GCSE tier applicability, and exam-board mappings.
 
 | Year | Modules | Stage |
 | --- | ---: | --- |
@@ -35,7 +37,7 @@ The Department for Education specifies KS3 programmes of study for the key stage
 
 Years 10-11 use GCSE-oriented units and support:
 
-- Exam boards: AQA, Edexcel, and OCR
+- Selectable exam boards: AQA and Edexcel
 - Maths and Combined Science tiers: Foundation and Higher
 - English, History, Geography, Computing, and Design & Technology, which are not tiered
 
@@ -43,15 +45,17 @@ History options and named geographical case studies vary substantially between s
 
 Qualification identifiers are stored in the catalogue so later question banks and marking rubrics can target an exact specification.
 
-| Subject | AQA | Edexcel | OCR |
-| --- | --- | --- | --- |
-| Maths | 8300 | 1MA1 | J560 |
-| Combined Science | 8464 | 1SC0 | J250 |
-| English Language / Literature | 8700 / 8702 | 1EN0 / 1ET0 | J351 / J352 |
-| History | 8145 | 1HI0 | J411 (History B) |
-| Geography | 8035 | 1GB0 (Geography B) | J384 (Geography B) |
-| Computer Science | 8525 | 1CP2 | J277 |
-| Design and Technology | 8552 | 1DT0 | J310 |
+| Subject | AQA | Edexcel |
+| --- | --- | --- |
+| Maths | 8300 | 1MA1 |
+| Combined Science | 8464 | 1SC0 |
+| English Language / Literature | 8700 / 8702 | 1EN0 / 1ET0 |
+| History | 8145 | 1HI0 |
+| Geography | 8035 | 1GB0 (Geography B) |
+| Computer Science | 8525 | 1CP2 |
+| Design and Technology | 8552 | 1DT0 |
+
+OCR is not selectable. These codes do not resolve school-selected options or establish complete coverage of a particular examination series.
 
 ## Runtime Filtering
 
@@ -88,7 +92,7 @@ OCR remains in the catalogue and in the qualification code table, but is not off
 
 ## Sub-topics and worked examples
 
-The learning hub lists every topic for the learner's year in one dropdown grouped by unit, and presents that topic's curriculum outcomes as sub-topic cards. Outcomes are reused as sub-topics deliberately: the catalogue stays the single source of truth, and no parallel content tree has to be maintained alongside it. The catalogue currently holds 240 topics and 1,510 outcomes across Years 7 to 11.
+The learning hub lists every topic for the learner's year in one dropdown grouped by unit, and presents that topic's curriculum outcomes as sub-topic cards. Outcomes are reused as sub-topics deliberately: the catalogue stays the single source of truth, and no parallel content tree has to be maintained alongside it. The catalogue currently holds 240 topics and 1,513 outcomes across Years 7 to 11.
 
 Topic explanations and worked examples are held in the `EducationHubContent` table, and a routing policy decides where each request is answered from. Explanations are authored curriculum text and are served from storage only, so the model is never asked to invent them. Worked examples are served from storage and reach the model only when nothing has been seeded, after which the result is persisted for every later learner. Maths examples are stored as LaTeX and typeset in the browser. Content quality is the open risk. Examples are not reviewed before a learner sees them, and pitch varies: a Year 10 microscopy example came back correctly pitched at GCSE, while a Year 10 sampling example used t-distributions, finite population correction, and confidence intervals, none of which is GCSE content. Seeding a year ahead of time and reviewing the stored rows is the current mitigation; a teacher review state on each row is the missing piece.
 
@@ -132,11 +136,7 @@ the rest and disproved two of the model's. Neither pass alone was sufficient.
 | The order of operations was never stated; the only mention was a Year 9 line applying it to powers and roots | Appended to Year 7 "Integers and Place Value". |
 | Recurring decimals to fractions appeared nowhere | Appended to Year 11 "Surds and Exact Calculation", which is Higher tier, matching N10. |
 
-Two candidate gaps were rejected on inspection. Compound interest is already
-carried by Year 11 "Direct and Inverse Proportion" under the specification's own
-name, growth and decay, and the validator refuses it anywhere else: R16 is Higher
-tier, and the key stage 3 programme of study names simple interest only.
-Cumulative frequency is Year 11 Higher, which is where AQA places it.
+The September 2026 review corrected an earlier tiering mistake: AQA R16 includes growth and decay, including compound interest, at Foundation as well as Higher. Only general iterative processes are Higher-only. Foundation outcomes now explicitly include compound interest, numerical inverse proportion and interpretation of given inverse-proportion equations (R10/R13), and exact trigonometric values (G21). Cumulative frequency remains in Year 11 Higher.
 
 Outcomes are appended to the end of a topic's list, never inserted. Worked
 examples are stored as `example-{index}-{tier}`, so an outcome that changed
@@ -410,9 +410,9 @@ interface require:
   images, so a question referring to "the diagram" cannot be answered.
 - No question may ask for a drawing, a ruler-and-compass construction or a
   measurement, because the answer is typed into a text box.
-- Content above the specification is named and excluded in the prompt: standard
-  error, confidence intervals, named sampling schemes, standard deviation, the
-  normal distribution, radians and calculus.
+- Scope restrictions are subject-, tier- and outcome-specific. Named sampling
+  methods are legitimate Geography content. A keyword hit alone is not evidence
+  that an item is beyond the specification.
 - Quantities must be internally consistent. A length "to the nearest 0.5 cm"
   must be a multiple of 0.5 cm; an approved question previously read 53.6 cm.
 - A practice question with fewer than two steps of working is refused, exactly as
@@ -447,7 +447,14 @@ so a re-seed regenerates them.
 7. Decide which exam boards to offer. Only AQA and Edexcel can be selected,
    and `examBoards` is enforced at signup, in validation and in the storage key.
    Schools sitting CIE or OCR - including CIE 0977 History and OCR J198 Ancient
-   History - have no board to choose, and Ancient History has no content at all.
-8. Seed question banks beyond Year 10 Maths. The bank currently covers Year 10
-   Maths Higher for AQA and Edexcel; every other year, subject, tier and board
-   generates on demand and is stored on first use.
+   History - have no matching board to choose. Four Ancient History enrichment
+   units exist, but are not evidence of AQA 8145 or Edexcel 1HI0 coverage.
+8. Fill the remaining configured question-bank slots. The local database now has
+   content across all seven subjects and Years 7–11; use the current coverage
+   report rather than the historical Year 10 Maths-only count. Ten questions
+   per variant is a product target, not a qualification standard.
+## Subtopic teaching selection
+
+Explanation rows retain the `explanation` key per topic and may contain a `subtopics` array indexed by the canonical outcomes. Each entry has its exact outcome title, explanation, key ideas and an explicitly authored formula list; optional Higher extensions use the existing tier convention. `selectExplanation` is shared by the API, preview and narration preparation.
+
+Do not reuse outcome zero as another outcome's lesson. Missing subtopic teaching must be labelled as a shared topic overview. Review coverage must count dedicated subtopic explanations separately from the presence of a topic-level explanation. The current full inventory is in `output/curriculum-review/subtopic-inventory.json`.

@@ -1,0 +1,63 @@
+import {readFileSync,writeFileSync,existsSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {TableClient} from '@azure/data-tables';
+const file='output/curriculum-review/retained-review-decisions.json';
+const decisions={
+'y10-english-modern/practice-8-Edexcel-core':'The leading 9 numbers the tenth-style question; it is not a content error and does not change the analysis task.',
+'y10-maths-algebra/exam-6-Edexcel-Higher':'All actual algebra uses b_1 and b_2 consistently: multiplying by 2 then dividing by their sum gives 2A/(b_1+b_2). Nano invented an a/b substitution.',
+'y11-computing-problem-solving-mastery/practice-2-Edexcel-core':'Duplicated validation is deliberately supplied as a weakness to evaluate. The answer identifies the maintenance risk and recommends a shared function. Removing that flaw from the stimulus would remove the intended critique.',
+'y11-design-technology-testing-and-evaluation/practice-4-AQA-core':'24/6=4. Describing a mean rating as 4 out of 5 correctly identifies the maximum of the explicitly stated 1–5 rating scale; it is not a claim that four respondents out of five approved.',
+'y11-history-conflict-and-tension/exam-9-AQA-core':'The actual answer does not make the model-alleged definitive judgement that France had the most influential aim; it compares competing aims.',
+'y11-maths-algebra/practice-9-Edexcel-Higher':'Completing the square can be expressed by adding and subtracting the same quantity. Actual working adds four to both sides consistently and obtains roots 1 and -5.',
+'y11-maths-similarity/example-1-Higher':'Volumes 250 and 2000 give a length scale factor of 2 and height 24. Surface areas are correctly 1:4 in smaller-to-larger order. Nano reversed the labelled order.',
+'y7-history-church-crown-and-society/practice-8-core-core':'The actual ranking places the King before the Archbishop; the model alleged the opposite. This is a simplified classroom hierarchy, not evidence that every medieval dispute followed one power ranking.',
+'y7-history-norman-conquest/example-0-core':'The actual answer includes all five supplied events, including William’s coronation. The alleged omission is absent.',
+'y8-design-technology-sustainable-cad-cam/practice-9-core-core':'The tray is explicitly open-topped. For exterior height 4 cm and base thickness 0.5 cm, inner height is 3.5 cm. Nano incorrectly subtracts a nonexistent top wall.',
+'y8-history-industrial-revolution-and-reform/explanation':'Describing the 1832 franchise extension as limited or slight is a defensible qualitative summary of the restricted extension. The model requests nuance but identifies no contradictory statement.',
+'y8-history-industrial-revolution-and-reform/practice-3-core-core':'The answer selects coal/iron and transport as two supported factors. A further relevant discussion of steam power in the working does not invalidate those two choices.',
+'y8-science-reactions/practice-2-core-core':'At KS3 relative atomic masses H=1 and O=16, 2 g hydrogen and 16 g oxygen react to make 18 g water in the stated closed-system exercise. Nano imposed more precise atomic masses and an unrequested 17.9 g result.',
+'y9-design-technology-programmable-control/exam-4-Edexcel-core':'The two-hour cooldown applies after watering, and the answer includes it in that branch. The optional five-minute interval appears only when no watering occurs; it does not violate the cooldown.',
+'y9-english-drama/practice-7-Edexcel-core':'The actual answer does not contain the alleged nonexistent quotation Then we tell the truth. Its references correspond to the supplied stimulus.',
+'y9-history-democracy-and-dictatorship/practice-9-Edexcel-core':'The question requests three reasons from four supplied factors. Selecting three supported factors is valid; it does not require the omitted fourth social factor too.',
+'y9-science-pressure/practice-9-AQA-core':'The actual moment calculation is 40 N × 0.755 m = 30.2 Nm. The alleged N cm mismatch is not in this item.',
+'y11-design-technology-mechanisms-electronics-and-control/exam-3-Edexcel-core':'The prompt defines driven:driving; 54:18=3:1 and pulley diameter ratio 70:40=7:4. Seven driver turns give four driven turns. Nano inverted a correctly labelled ratio.',
+'y11-design-technology-mechanisms-electronics-and-control/example-3-core':'The question describes separate gear and pulley calculations. Nano assumed a cascade that the question does not state.',
+'y7-english-vocabulary/practice-2-core-core':'A comma after the short opening adverb Yesterday is optional; Yesterday Tom went to the shop is grammatical.',
+'y7-english-speaking/practice-5-core-core':'Additional relevant supporting explanation is not an error merely because one reason was requested.',
+'y11-geography-decision-making-exercise/practice-7-AQA-core':'The leading 8 is a question number. The prompt does not require exactly eight stakeholders.',
+'y10-science-chemical-changes/practice-9-AQA-Higher':'Silver nitrate is a reactant in a metal displacement task, not a qualitative halide-ion test. All three equations balance.',
+'y11-science-inheritance/practice-2-Edexcel-Foundation':'Percentage yield increase refers to agricultural crop output, not chemical percentage-yield calculations. The supplied percentage calculations are correct.',
+'y10-maths-algebra/exam-5-AQA-Foundation':'The stored working already states 10x = 55 and x = 11/2; the model alleged the opposite.',
+'y10-maths-mensuration/practice-9-AQA-Foundation':'The actual circumference used is 16 pi, giving arc 16 pi/3 and sector area 64 pi/3. Nano invented a 13 pi step.',
+'y10-science-practicals/exam-3-AQA-Higher':'The actual answer explicitly uses a digital display, spindle and anvil. No vernier-scale reading instruction appears. Given resolutions determine the choice.',
+'y10-science-practicals/exam-7-AQA-Foundation':'4.63/5 = 0.926; 5/0.926 = 5.399568..., hence 5.40 m/s and 0.10 m/s below target. Keeping the unrounded mean for calculation is appropriate.',
+'y10-science-particles/practice-9-AQA-Higher':'340/(6.5*3*4.5) = 3.8746438746..., which rounds to 3.87 at two decimal places. Nano incorrectly asserted 3.875.',
+'y10-science-particles/explanation':'Delta theta is explicitly used for temperature change by AQA 8464 Physics section 6.1.1.3. Delta T is another convention, not a reason to remove the valid formula.',
+'y10-science-earth/exam-4-AQA-Higher':'The actual question concerns potable river water, not wastewater treatment. Screening, coagulation/flocculation, settlement, filtration and disinfection are described; the model invented a required grit-removal step.',
+'y11-maths-graphs/practice-2-Edexcel-Higher':'Actual substitution and expansion give 4x^2 - 24x + 36 = 4(x-3)^2; vertex (3,0), minimum 0. The allegedly missing correct expression is already present.',
+'y11-maths-graphs/example-9-Higher':'An increasing concave-down curve lies above its chords. The 44 m trapezium estimate is correctly described as an underestimate; Nano reversed this geometry.',
+'y11-science-rates/exam-2-Edexcel-Higher':'Actual prompt explicitly says exothermic forward reaction, consistently with both answer and rubric. Heating favours the endothermic reverse reaction.',
+'y11-science-ecology/practice-0-Edexcel-Higher':'Actual answer includes all four parts, species totals/percentages, both densities and the most abundant species. Nano reviewed an imagined five-part task.',
+'y9-maths-probability/exam-5-AQA-core':'Actual part b is 43/90 and part d is 4/9. These answer different events and are both correct; Nano conflated them.',
+'y9-computing-web-technologies-and-data/example-3-core':'No 20px gap is specified anywhere in the stored task or answer. The 600px and 200px columns correctly fill 800px; padding and border constraints are explained.',
+'y7-design-technology-user-needs-and-iterative-design/exam-9-core-core':'No 0.8-litre capacity claim exists in the stored payload. Capacity is checked by fitting the listed objects, with external dimensions stated separately.',
+'y8-design-technology-motion-and-mechanisms/explanation':'The explanation defines driven/driver tooth ratio and contains no numerical 12/36 example or conflicting 1:3 label. Nano imported text from another item.',
+'y8-science-metals/explanation':'The flagged equation is a word equation, not an unbalanced symbol equation. Reduction of a metal oxide by carbon is valid KS3 teaching; coefficients are not applied to chemical names.',
+'y10-computing-data-representation/example-6-core':'Pearson 1CP2 official August 2024 examiner report explicitly uses KiB/MiB/GiB/TiB and 1024-based units. The supplied convention is stated rather than assumed.',
+'y10-computing-data-representation/explanation':'Pearson 1CP2 official examiner report confirms binary prefixes; the explanation makes board conventions explicit. Source: https://qualifications.pearson.com/content/dam/pdf/GCSE/Computer-science/2020/Exam-materials/1cp2-01-pef-20240822.pdf',
+'y10-english-lang-writing/example-2-core':'The original stimulus uses lower-case it at the start of the second sentence; the instruction to capitalise it is warranted.',
+'y10-english-modern/practice-7-AQA-core':'The alleged present-mate typo does not occur in the actual stored working.',
+'y10-english-lang-writing/exam-6-Edexcel-core':'Counted the actual answer: 726 words, within the requested 650–750. The model length objection is unsupported.',
+'y10-english-lang-writing/exam-9-Edexcel-core':'Counted the actual answer: 330 words, within the requested 250–350.',
+'y10-english-lang-writing/practice-6-AQA-core':'Counted the actual answer: 770 words, within the requested 600–800.',
+'y11-english-creative/exam-7-AQA-core':'Counted the actual answer: 1093 words, within the requested 900–1100.',
+'y11-english-lang-transactional/exam-5-Edexcel-core':'Counted the actual answer: 459 words, within the requested 420–520.',
+'y9-english-speech/exam-3-AQA-core':'Counted the actual answer: 246 words, within the requested 230–250.',
+'y9-english-transactional/exam-2-Edexcel-core':'Counted the actual answer: 187 words, within the requested 170–190.',
+'y9-english-transactional/exam-7-AQA-core':'Counted the actual answer: 157 words, within the requested 150–170.',
+};
+const settings=JSON.parse(readFileSync(new URL('../local.settings.json',import.meta.url),'utf8').replace(/^\uFEFF/,'')).Values;
+const client=TableClient.fromConnectionString(settings.AZURE_STORAGE_CONNECTION_STRING,settings.AZURE_STORAGE_CONTENT_TABLE??'EducationHubContent');
+const previous=existsSync(file)?JSON.parse(readFileSync(file)):[],rows=new Map(previous.map(r=>[`${r.ref}/${r.payloadHash}`,r]));
+for(const [ref,reason] of Object.entries(decisions)){const [pk,rk]=ref.split('/'),e=await client.getEntity(pk,rk),payloadHash=createHash('sha256').update(JSON.stringify(JSON.parse(e.payload))).digest('hex');rows.set(`${ref}/${payloadHash}`,{ref,payloadHash,reason,reviewedAt:new Date().toISOString(),scope:'Adjudication of the cited model suggestion against the actual payload; not teacher approval or comprehensive certification.'});}
+writeFileSync(file,JSON.stringify([...rows.values()],null,2));console.log(`Recorded ${decisions?Object.keys(decisions).length:0} inspected retained decisions with exact payload hashes.`);

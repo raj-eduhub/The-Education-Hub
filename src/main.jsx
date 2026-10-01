@@ -21,8 +21,9 @@ import { SubscriptionPage } from "./SubscriptionPage.jsx";
 import { authFetch, clearAuthToken, getAuthToken, readJson, setAuthToken } from "./auth.js";
 import { loadDiagnostic, personaliseTopics, saveDiagnostic } from "./diagnostic.js";
 import { boardFor, loadLearnerProfile, saveLearnerProfile } from "./learnerProfile.js";
-import { formatTopicGuide, getTopicGuide } from "./topicGuides.js";
+import { formatTopicGuide, getTopicGuide, getAuthoredExample } from "./topicGuides.js";
 import { subtopicsFor } from "./subtopics.js";
+import { selectExplanation } from './data/selectExplanation.js';
 import { warrantsWorkedExample } from "./data/workedExampleOutcomes.js";
 import { hasMaths, MathsText } from "./MathsText.jsx";
 import { stopSpeaking } from "./speech.js";
@@ -139,11 +140,14 @@ let previewFlags = [
   },
 ];
 
+// Development-only year selection makes every curriculum year reviewable.
+const requestedPreviewYear = Number(new URLSearchParams(window.location.search).get('year'));
+const previewYear = appPreview && [7, 8, 9, 10, 11].includes(requestedPreviewYear) ? requestedPreviewYear : 7;
 const previewProfile = {
   ownerEmail: "parent@example.com",
   firstName: "Alex",
   dateOfBirth: "2014-01-15",
-  year: 7,
+  year: previewYear,
   examBoard: "AQA",
   examBoards: { Maths: "AQA", Science: "Edexcel" },
   tier: "Higher",
@@ -235,15 +239,21 @@ async function previewApiRequest(url, options = {}) {
   }
   if (pathname === "/api/content") {
     const input = JSON.parse(options.body);
-    const guide = getTopicGuide(input.subject, input.topic);
+    const guide = getTopicGuide(input.subject, input.topic, input.tier ?? 'Foundation');
+    if (input.type === 'example' || !input.type) {
+      const tier = input.topic.tiers?.length ? input.tier ?? 'Foundation' : null;
+      const example = getAuthoredExample(input.subject, input.topic, input.subtopic?.index ?? 0, tier);
+      if (!example) return previewResponse({error: 'No authored worked example is available for this sub-topic in the preview.'}, 404);
+      return previewResponse({content: {...example,source:'catalogue'},route:'stored',generated:false});
+    }
     const content = input.type === "explanation"
-      ? { explanation: guide.explanation, keyIdeas: guide.keyIdeas, formulae: guide.formulae }
+      ? selectExplanation({ explanation: guide.explanation, keyIdeas: guide.keyIdeas, formulae: guide.formulae, subtopics: guide.subtopics }, input.subtopic?.index, input.tier ?? 'Foundation')
       : { formulae: guide.formulae, question: guide.question, steps: guide.steps, answer: guide.answer };
     return previewResponse({ content: { ...content, source: "stored" }, route: "stored", generated: false });
   }
   if (pathname === "/api/tutor") {
     const input = JSON.parse(options.body);
-    return previewResponse({ answer: formatTopicGuide(input.subject, input.topic) });
+    return previewResponse({ answer: formatTopicGuide(input.subject, input.topic, input.tier ?? 'Foundation') });
   }
   if (pathname === "/api/diagnostic") {
     const input = JSON.parse(options.body);
@@ -299,8 +309,8 @@ function App() {
   const [unitFilter, setUnitFilter] = useState("All");
   const [selectedTopicId, setSelectedTopicId] = useState(curriculum[0].id);
   const [selectedSubtopicId, setSelectedSubtopicId] = useState("");
-  const [explanation, setExplanation] = useState({ status: "idle" });
-  const [workedExample, setWorkedExample] = useState({ status: "idle" });
+  const [explanationState, setExplanation] = useState({ status: "idle" });
+  const [exampleState, setWorkedExample] = useState({ status: "idle" });
   // Sub-topic lessons finished, by sub-topic id ("topicId::index").
   const [lessonsDone, setLessonsDone] = useState(() => new Set());
   const [lessonSaveError, setLessonSaveError] = useState("");
@@ -363,7 +373,7 @@ function App() {
     });
   }
   const [mastery, setMastery] = useState([]);
-  const [subscription, setSubscription] = useState(subscriptionPreview ? null : previewMode ? { plan: "admin", status: "active" } : null);
+  const [subscription, setSubscription] = useState(subscriptionPreview ? null : previewMode ? { plan: "admin", status: "active", onboardingComplete: appPreview } : null);
   const [billingChecked, setBillingChecked] = useState(Boolean(previewMode));
   const [legalSection, setLegalSection] = useState(null);
   const checkoutState = new URLSearchParams(window.location.search).get("checkout");
@@ -422,6 +432,12 @@ function App() {
   const subtopics = useMemo(() => subtopicsFor(selectedTopic), [selectedTopic]);
   const selectedSubtopic =
     subtopics.find((subtopic) => subtopic.id === selectedSubtopicId) ?? subtopics[0];
+  // Hide the old selection immediately, before the fetching effects run.
+  // Request tickets also prevent a slower previous request from winning.
+  const explanation = explanationState.selection === selectedSubtopic?.id
+    ? explanationState : { status: 'loading' };
+  const workedExample = exampleState.selection === selectedSubtopic?.id
+    ? exampleState : { status: 'loading' };
 
   // Memoised: a fresh array on every render would look like a new sequence
   // to the player and stop the audio each time anything else on the page
@@ -449,7 +465,10 @@ function App() {
     // stopSpeaking() catches any device utterance no player owns.
     stopPlayback();
     stopSpeaking();
-  }, [selectedTopicId, learningMode, subject, view]);
+    setPlayerOpen(false);
+    setFormulaBeat(null);
+    setExampleBeat(null);
+  }, [selectedTopicId, selectedSubtopic?.id, learningMode, subject, view]);
 
   const checkSession = useCallback(async () => {
     setAuthStatus("checking");
@@ -681,16 +700,16 @@ function App() {
     return data;
   }, [appRequest, learnerProfile, learnerYear, subject]);
 
-  const loadExplanation = useCallback(async (topic) => {
-    if (!topic) return;
+  const loadExplanation = useCallback(async (topic, subtopic) => {
+    if (!topic || !subtopic) return;
     const ticket = explanationTicket.current + 1;
     explanationTicket.current = ticket;
-    setExplanation({ status: "loading" });
+    setExplanation({ status: "loading", selection: subtopic.id });
     try {
-      const data = await requestContent("explanation", topic, null, false);
-      if (explanationTicket.current === ticket) setExplanation({ status: "ready", ...data.content });
+      const data = await requestContent("explanation", topic, subtopic, false);
+      if (explanationTicket.current === ticket) setExplanation({ ...data.content, status: "ready", selection: subtopic.id });
     } catch (failure) {
-      if (explanationTicket.current === ticket) setExplanation({ status: "error", error: failure.message });
+      if (explanationTicket.current === ticket) setExplanation({ status: "error", error: failure.message, selection: subtopic.id });
     }
   }, [requestContent]);
 
@@ -826,17 +845,17 @@ function App() {
     // server applies the same list; its answer is honoured too, in case the
     // two ever disagree.
     if (!warrantsWorkedExample(topic.id, subtopic.index)) {
-      setWorkedExample({ status: "none" });
+      setWorkedExample({ status: "none", selection: subtopic.id });
       return;
     }
-    setWorkedExample({ status: "loading" });
+    setWorkedExample({ status: "loading", selection: subtopic.id });
     activity.current.examplesOpened += 1;
     try {
       const data = await requestContent("example", topic, subtopic, refresh);
-      if (exampleTicket.current === ticket) setWorkedExample({ status: "ready", ...data.content });
+      if (exampleTicket.current === ticket) setWorkedExample({ ...data.content, status: "ready", selection: subtopic.id });
     } catch (failure) {
       if (exampleTicket.current !== ticket) return;
-      setWorkedExample(failure.noWorkedExample ? { status: "none" } : { status: "error", error: failure.message });
+      setWorkedExample({ ...(failure.noWorkedExample ? { status: "none" } : { status: "error", error: failure.message }), selection: subtopic.id });
     }
   }, [requestContent]);
 
@@ -1479,7 +1498,7 @@ Mark my answer.`,
               <Brain size={20} />
               <div>
                 <p className="eyebrow">{selectedTopic.exam} / {selectedTopic.unit}</p>
-                <h3>{selectedTopic.title}</h3>
+                <h3>{selectedSubtopic?.title ?? selectedTopic.title}</h3>
               </div>
               {explanation.status === "ready" && <button className="ask-tutor play-lesson" onClick={() => {
                 // Opening the lesson player is the learner asking for the
@@ -1491,19 +1510,20 @@ Mark my answer.`,
                 <MonitorPlay size={16} /> {playerOpen ? "Close the lesson player" : "Play this as a lesson"}
               </button>}
             </div>
-            <p className="lesson-goal">{selectedTopic.goal}</p>
+            <p className="lesson-goal">{selectedTopic.title} — {selectedTopic.goal}</p>
             <div className="topic-guide">
               {/* The narrated lesson presents the same authored content, so it
                   takes the place of the written explanation rather than sitting
                   alongside it and saying everything twice. */}
               {playerOpen && explanation.status === "ready" ? (
                 <section className="guide-section">
-                  <LessonPlayer content={explanation} request={appRequest} topic={selectedTopic} />
+                  <LessonPlayer key={selectedSubtopic?.id} content={explanation} request={appRequest} topic={selectedTopic} />
                 </section>
               ) : <>
                 <section className="guide-section">
-                  <h4>Clear explanation</h4>
-                  {explanation.status === "loading" && <p className="example-status" role="status">Loading this topic...</p>}
+                  <h4>{explanation.scope === 'topic' ? 'Topic overview' : 'Clear explanation'}</h4>
+                  {explanation.scope === 'topic' && <p className="example-status">This overview covers the whole topic. A separate explanation for this subtopic is not yet available.</p>}
+                  {explanation.status === "loading" && <p className="example-status" role="status">Loading this subtopic...</p>}
                   {explanation.status === "error" && <p className="login-error" role="alert">{explanation.error}</p>}
                   {explanation.status === "ready" && <>
                     <p><MathsText enabled={typeset(explanation.explanation)}>{explanation.explanation}</MathsText></p>
@@ -1515,7 +1535,7 @@ Mark my answer.`,
                 {explanation.status === "ready" && (explanation.formulae ?? []).length > 0 && (
                   <section className="guide-section formula-guide">
                     <div className="worked-example-heading">
-                      <h4>Key formulas</h4>
+                      <h4>{explanation.scope === 'topic' ? 'Topic formulas' : 'Key formulas'}</h4>
                       <BeatPlayer
                         beats={keyFormulaBeats}
                         label="Play the key formulas"
