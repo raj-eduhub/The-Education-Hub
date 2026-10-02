@@ -78,24 +78,36 @@ const learningModes = {
 // retrying, and access continues while it does.
 const paidStatuses = ["active", "past_due"];
 
-// A free trial is an account that has not paid: it may study one topic for a
-// week from choosing it. The API enforces this; the app only follows it, so a
-// locked topic is offered rather than requested and refused.
+// Everything here follows Stripe's status. The API enforces it; the app only
+// follows it, so a locked topic is offered rather than requested and refused.
+//
+//   trialing           Stripe's free trial: card on file, one topic, first
+//                      payment when the trial ends
+//   active, past_due   paid: every topic
+//   anything else      no subscription yet, or it ended: the subscription page
 function trialFor(isAdmin, subscription) {
-  return !isAdmin && !paidStatuses.includes(subscription?.status);
+  return !isAdmin && subscription?.status === "trialing";
 }
 
-// The week has run out, or the account has paid before and so has no trial.
-function trialEndedFor(isAdmin, subscription) {
-  if (!trialFor(isAdmin, subscription)) return false;
-  if (subscription?.everPaid) return true;
-  return Boolean(subscription?.trialEndsAt) && Date.parse(subscription.trialEndsAt) <= Date.now();
+function needsSubscriptionFor(isAdmin, subscription) {
+  return !isAdmin && !paidStatuses.includes(subscription?.status) && subscription?.status !== "trialing";
+}
+
+// The first charge of a trial that has just begun, as the sign-up screen states it.
+function trialFirstCharge() {
+  return new Date(Date.now() + 7 * 24 * 3600000).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
 }
 
 // Whole days left, rounded up: on the last day it says 1, never 0.
 function trialDaysLeft(subscription) {
   if (!subscription?.trialEndsAt) return null;
   return Math.max(0, Math.ceil((Date.parse(subscription.trialEndsAt) - Date.now()) / (24 * 3600000)));
+}
+
+// "Thursday 9 October", for when the first payment is taken.
+function chargeDay(subscription) {
+  if (!subscription?.trialEndsAt) return "";
+  return new Date(subscription.trialEndsAt).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
 }
 
 function topicById(topicId) {
@@ -125,6 +137,8 @@ const registerHandoff = (() => {
   return {
     email: (query.get("email") ?? "").trim().toLowerCase(),
     username: (query.get("username") ?? "").trim(),
+    // Which button the parent pressed on the website: "free" or "pay".
+    start: query.get("start"),
   };
 })();
 const resetToken = new URLSearchParams(window.location.search).get("reset");
@@ -327,12 +341,18 @@ function App() {
   const [learnerProfile, setLearnerProfile] = useState(appPreview ? previewProfile : null);
   const [diagnostic, setDiagnostic] = useState(null);
   const [showDiagnostic, setShowDiagnostic] = useState(false);
-  const [requestedView, setView] = useState(adminPreview ? "admin" : ["admin", "review", "safeguarding", "payments", "progress", "account", "support"].includes(window.location.hash.slice(1)) ? window.location.hash.slice(1) : "learning");
+  // Declared before the view, because which views exist depends on it.
+  const [subscription, setSubscription] = useState(subscriptionPreview ? null : previewMode ? { plan: "admin", status: "active", onboardingComplete: appPreview } : null);
+  const [requestedView, setView] = useState(adminPreview ? "admin" : ["admin", "review", "safeguarding", "payments", "progress", "account", "support", "subscribe"].includes(window.location.hash.slice(1)) ? window.location.hash.slice(1) : "learning");
   // An administrator-only view requested by somebody who is not one falls back
-  // to the learning hub rather than rendering an empty screen.
+  // to the learning hub rather than rendering an empty screen, and so does the
+  // subscribe page for an account that has already paid - the trial emails
+  // link to #subscribe, and a parent may subscribe before opening one.
   const view = ["admin", "review", "safeguarding", "payments"].includes(requestedView) && !currentUser?.isAdmin
     ? "learning"
-    : requestedView;
+    : requestedView === "subscribe" && currentUser && !needsSubscriptionFor(currentUser.isAdmin, subscription)
+      ? "learning"
+      : requestedView;
   const [subject, setSubject] = useState("Maths");
   const [unitFilter, setUnitFilter] = useState("All");
   const [selectedTopicId, setSelectedTopicId] = useState(curriculum[0].id);
@@ -401,10 +421,14 @@ function App() {
     });
   }
   const [mastery, setMastery] = useState([]);
-  const [subscription, setSubscription] = useState(subscriptionPreview ? null : previewMode ? { plan: "admin", status: "active", onboardingComplete: appPreview } : null);
   const [billingChecked, setBillingChecked] = useState(Boolean(previewMode));
   const [legalSection, setLegalSection] = useState(null);
+  // Set when someone signed in chooses to carry on as themselves rather than
+  // create the account the website sent them here to make.
+  const [handoffSkipped, setHandoffSkipped] = useState(false);
   const checkoutState = new URLSearchParams(window.location.search).get("checkout");
+  // Set by stripeCheckout.js when the checkout was a free trial, which takes no money.
+  const checkoutTrial = new URLSearchParams(window.location.search).get("plan") === "trial";
   const appRequest = appPreview ? previewApiRequest : authFetch;
 
   const learnerYear = Number(learnerProfile?.year ?? 7);
@@ -449,13 +473,18 @@ function App() {
   const selectedEvidence = selectedTopic ? evidenceByTopic.get(selectedTopic.id) : null;
   const selectedMastery = selectedTopic ? mastery.find((item) => item.topicId === selectedTopic.id) : null;
   const trial = trialFor(currentUser?.isAdmin, subscription);
-  const trialEnded = trialEndedFor(currentUser?.isAdmin, subscription);
+  // Not paying and not in a trial: the subscription page is the app.
+  const trialEnded = Boolean(currentUser) && needsSubscriptionFor(currentUser.isAdmin, subscription);
   const daysLeft = trialDaysLeft(subscription);
+  const firstCharge = chargeDay(subscription);
+  const [startNowState, setStartNowState] = useState({ busy: false, error: "" });
   const freeTopic = trial ? topicById(subscription?.freeTopicId) : null;
   // Every topic is listed in a trial, so the learner can see what the plan
   // covers. One that is not their free topic is shown as an offer instead of a
   // lesson, and nothing is requested for it.
-  const selectedLocked = trial && Boolean(selectedTopic) && selectedTopic.id !== freeTopic?.id;
+  // Once the week has ended every topic is locked, the free one included, so
+  // nothing is requested behind the subscription page while it is showing.
+  const selectedLocked = trial && Boolean(selectedTopic) && (trialEnded || selectedTopic.id !== freeTopic?.id);
   const [freeTopicState, setFreeTopicState] = useState({ busy: false, error: "" });
   const topicOptionGroups = useMemo(() => {
     const groups = new Map();
@@ -519,7 +548,9 @@ function App() {
       const data = await readJson(response);
       if (!response.ok) throw new Error(data.error ?? "Sign-in could not be verified.");
       setCurrentUser({ ...data.user, isAdmin: data.isAdmin, accessRole: data.accessRole });
-      setView(data.isAdmin ? "admin" : "learning");
+      // A page asked for in the link - #subscribe from a trial email, #account
+      // back from the billing portal - is kept rather than replaced.
+      setView((current) => data.isAdmin ? "admin" : ["progress", "account", "support", "subscribe"].includes(current) ? current : "learning");
       let billingSubscription = null;
       if (data.hasAccess) {
         const billingResponse = await authFetch("/api/billing/status");
@@ -568,7 +599,7 @@ function App() {
         const storedDiagnostic = loadDiagnostic(data.user.email, storedProfile.year, storedSubject);
         setDiagnostic(storedDiagnostic);
         // The placement check spans the whole year, so it is part of the paid plan.
-        setShowDiagnostic(!storedDiagnostic && !trialFor(data.isAdmin, billingSubscription));
+        setShowDiagnostic(!storedDiagnostic && (data.isAdmin || paidStatuses.includes(billingSubscription?.status)));
       }
       setAuthStatus(data.hasAccess ? "signed-in" : "pending");
     } catch (error) {
@@ -590,7 +621,9 @@ function App() {
   }, [examRunning]);
 
   useEffect(() => {
-    if (!learnerProfile || previewMode) return;
+    // An ended trial has no progress to show until it subscribes; the effect
+    // runs again when payment clears.
+    if (!learnerProfile || previewMode || trialEnded) return;
     appRequest(`/api/progress?year=${learnerYear}`)
       .then(async (response) => response.ok ? readJson(response) : Promise.reject())
       .then((data) => {
@@ -598,7 +631,7 @@ function App() {
         setLessonsDone(new Set((data.lessons ?? []).map((lesson) => `${lesson.topicId}::${lesson.index}`)));
       })
       .catch(() => {});
-  }, [learnerProfile, learnerYear]);
+  }, [learnerProfile, learnerYear, trialEnded]);
 
   const handleGoogleCredential = useCallback(async (credential) => {
     setAuthToken(credential);
@@ -647,19 +680,19 @@ function App() {
     setExamSeconds(0);
   }
 
-  // The free week can run out while the page is open. The API says so, and the
+  // The free trial can end while the page is open. The API says so, and the
   // subscription page takes over rather than each part of the lesson failing.
   function noteTrialEnded(data) {
     if (data?.code !== "trial-ended") return;
-    // The server decides: its clock, not this device's, ends the week.
-    setSubscription((current) => ({ ...current, trialEndsAt: new Date().toISOString() }));
+    // The server decides: Stripe has ended the trial, whatever this page last saw.
+    setSubscription((current) => ({ ...current, status: "trial_ended" }));
   }
 
   // Spends the trial's one free topic, so it asks first. The API keeps the
   // first choice whatever happens, and says which topic that was.
   async function chooseFreeTopic(topic) {
     if (!topic || freeTopicState.busy) return;
-    if (!window.confirm(`Make "${topic.title}" your free topic? It is open for one week from now, and the choice cannot be changed.`)) return;
+    if (!window.confirm(`Make "${topic.title}" the topic for your free trial? The choice cannot be changed.`)) return;
     setFreeTopicState({ busy: true, error: "" });
     try {
       const response = await appRequest("/api/billing/free-topic", {
@@ -673,6 +706,23 @@ function App() {
       setFreeTopicState({ busy: false, error: "" });
     } catch (failure) {
       setFreeTopicState({ busy: false, error: failure.message });
+    }
+  }
+
+  // Ends the free trial early at the parent's request: Stripe charges the
+  // first month now and every topic opens.
+  async function startNow() {
+    if (startNowState.busy) return;
+    if (!window.confirm("Start your subscription now? £14.99 will be charged to your card today, then every month, and every topic opens straight away.")) return;
+    setStartNowState({ busy: true, error: "" });
+    try {
+      const response = await appRequest("/api/billing/start-now", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+      const data = await readJson(response);
+      if (!response.ok) throw new Error(data.error ?? "The subscription could not be started. Please try again.");
+      setSubscription((current) => ({ ...current, status: data.status ?? "active" }));
+      setStartNowState({ busy: false, error: "" });
+    } catch (failure) {
+      setStartNowState({ busy: false, error: failure.message });
     }
   }
 
@@ -1169,7 +1219,8 @@ Mark my answer.`,
     const response = await authFetch("/api/billing/status");
     const data = await readJson(response);
     if (response.ok && data.subscription) setSubscription(data.subscription);
-    return data.subscription?.status === "active";
+    // A trial checkout starts in "trialing", a paid one in "active".
+    return ["active", "trialing"].includes(data.subscription?.status);
   }, []);
 
   // Learner setup is a one-time step, and the whole app reads from the profile
@@ -1179,17 +1230,21 @@ Mark my answer.`,
     window.location.assign("/");
   }
 
-  async function beginCheckout() {
+  // trial asks Stripe for the 7-day free trial; the server gives it only to an
+  // account that has not had one.
+  async function beginCheckout({ trial = false } = {}) {
     const response = await authFetch("/api/billing/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({}),
+      body: JSON.stringify({ trial }),
     });
     const data = await readJson(response);
     if (!response.ok) throw new Error(data.error ?? "Secure checkout could not be opened.");
-    // The payment form is mounted in the page now, so the session's client
-    // secret is handed back rather than a URL to redirect to.
-    return data.client_secret;
+    // The payment form is mounted in the page, so the session's client secret
+    // is what matters. A hosted checkout - the local Stripe stub, or Stripe if
+    // the session is ever created that way - answers with a url instead, which
+    // the page follows, as the website sign-up already does.
+    return { clientSecret: data.client_secret ?? null, url: data.url ?? null, trial: data.trial === true };
   }
 
   function finishAccountDeletion() {
@@ -1213,7 +1268,15 @@ Mark my answer.`,
   if (authStatus === "signed-out" && checkoutState === "success") {
     return <main className="password-login"><div className="login-box">
       <div className="password-brand"><BrandLogo /></div>
-      <h1>Payment received</h1>
+      {/* A free trial takes no money, so it speaks of the saved card and the
+          first charge rather than a payment. */}
+      {checkoutTrial ? <>
+        <h1>Your free trial has started</h1>
+        <p>Your card is saved and nothing has been charged. £14.99 a month starts on {trialFirstCharge()} unless you cancel before then, and we email you the day before.</p>
+      </> : <>
+        <h1>Your payment is confirmed</h1>
+        <p>Your subscription has started: £14.99 a month, with every topic open.</p>
+      </>}
       <p>Check your email. We have sent a link to set your password, and it works for seven days.</p>
       <p className="login-no-account">The link takes you to sign in once your password is set, and we then ask for the learner's details.</p>
       {/* No sign-in button here: there is no password yet, so signing in can
@@ -1226,9 +1289,33 @@ Mark my answer.`,
     return (
       <SignupHandoff
         email={registerHandoff.email}
+        start={registerHandoff.start}
         username={registerHandoff.username}
       />
     );
+  }
+
+  // Arriving from the website's sign-up while already signed in. Showing the
+  // app here hid the card form the parent came for, so the choice is put to
+  // them: sign out and make the new account, or carry on as who they are.
+  if (authStatus === "signed-in" && registerHandoff?.email && registerHandoff?.username && !handoffSkipped) {
+    const same = currentUser?.email?.toLowerCase() === registerHandoff.email;
+    return <main className="password-login"><div className="login-box">
+      <div className="password-brand"><BrandLogo /></div>
+      <h1>{same ? "You already have this account" : "You are already signed in"}</h1>
+      <p>{same
+        ? <>You are signed in as <strong>{currentUser.email}</strong>, the address you just entered. Carry on to your account to see your plan.</>
+        : <>You are signed in as <strong>{currentUser?.email}</strong>. To create the account for <strong>{registerHandoff.email}</strong>, sign out first.</>}</p>
+      <div className="password-form">
+        {!same && <button type="button" onClick={signOut}>Sign out and create the new account</button>}
+        <button type="button" className={same ? undefined : "login-link"} onClick={() => {
+          // Leaves the sign-up details out of the address bar, so a reload
+          // does not ask again.
+          window.history.replaceState(null, "", "/");
+          setHandoffSkipped(true);
+        }}>{same ? "Go to my account" : `Continue as ${currentUser?.email}`}</button>
+      </div>
+    </div></main>;
   }
 
   if (authStatus === "signed-out" || authStatus === "checking") {
@@ -1255,13 +1342,13 @@ Mark my answer.`,
     );
   }
 
-  const subscriptionActive = subscription?.status === "active";
+  const subscriptionActive = ["active", "past_due", "trialing"].includes(subscription?.status);
   const setupIncomplete = !currentUser?.isAdmin && !subscription?.onboardingComplete;
 
   // Back from Stripe before its webhook: wait for the payment rather than show
   // a free trial to somebody who has just paid.
   if (authStatus === "signed-in" && billingChecked && !subscriptionActive && checkoutState === "success") {
-    return <CheckoutConfirming email={currentUser.email} onRecheck={recheckBilling} onSignOut={signOut} />;
+    return <CheckoutConfirming email={currentUser.email} onRecheck={recheckBilling} onSignOut={signOut} trial={checkoutTrial} />;
   }
   // Learner setup happens here, in the app, before anything else - paid or
   // not, because a free trial chooses its topic from the learner's year. It
@@ -1271,19 +1358,20 @@ Mark my answer.`,
     return <SubscriberSignup account={currentUser} onComplete={completeOnboarding} />;
   }
   // A trial reaches the subscription page when it asks to, and can go back.
-  // Once the week is over it is the only page, with nothing to go back to.
-  if (authStatus === "signed-in" && billingChecked && trial && (trialEnded || view === "subscribe" || checkoutState === "cancelled")) {
+  // Once the week is over it is the page the app opens on, with nothing to go
+  // back to - except Account & privacy and Help, which stay open so a parent
+  // can still delete the account or ask a question without paying.
+  if (authStatus === "signed-in" && billingChecked && trialEnded && !["account", "support"].includes(view)) {
     return <>
       <SubscriptionPage
         checkoutState={checkoutState}
         currentUser={currentUser}
         freeTopic={freeTopic}
-        trialEnded={trialEnded}
-        onBack={trialEnded ? null : () => {
-          // Clears ?checkout= as well, so going back does not land here again.
-          window.history.replaceState(null, "", "/");
-          chooseView("learning");
-        }}
+        trialAvailable={subscription?.trialAvailable !== false}
+        trialEnded={Boolean(subscription?.trialStartedAt)}
+        onAccount={() => chooseView("account")}
+        onSupport={() => chooseView("support")}
+        onBack={null}
         onCheckout={beginCheckout}
         onPrivacy={setLegalSection}
         onSignOut={signOut}
@@ -1433,7 +1521,7 @@ Mark my answer.`,
       ) : view === "support" ? (
         <SupportTickets />
       ) : view === "account" ? (
-        <AccountSettings currentUser={currentUser} daysLeft={daysLeft} freeTopic={freeTopic} onDeleted={finishAccountDeletion} onSubscribe={() => chooseView("subscribe")} request={appRequest} subscription={subscription} trial={trial} />
+        <AccountSettings currentUser={currentUser} daysLeft={daysLeft} firstCharge={firstCharge} freeTopic={freeTopic} trialEnded={trialEnded} onDeleted={finishAccountDeletion} onSubscribe={() => chooseView("subscribe")} request={appRequest} subscription={subscription} trial={trial} />
       ) : view === "progress" ? (
         <ProgressDashboard learner={learnerProfile} onOpenTopic={openTrackedTopic} request={appRequest} />
       ) : <section className="workspace" data-subject={subject}>
@@ -1513,10 +1601,14 @@ Mark my answer.`,
           <p>
             <strong>Free trial.</strong>{" "}
             {freeTopic
-              ? <>Your free topic is <button className="trial-topic-link" onClick={openFreeTopic} type="button">{freeTopic.title}</button>{freeTopic.subject !== subject ? ` in ${freeTopic.subject}` : ""}, open for {daysLeft === 1 ? "1 more day" : `${daysLeft} more days`}.</>
-              : "Choose any one topic to study free for a week: lessons, practice, exam questions and questions to Sonia."}
+              ? <>Your free topic is <button className="trial-topic-link" onClick={openFreeTopic} type="button">{freeTopic.title}</button>{freeTopic.subject !== subject ? ` in ${freeTopic.subject}` : ""}. </>
+              : "Choose one topic to study during the trial: lessons, practice, exam questions and questions to Sonia. "}
+            {subscription?.cancelAtPeriodEnd
+              ? `The trial ends on ${firstCharge} and you will not be charged.`
+              : `Your subscription starts on ${firstCharge}: £14.99 a month, and every topic opens.`}
           </p>
-          <button className="trial-unlock" onClick={() => chooseView("subscribe")} type="button"><LockKeyholeOpen size={16} /> Unlock every topic</button>
+          {!subscription?.cancelAtPeriodEnd && <button className="trial-unlock" disabled={startNowState.busy} onClick={startNow} type="button"><LockKeyholeOpen size={16} /> {startNowState.busy ? "Starting..." : "Unlock every topic now"}</button>}
+          {startNowState.error && <p className="login-error" role="alert">{startNowState.error}</p>}
         </section>}
 
         <DailyGoal refreshKey={habitKey} request={appRequest} />
@@ -1592,18 +1684,18 @@ Mark my answer.`,
             </div>
             <p className="lesson-goal">{selectedTopic.title} — {selectedTopic.goal}</p>
             {freeTopic ? <>
-              <p>Your free topic is <strong>{freeTopic.title}</strong>{freeTopic.subject !== subject ? ` in ${freeTopic.subject}` : ""}, open for {daysLeft === 1 ? "1 more day" : `${daysLeft} more days`}. Subscribe to open this topic and every other topic in Year {learnerYear}.</p>
+              <p>Your free topic is <strong>{freeTopic.title}</strong>{freeTopic.subject !== subject ? ` in ${freeTopic.subject}` : ""}. This topic, and every other topic in Year {learnerYear}, opens when your subscription starts on {firstCharge}, or now if you start it today.</p>
               <div className="trial-actions">
-                <button className="subscribe-button" onClick={() => chooseView("subscribe")} type="button"><LockKeyholeOpen size={17} /> Unlock every topic</button>
+                <button className="subscribe-button" disabled={startNowState.busy || subscription?.cancelAtPeriodEnd} onClick={startNow} type="button"><LockKeyholeOpen size={17} /> Start my subscription now</button>
                 <button className="secondary-button" onClick={openFreeTopic} type="button">Go to my free topic</button>
               </div>
             </> : <>
-              <p>You can study one topic free for a week, with its lessons, worked examples, practice and exam questions, and up to 20 questions a day to Sonia, your AI tutor. The week starts when you choose. Pick the one that matters most: the choice cannot be changed afterwards.</p>
+              <p>During your free trial you can study one topic, with its lessons, worked examples, practice and exam questions, and up to 20 questions a day to Sonia, your AI tutor. Every topic opens when your subscription starts on {firstCharge}. Pick the one that matters most: the choice cannot be changed afterwards.</p>
               <div className="trial-actions">
                 <button className="subscribe-button" disabled={freeTopicState.busy} onClick={() => chooseFreeTopic(selectedTopic)} type="button">
                   <Gift size={17} /> {freeTopicState.busy ? "Saving..." : "Make this my free topic"}
                 </button>
-                <button className="secondary-button" onClick={() => chooseView("subscribe")} type="button">Subscribe for every topic</button>
+                <button className="secondary-button" disabled={startNowState.busy || subscription?.cancelAtPeriodEnd} onClick={startNow} type="button">Start my subscription now</button>
               </div>
             </>}
             {freeTopicState.error && <p className="login-error" role="alert">{freeTopicState.error}</p>}

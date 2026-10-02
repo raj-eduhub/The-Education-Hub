@@ -35,9 +35,9 @@ export function LoginScreen({ onAuthenticated, error, checking }) {
   }
   return <main className="password-login"><div className="login-box">
     <div className="password-brand"><BrandLogo /></div>
-    <p className="login-no-account">New here? Accounts are created at <strong>Y7to11.AI</strong>, where you choose your plan. We email you a link to set your password once payment goes through.</p>
+    <p className="login-no-account">New here? Accounts are created at <strong>Y7to11.AI</strong>, where you can start a 7-day free trial or subscribe. We email you a link to set your password.</p>
     <h1>{forgot ? "Reset your password" : signup ? "Create your account" : "Welcome back"}</h1>
-    {signup && <p>Parent or guardian account. We will email a link to confirm your address, and a paid subscription and learner setup are required before learning begins.</p>}
+    {signup && <p>Parent or guardian account. We will email a link to confirm your address. Then set up the learner and start a 7-day free trial, or subscribe for every topic.</p>}
     {forgot && !sent && <p>Enter the email registered to the account. If it matches an account, we send the username and a reset link to that address.</p>}
     {sent ? <div className="login-sent">
       <p role="status">{signup
@@ -85,7 +85,7 @@ export function EmailVerification({ token }) {
     <h1>{status === "done" ? "Email confirmed" : status === "error" ? "Link unavailable" : "Confirming your email"}</h1>
     {status === "working" && <p role="status">One moment.</p>}
     {status === "done" && <div className="login-sent">
-      <p role="status">Your address is confirmed and you are signed in. Choose a subscription to begin.</p>
+      <p role="status">Your address is confirmed and you are signed in. Next, tell us about the learner, then start a 7-day free trial or subscribe.</p>
       <button type="button" onClick={() => window.location.assign("/")}>Continue</button>
     </div>}
     {status === "error" && <div className="login-sent">
@@ -100,6 +100,21 @@ export function PasswordReset({ token }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [done, setDone] = useState(false);
+  // The account the link was sent for, looked up from the link without using
+  // it up, so the username is shown and locked rather than typed. If the
+  // lookup cannot be made the field is left to fill in, as before; the server
+  // checks it against the link either way.
+  const [owner, setOwner] = useState({ status: "checking", username: "" });
+  useEffect(() => {
+    apiFetch("/api/auth/reset-info", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token }) })
+      .then(async (response) => {
+        const data = await readJson(response);
+        if (response.ok && data.username) setOwner({ status: "known", username: data.username });
+        else if (response.status === 410) setOwner({ status: "expired", username: "" });
+        else setOwner({ status: "unknown", username: "" });
+      })
+      .catch(() => setOwner({ status: "unknown", username: "" }));
+  }, [token]);
   async function submit(event) {
     event.preventDefault();
     const form = Object.fromEntries(new FormData(event.currentTarget));
@@ -119,13 +134,20 @@ export function PasswordReset({ token }) {
     {done ? <div className="login-sent">
       <p role="status">Your password is updated and every signed-in device was signed out. Log in with your new password.</p>
       <button type="button" className="login-link" onClick={() => window.location.assign("/")}>Go to log in</button>
-    </div> : <form className="password-form" onSubmit={submit}>
-      <p>Enter the username from the email this link came in, then choose your password. The link can be used once.</p>
+    </div> : owner.status === "expired" ? <div className="login-sent">
+      <p role="alert">This link is invalid, has expired, or has already been used. Ask for a new one and we will email it to you.</p>
+      <button type="button" onClick={() => window.location.assign("/?forgot=1")}>Send me a new link</button>
+    </div> : owner.status === "checking" ? <p role="status">Checking your link...</p> : <form className="password-form" onSubmit={submit}>
+      <p>{owner.status === "known"
+        ? "Choose a password for this account. The link can be used once."
+        : "Enter the username from the email this link came in, then choose your password. The link can be used once."}</p>
       <RequiredNote />
-      {/* Asked for rather than filled in: it has to match the account the link
-          was sent for, and typing it here lets a password manager save the
-          username and password together. */}
-      <label><span>Username<RequiredMark /></span><input name="username" autoCapitalize="none" autoComplete="username" required minLength={3} maxLength={32} pattern="[A-Za-z0-9_.\-]{3,32}" spellCheck={false} /></label>
+      {/* Filled in and locked when the link says whose it is. It still sits in
+          the form, so a password manager saves the username and password
+          together, and the server still checks it against the link. */}
+      {owner.status === "known"
+        ? <label><span>Username</span><input name="username" autoComplete="username" readOnly value={owner.username} /></label>
+        : <label><span>Username<RequiredMark /></span><input name="username" autoCapitalize="none" autoComplete="username" required minLength={3} maxLength={32} pattern="[A-Za-z0-9_.\-]{3,32}" spellCheck={false} /></label>}
       <label><span>New password (15-128 characters)<RequiredMark /></span><input name="password" type="password" autoComplete="new-password" required minLength={15} maxLength={128} /></label>
       <label><span>Confirm new password<RequiredMark /></span><input name="confirm" type="password" autoComplete="new-password" required maxLength={128} /></label>
       {message && <p role="alert" className="login-error">{message}</p>}
@@ -138,48 +160,34 @@ export function PasswordReset({ token }) {
 // Arriving from the website, where the username, email and consent were given.
 //
 // No password is asked for: the account is created without one and the password
-// is set later, from a one-time emailed link. So this is a confirmation rather
-// than a form - check the two details, then either start free (the link is
-// sent now) or pay (the link is sent when payment clears).
-export function SignupHandoff({ username, email }) {
+// is set later, from the one-time link emailed as soon as Stripe confirms the
+// card. So this is a confirmation rather than a form - check the two details,
+// then go to Stripe for one of two things:
+//
+//   trial  a 7-day free trial: the card is taken, nothing is charged today, and
+//          £14.99 a month starts when the trial ends unless it is cancelled
+//   pay    a subscription paid today, every topic straight away
+//
+// The website asks which, and passes it as start, so this page leads with that
+// choice and offers the other as a small link. Without a start, both are offered.
+export function SignupHandoff({ username, email, start: initialStart = null }) {
+  const [start, setStart] = useState(initialStart === "pay" ? "pay" : initialStart === "trial" ? "trial" : null);
   const [busy, setBusy] = useState(false);
-  // Set once a free start has sent the set-password email.
-  const [freeStarted, setFreeStarted] = useState(false);
   const [message, setMessage] = useState("");
   // Set when the details belong to an account that already exists, so the
   // way forward is a button rather than advice in a sentence.
   const [conflict, setConflict] = useState("");
   // Set once the card form is on the page. Stripe's form ui_mode answers with a
-  // client_secret and no url, so the payment is taken here rather than on a
-  // page redirected to.
+  // client_secret and no url, so the card is taken here rather than on a page
+  // redirected to.
   const [paying, setPaying] = useState(false);
   const formRef = useRef(null);
-
-  async function startFree() {
-    setBusy(true);
-    setMessage("");
-    setConflict("");
-    try {
-      const response = await apiFetch("/api/auth/reserve", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, consent: true, start: "free" }),
-      });
-      const data = await readJson(response);
-      if (!response.ok) {
-        if (response.status === 409) setConflict(data.code ?? "existing");
-        throw new Error(data.error ?? "The account could not be created.");
-      }
-      setFreeStarted(true);
-    } catch (failure) {
-      setMessage(failure.message);
-    } finally {
-      setBusy(false);
-    }
-  }
+  const firstCharge = new Date(Date.now() + 7 * 24 * 3600000).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
 
   async function create(event) {
     event.preventDefault();
+    // The button pressed decides; with one choice on screen, that choice.
+    const trial = (event.nativeEvent.submitter?.value ?? start ?? "trial") !== "pay";
     const registration = Object.fromEntries(new FormData(event.currentTarget));
     setBusy(true);
     setMessage("");
@@ -206,21 +214,19 @@ export function SignupHandoff({ username, email }) {
       const checkout = await apiFetch("/api/billing/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ checkoutToken: data.checkoutToken }),
+        body: JSON.stringify({ checkoutToken: data.checkoutToken, trial }),
       });
       const session = await readJson(checkout);
       if (!checkout.ok) throw new Error(session.error ?? "Checkout could not be opened.");
       // A hosted checkout hands back a url to send the parent to. The embedded
-      // form hands back a client_secret instead and has to be mounted on a page
-      // in this application, which is not wired for a sign-up that has no
-      // session yet: say so rather than leaving a button that does nothing.
+      // form hands back a client_secret instead, mounted on this page.
       if (session.url) {
         window.location.assign(session.url);
         return;
       }
       if (!session.client_secret) throw new Error("The payment form could not be opened. Please try again, or contact support.");
       setPaying(true);
-      await mountCheckoutForm(session.client_secret, formRef.current, { onError: setMessage });
+      await mountCheckoutForm(session.client_secret, formRef.current, { onError: setMessage, trial: session.trial === true });
       setBusy(false);
     } catch (failure) {
       setMessage(failure.message);
@@ -229,20 +235,16 @@ export function SignupHandoff({ username, email }) {
     }
   }
 
-  if (freeStarted) {
-    return <main className="password-login"><div className="login-box">
-      <div className="password-brand"><BrandLogo /></div>
-      <h1>Check your email</h1>
-      <p>We have sent a link to <strong>{email}</strong> to set your password. It works for seven days.</p>
-      <p className="login-no-account">Once it is set, sign in with the username <strong>{username}</strong>, tell us about the learner, and choose one topic to study free for a week.</p>
-      <button type="button" className="login-link" onClick={() => window.location.assign("/?forgot=1")}>Didn't get the email? Send another link</button>
-    </div></main>;
-  }
+  const trialTerms = `Nothing is charged today. £14.99 a month starts on ${firstCharge} unless you cancel before then, and we email you the day before.`;
 
   return <main className="password-login"><div className="login-box">
     <div className="password-brand"><BrandLogo /></div>
-    <h1>Check your details</h1>
-    <p>These came across from Y7to11.AI. Try one topic free for a week with no card needed, or subscribe now for every topic. Either way we email you a link to set your password.</p>
+    <h1>{start === "trial" ? "Start your 7-day free trial" : start === "pay" ? "Subscribe to Y7to11.AI" : "Check your details"}</h1>
+    <p>{start === "trial"
+      ? `Check your details, then add a card. ${trialTerms} During the trial the learner chooses one topic to study.`
+      : start === "pay"
+        ? "Check your details. Payment is next: £14.99 a month, every topic straight away, cancel any time."
+        : "These came across from Y7to11.AI. Start a 7-day free trial with one topic, or subscribe now for every topic. Either way a card is needed, and we email you a link to set your password."}</p>
     <form className="password-form" onSubmit={create}>
       <label>Username<input autoComplete="username" name="username" readOnly value={username} /></label>
       <label>Email<input autoComplete="email" name="email" readOnly type="email" value={email} /></label>
@@ -250,12 +252,21 @@ export function SignupHandoff({ username, email }) {
           tree throughout so the mount target cannot disappear under the form. */}
       <div className="checkout-form" hidden={!paying} ref={formRef}></div>
       {message && <p role="alert" className="login-error">{message}</p>}
+      {/* Someone already in a trial who comes back to subscribe has an account,
+          so the way to pay is from inside it. */}
+      {conflict === "existing" && start === "pay" && <p className="login-no-account">Already on the free trial? Sign in, then choose <strong>Unlock every topic now</strong>. Everything done so far is kept.</p>}
       {paying ? null : conflict ? <>
         <button type="button" onClick={() => window.location.assign("/")}>Sign in</button>
         <button type="button" className="login-link" onClick={() => window.location.assign("/?forgot=1")}>Forgot your password?</button>
+      </> : start === "trial" ? <>
+        <button type="submit" value="trial" disabled={busy}>{busy ? "Please wait..." : "Continue to card details"}</button>
+        <button type="button" className="login-link" disabled={busy} onClick={() => setStart("pay")}>Subscribe now instead</button>
+      </> : start === "pay" ? <>
+        <button type="submit" value="pay" className="pay-button" disabled={busy}>{busy ? "Please wait..." : "Continue to payment - £14.99/month"}</button>
+        <button type="button" className="login-link" disabled={busy} onClick={() => setStart("trial")}>Start with a 7-day free trial instead</button>
       </> : <>
-        <button type="button" disabled={busy} onClick={startFree}>{busy ? "Please wait..." : "Try one topic free for a week"}</button>
-        <button type="submit" className="secondary-button" disabled={busy}>Subscribe now - £14.99/month</button>
+        <button type="submit" value="trial" disabled={busy}>{busy ? "Please wait..." : "Start 7-day free trial"}</button>
+        <button type="submit" value="pay" className="pay-button" disabled={busy}>Subscribe now - £14.99/month</button>
       </>}
       <button type="button" className="login-link" onClick={() => window.location.assign("/")}>These are wrong - start again</button>
     </form>

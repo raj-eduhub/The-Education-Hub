@@ -1,4 +1,5 @@
 import { app } from "@azure/functions";
+import { timingSafeEqual } from "node:crypto";
 import Stripe from "stripe";
 import { developmentBypass, getPrincipal, isAdministrator, principalEmail } from "../lib/auth.js";
 import { emailForCheckoutGrant } from "../lib/passwordAuth.js";
@@ -7,6 +8,7 @@ import { getProfile } from "../lib/signupStore.js";
 import {
   accountKey,
   claimFreeTopic,
+  trialDays,
   getSubscription,
   getSubscriptionEntity,
   grantsAccess,
@@ -16,6 +18,7 @@ import {
 } from "../lib/subscriptionStore.js";
 import { userCanAccess } from "../lib/userStore.js";
 import { handleStripeEvent } from "../lib/billingEvents.js";
+import { sendTrialReminders } from "../lib/trialReminders.js";
 
 // One plan, billed monthly. The billing period still travels in the Stripe
 // metadata so the webhook, the subscription record and the billing portal keep
@@ -89,6 +92,27 @@ app.http("billing", {
         }
       }
 
+      // The daily free-trial emails. Called by a schedule with no user session
+      // (.github/workflows/trial-reminders.yml), so it is authorised by a
+      // shared secret in a header, or by an administrator from the app. Static
+      // Web Apps' managed Functions run only HTTP triggers, which is why this is
+      // a route on a schedule rather than a timer function.
+      if (action === "trial-reminders") {
+        if (request.method !== "POST") return { status: 405 };
+        const expected = process.env.TRIAL_REMINDER_KEY ?? "";
+        const offered = request.headers.get("x-trial-reminder-key") ?? "";
+        const keyMatches = expected.length >= 32 && offered.length === expected.length
+          && timingSafeEqual(Buffer.from(offered), Buffer.from(expected));
+        if (!keyMatches && !(await identity(request)).admin) {
+          return { status: 403, jsonBody: { error: "Not authorised to send trial emails." } };
+        }
+        const result = await sendTrialReminders({
+          appUrl: process.env.APP_BASE_URL ?? new URL(request.url).origin,
+          log: (message) => context.warn(message),
+        });
+        return { jsonBody: result };
+      }
+
       const identified = await identity(request);
       // Checkout is the one action a brand-new account must reach before it has
       // any access, because paying is how access is granted. A sign-up carries
@@ -139,9 +163,8 @@ app.http("billing", {
               cancelling: counted((row) => row.status === "active" && row.cancelAtPeriodEnd),
               cancelled: counted((row) => ["canceled", "unpaid"].includes(row.status)),
               pending: counted((row) => row.status === "checkout_pending"),
-              // Trials are the app's own record, not a Stripe status.
-              trial: counted((row) => !grantsAccess(row.status) && row.trialEndsAt && Date.parse(row.trialEndsAt) > Date.now()),
-              trialEnded: counted((row) => !grantsAccess(row.status) && row.trialEndsAt && Date.parse(row.trialEndsAt) <= Date.now()),
+              trial: counted((row) => row.status === "trialing"),
+              trialEnded: counted((row) => !grantsAccess(row.status) && row.status !== "trialing" && Boolean(row.trialEndsAt)),
               setupIncomplete: counted((row) => grantsAccess(row.status) && !row.onboardingComplete),
             },
           },
@@ -150,15 +173,14 @@ app.http("billing", {
 
       if (request.method !== "POST") return { status: 405 };
 
-      // Starts the free trial: one topic, open for a week from now. It has to be
-      // a topic in the learner's own year, and the first choice stands - the
-      // store refuses to overwrite it - so the reply always names the topic
-      // that is actually free, and the week cannot be restarted.
+      // The one topic a trial studies. It has to be a topic in the learner's
+      // own year, and the first choice stands - the store refuses to overwrite
+      // it - so the reply always names the topic that is actually free.
       if (action === "free-topic") {
         if (admin) return { status: 400, jsonBody: { error: "Administrator access already covers every topic." } };
         const subscription = await getSubscription(email);
         if (grantsAccess(subscription?.status)) return { status: 409, jsonBody: { error: "Your subscription already covers every topic." } };
-        if (subscription?.everPaid) return { status: 409, jsonBody: { error: "The free trial is for new accounts. Subscribe to carry on learning." } };
+        if (subscription?.status !== "trialing") return { status: 409, jsonBody: { error: "Start the free trial first." } };
         if (!subscription?.onboardingComplete) return { status: 409, jsonBody: { error: "Finish learner setup first." } };
         const body = await request.json().catch(() => ({}));
         const profile = await getProfile(email);
@@ -181,6 +203,18 @@ app.http("billing", {
         const price = priceId();
         if (!price) return { status: 503, jsonBody: { error: "This subscription price is not configured yet." } };
         const key = accountKey(email);
+        const existing = await getSubscriptionEntity(email);
+        if (["active", "past_due", "trialing"].includes(existing?.status)) {
+          return { status: 409, jsonBody: { error: "This account already has a subscription or a trial running." } };
+        }
+        // The free trial is Stripe's: asked for here, it takes the card, charges
+        // nothing today, and charges the first month when the trial ends unless
+        // it is cancelled first. It is given only when asked for - a parent can
+        // also subscribe straight away - and once per account: an account
+        // Stripe has billed before, or that has had a trial, pays from the start.
+        const requested = await request.clone().json().catch(() => ({}));
+        const trialAvailable = !existing?.stripeSubscriptionId && !existing?.stripeCustomerId && !existing?.trialStartedAt;
+        const trial = requested.trial === true && trialAvailable;
         const session = await stripe.checkout.sessions.create({
           // Configured in Checkout Studio.
           ui_mode: "form",
@@ -204,6 +238,12 @@ app.http("billing", {
           metadata: { accountKey: key, plan: "learner", billingPeriod },
           subscription_data: {
             metadata: { accountKey: key, plan: "learner", billingPeriod },
+            ...(trial ? {
+              trial_period_days: trialDays(),
+              // The card is always collected, so this only matters if it is
+              // somehow missing at the end: no card, no subscription.
+              trial_settings: { end_behavior: { missing_payment_method: "cancel" } },
+            } : {}),
           },
         });
         await savePendingSubscription(email, { plan: "learner", billingPeriod });
@@ -212,7 +252,27 @@ app.http("billing", {
         // through as well because the local Stripe stub has no card form and
         // answers with a plain redirect instead; against real Stripe in this
         // ui_mode it is null and the embedded form is used.
-        return { jsonBody: { client_secret: session.client_secret ?? null, url: session.url ?? null } };
+        return { jsonBody: { client_secret: session.client_secret ?? null, url: session.url ?? null, trial } };
+      }
+
+      // Ends the free trial now, at the parent's request: Stripe charges the
+      // first month straight away and every topic opens. The row is updated from
+      // Stripe's answer so the app unlocks at once; the webhook that follows
+      // says the same thing.
+      if (action === "start-now") {
+        const subscription = await getSubscriptionEntity(email);
+        if (subscription?.status !== "trialing" || !subscription.stripeSubscriptionId) {
+          return { status: 409, jsonBody: { error: "There is no free trial running to end." } };
+        }
+        const updated = await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+          trial_end: "now",
+          proration_behavior: "none",
+        });
+        await updateSubscriptionByAccountKey(accountKey(email), { status: updated.status });
+        if (updated.status !== "active") {
+          return { status: 402, jsonBody: { error: "The payment could not be taken. Update the card from Account and privacy, then try again.", status: updated.status } };
+        }
+        return { jsonBody: { status: updated.status } };
       }
 
       if (action === "portal") {

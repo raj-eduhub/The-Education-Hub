@@ -1,0 +1,36 @@
+name: Free trial emails
+
+# Once a day, asks the deployed app to send the free-trial emails: one the day
+# before a free week ends, and one when it has ended. Static Web Apps' managed
+# Functions run HTTP triggers only, so the schedule lives here and calls the
+# route. Each email is sent at most once per account, so a re-run is harmless.
+#
+# Needs two repository secrets:
+#   APP_BASE_URL         the deployed app, e.g. https://app.y7to11.ai
+#   TRIAL_REMINDER_KEY   the same value as the app setting of that name (32+ characters)
+# Until both are set the job reports that it is not configured and succeeds.
+
+on:
+  schedule:
+    - cron: "0 8 * * *"   # 08:00 UTC: 9am in the UK in summer, 8am in winter
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send the free-trial emails
+        env:
+          APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+          TRIAL_REMINDER_KEY: ${{ secrets.TRIAL_REMINDER_KEY }}
+        run: |
+          if [ -z "$APP_BASE_URL" ] || [ -z "$TRIAL_REMINDER_KEY" ]; then
+            echo "::notice::APP_BASE_URL or TRIAL_REMINDER_KEY is not set; no trial emails sent."
+            exit 0
+          fi
+          curl --fail-with-body --silent --show-error --max-time 120 \
+            -X POST "${APP_BASE_URL%/}/api/billing/trial-reminders" \
+            -H "x-trial-reminder-key: $TRIAL_REMINDER_KEY"
+          echo

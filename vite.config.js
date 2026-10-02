@@ -6,7 +6,9 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://127.0.0.1:7071",
+        // API_PROXY_TARGET points a second dev server at another Functions
+        // host, such as one running against the local Stripe and email stubs.
+        target: process.env.API_PROXY_TARGET ?? "http://127.0.0.1:7071",
         changeOrigin: true,
       },
     },

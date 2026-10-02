@@ -3,7 +3,7 @@ import { CreditCard, ExternalLink, ShieldCheck, Trash2 } from "lucide-react";
 import { LegalNotice } from "./LegalNotice.jsx";
 import { readJson } from "./auth.js";
 
-export function AccountSettings({ currentUser, daysLeft = null, freeTopic = null, onDeleted, onSubscribe, request, subscription, trial = false }) {
+export function AccountSettings({ currentUser, daysLeft = null, firstCharge = "", freeTopic = null, onDeleted, onSubscribe, request, subscription, trial = false, trialEnded = false }) {
   const [confirmation, setConfirmation] = useState("");
   const [legalSection, setLegalSection] = useState(null);
   const [message, setMessage] = useState("");
@@ -40,16 +40,18 @@ export function AccountSettings({ currentUser, daysLeft = null, freeTopic = null
   }
 
   const isAdminPlan = subscription?.plan === "admin";
-  // Billing exists once Stripe has seen the account. A trial that has never
-  // paid has nothing for the billing portal to show.
-  const hasBilling = !isAdminPlan && !["trial", "checkout_pending", "", undefined, null].includes(subscription?.status);
+  // Billing exists once Stripe has seen the account - a trial included, since
+  // its card is on file and cancelling it is done in the billing portal.
+  const hasBilling = !isAdminPlan && !["checkout_pending", "", undefined, null].includes(subscription?.status);
   const plan = isAdminPlan
     ? "Administrator access does not use a paid subscription."
     : trial
-      ? freeTopic
-        ? `You are on the free trial: ${freeTopic.title} is open for ${daysLeft === 1 ? "1 more day" : `${daysLeft} more days`}. Subscribe to unlock every topic.`
-        : "You are on the free trial: choose one topic from the Learning hub to study free for a week. Subscribe to unlock every topic."
-      : `Your learner plan is ${subscription?.status ?? "inactive"}.`;
+      ? subscription?.cancelAtPeriodEnd
+        ? `Your free trial ends on ${firstCharge}. It has been cancelled, so nothing will be charged.`
+        : `You are on the 7-day free trial${freeTopic ? `, studying ${freeTopic.title}` : ""}. Your card will be charged £14.99 on ${firstCharge}, then every month, and every topic opens. To stop it, cancel before then in Manage billing.`
+      : trialEnded
+        ? "There is no subscription on this account. Subscribe to carry on; the learner's setup and progress are kept."
+        : `Your learner plan is ${subscription?.status ?? "inactive"}.`;
   return <section className="account-settings">
     <header className="account-settings-header">
       <p className="eyebrow">Account & privacy</p>
@@ -60,8 +62,8 @@ export function AccountSettings({ currentUser, daysLeft = null, freeTopic = null
     <section className="account-section">
       <div className="account-section-icon"><CreditCard size={20} /></div>
       <div><h3>Subscription</h3><p>{plan}</p></div>
-      {(trial || hasBilling) && <div className="account-links">
-        {trial && onSubscribe && <button onClick={onSubscribe} type="button">Subscribe</button>}
+      {(trialEnded || hasBilling) && <div className="account-links">
+        {trialEnded && onSubscribe && <button onClick={onSubscribe} type="button">Subscribe</button>}
         {hasBilling && <button disabled={working} onClick={openBillingPortal} type="button">Manage billing <ExternalLink size={16} /></button>}
       </div>}
     </section>

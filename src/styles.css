@@ -7350,3 +7350,95 @@ span.brand-logo.brand-logo.brand-logo {
   .trial-unlock { justify-content: center; width: 100%; }
   .trial-actions > button { width: 100%; }
 }
+
+/* After the free week, the subscription page links to the account and to help. */
+.subscription-links { display: flex; flex-wrap: wrap; gap: 8px 18px; justify-content: center; }
+.subscription-links button {
+  background: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Plans: the free trial and full access as cards, side by side. */
+.plan-page { margin: 0 auto; max-width: 1080px; padding: 40px 20px 56px; }
+.plan-page-heading { margin: 0 auto 32px; max-width: 680px; text-align: center; }
+.plan-page-heading h1 { color: var(--ink-bright, #f2f7fd); font-size: clamp(1.8rem, 3.4vw, 2.6rem); margin: 6px 0 10px; }
+.plan-page-heading p { color: var(--ink-soft, #93a7c2); }
+.plan-cards { display: grid; gap: 22px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.plan-cards.single { margin: 0 auto; max-width: 520px; grid-template-columns: minmax(0, 1fr); }
+.plan-card {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--hairline, rgba(255, 255, 255, 0.12));
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  padding: 30px 28px;
+  position: relative;
+}
+.plan-card.plan-full { border-color: rgba(62, 196, 106, 0.45); }
+.plan-icon { color: #4c8dff; margin-bottom: 14px; }
+.plan-full .plan-icon { color: #3ec46a; }
+.plan-card h2 { color: var(--ink-bright, #f2f7fd); font-size: 1.45rem; margin: 0; }
+.plan-blurb { color: var(--ink-soft, #93a7c2); margin: 6px 0 18px; }
+.plan-price { align-items: baseline; display: flex; gap: 8px; margin: 0; }
+.plan-price strong { color: var(--ink-bright, #f2f7fd); font-size: 2.8rem; letter-spacing: -0.02em; line-height: 1; }
+.plan-price span { color: var(--ink-soft, #93a7c2); }
+.plan-after { color: var(--ink-soft, #93a7c2); font-size: 0.9rem; margin: 6px 0 4px; }
+.plan-section {
+  color: var(--ink-soft, #93a7c2);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  margin: 20px 0 8px;
+  text-transform: uppercase;
+}
+.plan-card ul { display: grid; gap: 10px; list-style: none; margin: 0; padding: 0; }
+.plan-card li { align-items: flex-start; color: var(--ink, #d6e2f2); display: flex; gap: 10px; }
+.plan-card li svg { color: #4c8dff; flex: none; margin-top: 2px; }
+.plan-full li svg { color: #3ec46a; }
+.plan-badge {
+  border: 1px solid rgba(62, 196, 106, 0.6);
+  border-radius: 999px;
+  color: #6fe39a;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  padding: 4px 12px;
+  position: absolute;
+  right: 22px;
+  text-transform: uppercase;
+  top: 22px;
+}
+.plan-cta {
+  align-items: center;
+  border: 0;
+  border-radius: 10px;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  font-weight: 700;
+  gap: 8px;
+  justify-content: center;
+  margin-top: auto;
+  min-height: 50px;
+  width: 100%;
+}
+.plan-card ul + .plan-cta, .plan-card ul:last-of-type { margin-bottom: 24px; }
+.plan-cta-trial { background: linear-gradient(180deg, #4c8dff, #2f6fd8); }
+.plan-cta-full { background: linear-gradient(180deg, #2ba85a, #1d8f47); }
+.plan-cta:hover:not(:disabled) { filter: brightness(1.07); }
+.plan-cta:disabled { cursor: progress; opacity: 0.6; }
+.plan-checkout { margin: 26px auto 0; max-width: 640px; text-align: center; }
+.plan-checkout .checkout-form { text-align: left; }
+
+/* The paid choice on the sign-up page from the website, green like the plan. */
+.password-form button.pay-button:not(.login-link) { background: linear-gradient(180deg, #2ba85a, #1d8f47); border-color: #1a7f3f; }
+
+@media (max-width: 760px) {
+  .plan-cards { grid-template-columns: minmax(0, 1fr); }
+}

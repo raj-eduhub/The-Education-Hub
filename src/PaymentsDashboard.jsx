@@ -35,9 +35,9 @@ function stateOf(row) {
   if (row.status === "active") return { key: "active", label: "Active", tone: "ok" };
   if (row.status === "past_due") return { key: "past_due", label: "Payment late", tone: "warn" };
   if (["canceled", "unpaid"].includes(row.status)) return { key: "cancelled", label: "Cancelled", tone: "off" };
-  // The free week is the app's record, not a Stripe status, so it is read from
-  // its own field. It comes before "Never paid" because a trial that opened
-  // checkout and left it is still a trial.
+  // Stripe's free trial: "trialing" until its first charge. A trial that ended
+  // without becoming a subscription is shown as such, ahead of "Never paid".
+  if (row.status === "trialing") return { key: "trial", label: `Free trial to ${when(row.trialEndsAt)}`, tone: "warn" };
   if (row.trialEndsAt) {
     return Date.parse(row.trialEndsAt) > Date.now()
       ? { key: "trial", label: `Free trial to ${when(row.trialEndsAt)}`, tone: "warn" }

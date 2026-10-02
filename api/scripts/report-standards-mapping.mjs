@@ -43,12 +43,12 @@ Updated ${report.createdAt}. Local curriculum only; production unchanged. **The 
 
 - Archived 23 official DfE, AQA and Pearson specifications with retrieval dates, PDF hashes, extracted physical pages and source URLs.
 - Prepared all ${plan.outcomes} outcomes across ${curriculum.length} topics, Years 7–11 and seven subjects. KS3 maps to DfE; GCSE maps separately to both configured boards: ${jobs.length} topic/board jobs and ${inventory.length} outcome/board rows.
-- ${counts.reviewed} jobs (${report.reviewedRows} rows) have passed two separate GPT-5 nano calls and structural evidence checks. ${counts.failed} jobs failed validation, ${counts['not-reviewed']} have not completed review, and ${counts.stale} have changed inputs. Failed and stale results are excluded from accepted coverage.
+- ${counts.reviewed} jobs (${report.reviewedRows} rows) have passed two separate GPT-5 nano calls and structural evidence checks. ${counts.failed} jobs stopped with endpoint authentication failures, ${counts['not-reviewed']} have not completed review, and ${counts.stale} have changed inputs. There are no source-line or payload validation failures in the current inventory. Authentication-failed and stale results are excluded from accepted coverage.
 - Source citations use archived document IDs, physical pages and numbered lines. Lesson evidence must occur in the actual lesson. Unsupported references are rejected; newer runs select existing lesson fields rather than generating quotations.
 - Independently corrected the Year 7 factors/multiples lesson in the local DB and source. A number can be both a factor and a multiple of itself. The exact old row/source are backed up and the saved DB payload was read back. [Correction evidence](factor-correction/applied.json).
 - Verification after this correction: 3,026 subtopic/tier selection, formula-policy and notation checks passed; all seven corrected-topic authenticated API checks passed. [API results](../y7-maths-number-routing-verification.json).
 - The corrected Maths payload has now passed its exact-payload nano recheck. Both replacement narration clips were generated and passed authenticated browser delivery, decoding and non-silence checks. [Amendment verification](factor-correction/speech-verification.json).
-- A fresh full-catalogue speech dry run found all 25,150 required clips cached, zero missing, zero stale or unseeded topics. [Current speech inventory](../narration-standards-post-correction.json).
+- A fresh full-catalogue speech dry run found all 25,150 required clips cached, zero missing, zero stale or unseeded topics. [Current speech inventory](../narration-unique-speech-current.json).
 
 ## Current blocking condition
 

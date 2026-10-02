@@ -1,11 +1,8 @@
 import { app } from "@azure/functions";
-import { authTable, findAuth, digest, hashPassword, checkPassword, createSession, sessionToken, createPasswordReset, completePasswordReset, createEmailVerification, completeEmailVerification, createCheckoutGrant } from "../lib/passwordAuth.js";
-import { sendFreeStartEmail, sendPasswordResetEmail, sendVerificationEmail } from "../lib/email.js";
+import { authTable, findAuth, digest, hashPassword, checkPassword, createSession, sessionToken, createPasswordReset, completePasswordReset, usernameForResetToken, createEmailVerification, completeEmailVerification, createCheckoutGrant } from "../lib/passwordAuth.js";
+import { sendPasswordResetEmail, sendVerificationEmail } from "../lib/email.js";
 import { getUserByEmail, saveUser } from "../lib/userStore.js";
 import { getSubscription, grantsAccess } from "../lib/subscriptionStore.js";
-
-// As long as the link sent after payment: it may not be opened until evening.
-const setPasswordWindowMs = 7 * 24 * 3600000;
 
 app.http("passwordLogin", {
   methods: ["POST"], authLevel: "anonymous", route: "auth/{action}",
@@ -32,6 +29,16 @@ app.http("passwordLogin", {
         return { jsonBody: { ok: true }, headers: { "Set-Cookie": cookie("", 0) } };
       }
       const body = await request.json();
+      // Who a set-password link is for, so the page shows the username instead
+      // of asking for it. Holding the link already lets you set the password,
+      // so this tells its holder nothing more; it is still rate-limited per link.
+      if (action === "reset-info") {
+        const token = typeof body.token === "string" ? body.token : "";
+        if (!await withinLimit(`rate-link-${digest(token)}`, 10)) return fail(429, "Too many attempts. Try again in 15 minutes.");
+        const username = await usernameForResetToken(token);
+        if (!username) return fail(410, "This link is invalid, expired, or already used.");
+        return { status: 200, jsonBody: { username }, headers: { "Cache-Control": "no-store" } };
+      }
       if (action === "forgot") {
         // Always accept, so the response cannot be used to discover which emails hold accounts.
         const accepted = { status: 202, jsonBody: { ok: true }, headers: { "Cache-Control": "no-store" } };
@@ -121,30 +128,10 @@ app.http("passwordLogin", {
       // refuses a session whose address is not proven, and nothing here has
       // proven it. The grant authorises one Stripe checkout for this address
       // and expires in an hour.
-      //
-      // With start: "free" there is no checkout. The set-password link is sent
-      // now instead of after payment, and setting the password is what proves
-      // the address and opens the free trial.
       if (action === "reserve") {
         const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) return fail(400, "Enter an email address we can reach you on.");
         if (body.consent !== true) return fail(400, "Confirm you are the parent, guardian or carer.");
-        const startFree = body.start === "free";
-        // A free start sends an email, so it is counted per address as well as
-        // per username: otherwise a new username each time would let anyone
-        // send this address as many emails as they liked.
-        if (startFree && !await withinLimit(`rate-free-${digest(email)}`, 3)) return fail(429, "Too many attempts. Try again in 15 minutes.");
-        const sendFreeStart = async (resumed) => {
-          const reset = await createPasswordReset(email, setPasswordWindowMs);
-          const appUrl = process.env.APP_BASE_URL ?? new URL(request.url).origin;
-          try {
-            await sendFreeStartEmail({ email, username, setUrl: `${appUrl}/?reset=${encodeURIComponent(reset.token)}` });
-          } catch (error) {
-            context.error("Free start email failure", error.code ?? error.name);
-            return fail(503, "Your account is ready but the email could not be sent. Use Forgot your password to request a new link.");
-          }
-          return { status: 201, jsonBody: { ok: true, username, email, awaitingPassword: true, free: true, ...(resumed ? { resumed: true } : {}) }, headers: { "Cache-Control": "no-store" } };
-        };
         if (account || await findAuth(`email-${digest(email)}`) || await getUserByEmail(email)) {
           const refuse = (code, error) => ({ status: 409, jsonBody: { error, code }, headers: { "Cache-Control": "no-store" } });
           // The same parent coming back to a sign-up they did not finish: this
@@ -157,7 +144,6 @@ app.http("passwordLogin", {
           const sameSignup = account && account.email === email && !account.passwordHash;
           const paid = sameSignup && grantsAccess((await getSubscription(email))?.status);
           if (sameSignup && !paid) {
-            if (startFree) return sendFreeStart(true);
             return {
               status: 201,
               jsonBody: { ok: true, username, email, awaitingPassword: true, resumed: true, checkoutToken: await createCheckoutGrant(email) },
@@ -177,7 +163,6 @@ app.http("passwordLogin", {
           ["create", account],
           ["create", { partitionKey: "auth", rowKey: `email-${digest(email)}`, accountId }],
         ]);
-        if (startFree) return sendFreeStart(false);
         return {
           status: 201,
           jsonBody: { ok: true, username, email, awaitingPassword: true, checkoutToken: await createCheckoutGrant(email) },

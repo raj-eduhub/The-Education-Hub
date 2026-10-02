@@ -31,10 +31,15 @@ const appearance = {
 // is created without a return_url, so Stripe needs it on confirm() instead and
 // refuses to confirm without one. It is used both for Stripe's own redirect
 // (3D Secure and other redirect-based methods) and for the move made here when
-// a card confirms without leaving the page.
-const paidDestination = "/?checkout=success";
+// a card confirms without leaving the page. A trial carries plan=trial, so the
+// screens that follow speak of a saved card rather than a payment: a trial
+// takes no money.
+const checkoutDestination = (trial) => (trial ? "/?checkout=success&plan=trial" : "/?checkout=success");
 
-export async function mountCheckoutForm(clientSecret, target, { onError }) {
+// trial is what the server decided, not what was asked for: an account that
+// has had a trial is given a paid checkout instead.
+export async function mountCheckoutForm(clientSecret, target, { onError, trial = false }) {
+  const paidDestination = checkoutDestination(trial);
   const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
   if (!window.Stripe) throw new Error("The payment form could not be loaded. Check your connection and try again.");
   if (!publishableKey) throw new Error("Payments are not configured yet.");

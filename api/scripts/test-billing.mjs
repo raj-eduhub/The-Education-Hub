@@ -131,6 +131,27 @@ try {
     assert.equal(afterUnpaid.status, "checkout_pending");
   });
 
+  // A 7-day trial takes the card and no money, so Stripe reports the checkout
+  // as "no_payment_required". It starts the subscription in "trialing", and the
+  // trial's dates arrive on the subscription event.
+  await deleteSubscription(email);
+  await savePendingSubscription(email, { plan: "learner", billingPeriod: "monthly" });
+  const trialStart = await handleStripeEvent(checkoutEvent("evt_trial", { payment_status: "no_payment_required", mode: "subscription" }), { appUrl, sendEmail });
+  const trialEnd = Math.floor(Date.now() / 1000) + 7 * 86400;
+  await handleStripeEvent(subscriptionEvent("customer.subscription.created", "trialing", { trial_start: Math.floor(Date.now() / 1000), trial_end: trialEnd }), { appUrl, sendEmail });
+  const trialing = await getSubscription(email);
+  check("a trial checkout starts the subscription in its trial", () => {
+    assert.equal(trialStart.handled, true);
+    assert.equal(trialing.status, "trialing");
+    assert.equal(Date.parse(trialing.trialEndsAt), trialEnd * 1000);
+    assert.equal(trialing.trialAvailable, false, "a second trial must not be offered");
+  });
+  await deleteSubscription(email);
+  const oneOff = await handleStripeEvent(checkoutEvent("evt_zero_payment", { payment_status: "no_payment_required", mode: "payment" }), { appUrl, sendEmail });
+  check("a £0 session that is not a subscription grants nothing", () => {
+    assert.equal(oneOff.handled, false);
+  });
+
   // A mail outage must not cost a paying customer their access.
   await deleteSubscription(email);
   await savePendingSubscription(email, { plan: "learner", billingPeriod: "monthly" });

@@ -489,6 +489,14 @@
     box-shadow: 0 12px 26px -16px rgba(76, 141, 255, 0.95);
   }
   .btn-primary:hover { filter: brightness(1.07); }
+  /* The paid choice, green beside the blue free trial. */
+  .btn-pay {
+    background: linear-gradient(180deg, #2ba85a, #1d8f47);
+    border-color: #1a7f3f;
+    color: #ffffff;
+    box-shadow: 0 12px 26px -16px rgba(62, 196, 106, 0.95);
+  }
+  .btn-pay:hover { filter: brightness(1.07); }
   .btn-quiet {
     background: var(--tab-face);
     border-color: var(--hairline);
@@ -497,6 +505,39 @@
   .btn-quiet:hover { border-color: var(--hairline-firm); }
 
   .price-note { font-size: 14px; color: var(--ink-faint); }
+
+
+  /* ---------- plans ----------
+     The free trial and full access as cards, like the app's own plan page. */
+  .plans { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; margin: 40px 0 44px; }
+  .plan-card { position: relative; display: flex; flex-direction: column; padding: 30px 28px; border-radius: 18px;
+    background: var(--tab-face); border: 1px solid var(--hairline); }
+  .plan-card.plan-full { border-color: rgba(62, 196, 106, 0.45); }
+  .plan-icon { width: 36px; height: 36px; color: var(--maths); margin-bottom: 14px; }
+  .plan-full .plan-icon { color: var(--science); }
+  .plan-card h3 { margin: 0; font-size: 24px; color: var(--ink-bright); }
+  .plan-blurb { margin: 6px 0 18px; color: var(--ink-soft); }
+  .plan-price { display: flex; align-items: baseline; gap: 8px; margin: 0; }
+  .plan-price strong { font-family: "Bricolage Grotesque", sans-serif; font-size: 46px; line-height: 1; letter-spacing: -0.02em; color: var(--ink-bright); }
+  .plan-price span { color: var(--ink-soft); }
+  .plan-price s { color: var(--ink-faint); font-size: 20px; text-decoration-thickness: 2px; }
+  .plan-after { margin: 6px 0 4px; font-size: 14px; color: var(--ink-soft); }
+  .plan-section { margin: 20px 0 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); }
+  .plan-card ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .plan-card li { display: flex; gap: 10px; align-items: flex-start; color: var(--ink); }
+  .plan-card li svg { flex: none; width: 18px; height: 18px; margin-top: 2px; color: var(--maths); }
+  .plan-full li svg { color: var(--science); }
+  .plan-badge { position: absolute; top: 22px; right: 22px; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: #6fe39a; border: 1px solid rgba(62, 196, 106, 0.6); }
+  .plan-cta { margin-top: auto; width: 100%; }
+  .chosen-plan { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 22px;
+    padding: 12px 16px; border-radius: 12px; border: 1px solid var(--hairline); background: var(--tab-face); color: var(--ink); }
+  .chosen-plan strong { color: var(--ink-bright); }
+  .chosen-plan small { display: block; margin-top: 2px; color: var(--ink-soft); }
+  .chosen-plan a { color: var(--ink-bright); font-weight: 600; }
+  .plan-card ul:last-of-type { margin-bottom: 24px; }
+
+  @media (max-width: 760px) { .plans { grid-template-columns: minmax(0, 1fr); } }
 
   /* ---------- the bookmark fan ----------
      Tabs in a ring binder. This is the app's own card shape - a coloured
@@ -1745,6 +1786,58 @@
         </div>
       </div>
 
+
+      <!-- The two plans, as cards. The features listed are what the app does
+           for each, so keep them in step with the application. -->
+      <div class="plans" id="plans">
+        <article class="plan-card plan-trial">
+          <svg class="plan-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12v9H4v-9M2 7h20v5H2zM12 21V7M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 1 0 0-5C13 2 12 7 12 7z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <h3>7-day free trial</h3>
+          <p class="plan-blurb">Try one topic properly before you pay.</p>
+          <p class="plan-price"><strong>£0</strong><span>for 7 days</span></p>
+          <p class="plan-after">then £14.99 a month, unless you cancel</p>
+          <p class="plan-section">Usage</p>
+          <ul>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>One topic of your choice</span></li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Sonia, the AI tutor: 20 questions a day</span></li>
+          </ul>
+          <p class="plan-section">Included</p>
+          <ul>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Lessons, read aloud or on screen</span></li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Worked examples, practice and exam questions</span></li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Marking and progress tracking</span></li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Card needed, nothing charged for 7 days</span></li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Cancel before day 8 and pay nothing</span></li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Reminder email the day before the first charge</span></li>
+          </ul>
+          <a class="btn btn-primary plan-cta" href="#signup" data-choose-plan="trial">Start 7-day free trial</a>
+        </article>
+
+        <article class="plan-card plan-full">
+          <span class="plan-badge">Everything</span>
+          <svg class="plan-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.4zM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9zM5 15l.7 1.6L7.3 17.3l-1.6.7L5 19.6l-.7-1.6-1.6-.7 1.6-.7z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          <h3>Full access</h3>
+          <p class="plan-blurb">Every subject and every topic, Years 7 to 11.</p>
+          <p class="plan-price"><s>£24.99</s><strong>£14.99</strong><span>/month</span></p>
+          <p class="plan-after">introductory price, billed monthly from today</p>
+          <p class="plan-section">Usage</p>
+          <ul>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>All seven subjects, every topic in the year</span></li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Sonia, the AI tutor: 200 questions a day</span></li>
+          </ul>
+          <p class="plan-section">Included</p>
+          <ul>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Placement check and a personal learning path</span></li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Learn, Practice, Exam and Review modes</span></li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>AQA and Edexcel, Foundation and Higher</span></li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Lessons read aloud, with worked examples</span></li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Parent progress dashboard</span></li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Cancel any time, no tie-in</span></li>
+          </ul>
+          <a class="btn btn-pay plan-cta" href="#signup" data-choose-plan="pay">Subscribe now</a>
+        </article>
+      </div>
+
       <div class="checkout" id="signup">
         <!-- Sign up, on the left -->
         <form class="panel" id="signup-form" novalidate>
@@ -1778,7 +1871,7 @@
               <label for="su-email">Your email address<span class="req" aria-hidden="true">*</span></label>
               <input id="su-email" name="email" type="email" autocomplete="email"
                      placeholder="you@example.com" spellcheck="false" required>
-              <span class="hint">We send your link to set a password here once payment goes through</span>
+              <span class="hint">We send your link to set a password here</span>
             </div>
 
             <label class="consent" for="su-consent">
@@ -1788,11 +1881,19 @@
             </label>
           </div>
 
-          <button class="btn btn-primary" type="submit" style="width:100%;margin-top:22px">
-            Continue to payment
+          <!-- The plan is chosen on the cards above, so the form shows it rather
+               than asking again. It travels to the application as start=. -->
+          <input type="hidden" name="start" value="trial">
+          <div class="chosen-plan">
+            <span>Plan: <strong id="chosen-plan-name">7-day free trial</strong>
+              <small id="chosen-plan-note">£0 today, then £14.99 a month unless you cancel</small></span>
+            <a href="#plans" id="change-plan">Change</a>
+          </div>
+          <button class="btn btn-primary" id="signup-submit" type="submit" style="width:100%;margin-top:16px">
+            Continue to card details
           </button>
-          <p class="form-note">Once payment goes through we email you a link to set your password. We never
-            ask for a password on this page.</p>
+          <p class="form-note">Stripe takes your card. We email you a link to set your password as soon as Stripe confirms, and
+          we never ask for a password on this page.</p>
           <p class="form-note" data-needs-app hidden>Already have an account?
             <a data-app-login target="_blank" rel="noopener">Log in</a></p>
           <div class="form-status" id="signup-status" hidden></div>
@@ -1801,7 +1902,7 @@
         <!-- What they're paying, on the right -->
         <aside class="panel summary">
           <h3>Your subscription</h3>
-          <p class="panel-sub">Billed monthly. Nothing is taken today.</p>
+          <p class="panel-sub">Billed monthly. Start with a 7-day free trial if you like: nothing is charged until day 8.</p>
 
           <div style="margin-top:20px">
             <div class="sum-line">
@@ -1846,8 +1947,8 @@
 
           <ol class="steps">
             <li><span><strong>Create your account</strong>: the form on the left</span></li>
-            <li><span><strong>Pay securely with Stripe</strong>: £14.99, cancel any time</span></li>
-            <li><span><strong>Set your password</strong>: from the link we email once payment goes through</span></li>
+            <li><span><strong>Add your card with Stripe</strong>: start the 7-day free trial, or subscribe straight away at £14.99</span></li>
+            <li><span><strong>Set your password</strong>: from the link we email you</span></li>
             <li><span><strong>Set up your child</strong>: year, subjects and exam boards</span></li>
           </ol>
 
@@ -2018,6 +2119,8 @@
     form.addEventListener("submit", function (event) {
       event.preventDefault();
       clearErrors();
+      // The plan picked on the cards above; the free trial unless full access was.
+      var start = form.start.value === "pay" ? "pay" : "trial";
 
       var values = {
         username: form.username.value.trim().toLowerCase(),
@@ -2049,7 +2152,8 @@
       // year is worked out from the date of birth rather than chosen.
       var handoff = APP_URL + "/?register=1"
         + "&email=" + encodeURIComponent(values.email)
-        + "&username=" + encodeURIComponent(values.username);
+        + "&username=" + encodeURIComponent(values.username)
+        + "&start=" + start;
 
       // A new tab, not this one. The page can be shown inside another site's
       // frame, and the application refuses to load inside a frame, so taking
@@ -2073,6 +2177,36 @@
       status.appendChild(line);
       status.appendChild(link);
       status.appendChild(document.createTextNode("."));
+    });
+
+    // A plan card's button sets the plan the form will use, and the form says
+    // which: the name, what it costs, and a submit button in the plan's colour.
+    var plans = {
+      trial: { name: "7-day free trial", note: "£0 today, then £14.99 a month unless you cancel", button: "Continue to card details", style: "btn-primary" },
+      pay: { name: "Full access", note: "£14.99 a month from today, every topic", button: "Continue to payment", style: "btn-pay" }
+    };
+    function choosePlan(plan) {
+      var chosen = plans[plan] || plans.trial;
+      var submit = document.getElementById("signup-submit");
+      form.start.value = plan === "pay" ? "pay" : "trial";
+      document.getElementById("chosen-plan-name").textContent = chosen.name;
+      document.getElementById("chosen-plan-note").textContent = chosen.note;
+      submit.textContent = chosen.button;
+      submit.classList.remove("btn-primary", "btn-pay");
+      submit.classList.add(chosen.style);
+    }
+    document.getElementById("change-plan").addEventListener("click", function (event) {
+      event.preventDefault();
+      document.getElementById("plans").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    document.querySelectorAll("[data-choose-plan]").forEach(function (link) {
+      link.addEventListener("click", function (event) {
+        event.preventDefault();
+        choosePlan(link.getAttribute("data-choose-plan"));
+        form.scrollIntoView({ behavior: "smooth", block: "start" });
+        setTimeout(function () { form.username.focus({ preventScroll: true }); }, 450);
+      });
     });
 
     form.addEventListener("input", function (event) {

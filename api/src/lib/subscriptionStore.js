@@ -69,14 +69,15 @@ function toSubscription(entity) {
     paymentFailedAt: entity.paymentFailedAt || null,
     paymentAttemptCount: entity.paymentAttemptCount ?? 0,
     nextPaymentAttempt: entity.nextPaymentAttempt || null,
-    // The free trial: one topic, for a week from the moment it is chosen. These
-    // fields belong to the app. status above belongs to Stripe and is written
-    // only from its events, so neither side can overwrite the other's record.
+    // The free trial is Stripe's: status "trialing" until trialEndsAt, when
+    // Stripe takes the first payment. Its dates come from Stripe's events. The
+    // one topic studied during it is the app's own choice, kept in freeTopicId.
     freeTopicId: entity.freeTopicId || null,
     trialStartedAt: entity.trialStartedAt || null,
     trialEndsAt: entity.trialEndsAt || null,
-    // An account Stripe has ever billed has had the product, so it gets no trial.
-    everPaid: Boolean(entity.stripeSubscriptionId || entity.stripeCustomerId),
+    // Whether checkout may still offer the free trial: never to an account
+    // Stripe has billed before or that has had one.
+    trialAvailable: !entity.stripeSubscriptionId && !entity.stripeCustomerId && !entity.trialStartedAt,
     updatedAt: entity.updatedAt,
   };
 }
@@ -164,17 +165,17 @@ export async function completeOnboarding(email) {
   });
 }
 
-// How long the free topic stays open, counted from the moment it is chosen.
+// How long the Stripe trial lasts, asked for at checkout.
 export function trialDays() {
   const days = Number(process.env.TRIAL_DAYS ?? 7);
   return Number.isFinite(days) && days > 0 ? days : 7;
 }
 
-// Starts an unpaid account's free trial: fixes its one topic and the week it
-// is open for, in one write. The first choice stands: the etag makes a second,
-// simultaneous choice fail rather than overwrite it, so two tabs cannot claim
-// two topics or two weeks. Returns the topic that is actually free, which is
-// the earlier one if a choice had already been made.
+// Fixes the one topic a trial may study. The first choice stands: the etag
+// makes a second, simultaneous choice fail rather than overwrite it, so two
+// tabs cannot claim two topics. Returns the topic that is actually free, which
+// is the earlier one if a choice had already been made. The trial's dates are
+// Stripe's and are not touched here.
 export async function claimFreeTopic(email, topicId) {
   const current = await readyClient();
   for (let attempt = 0; attempt < 2; attempt += 1) {
@@ -182,14 +183,12 @@ export async function claimFreeTopic(email, topicId) {
     if (!entity) return null;
     if (entity.freeTopicId) return entity.freeTopicId;
     try {
-      const now = new Date();
       await current.updateEntity({
         partitionKey,
         rowKey: entity.rowKey,
         freeTopicId: topicId,
-        trialStartedAt: now.toISOString(),
-        trialEndsAt: new Date(now.getTime() + trialDays() * 24 * 3600000).toISOString(),
-        updatedAt: now.toISOString(),
+        freeTopicChosenAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       }, "Merge", { etag: entity.etag });
       return topicId;
     } catch (error) {
@@ -197,6 +196,27 @@ export async function claimFreeTopic(email, topicId) {
     }
   }
   return (await getSubscriptionEntity(email))?.freeTopicId ?? null;
+}
+
+// Every row with a free trial, for the trial emails. The same small scan as
+// listSubscriptions(), with the fields the emails need and nothing else.
+export async function listTrialRows() {
+  const current = await readyClient();
+  const rows = [];
+  for await (const entity of current.listEntities()) {
+    if (!entity.trialEndsAt) continue;
+    rows.push({
+      accountKey: entity.rowKey,
+      email: entity.email ?? "",
+      status: entity.status ?? "",
+      cancelAtPeriodEnd: entity.cancelAtPeriodEnd === true,
+      freeTopicId: entity.freeTopicId ?? "",
+      trialEndsAt: entity.trialEndsAt,
+      trialEndingEmailAt: entity.trialEndingEmailAt ?? "",
+      trialEndedEmailAt: entity.trialEndedEmailAt ?? "",
+    });
+  }
+  return rows;
 }
 
 // Every subscription, for the administrator's payments view. The table holds one

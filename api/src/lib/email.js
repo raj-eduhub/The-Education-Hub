@@ -23,24 +23,28 @@ async function send({ email, to, subject, plainText, html, undelivered }) {
   }
 }
 
-// Sent once payment is confirmed. It is a receipt and a way back in, not a key:
-// learner setup happens in the app, so this link carries no token and never
-// expires. A learner who never opens the email loses nothing.
-// Sent once payment has gone through. It carries the two things somebody needs
-// to get back in - where to sign in, and the username they chose on the website
-// - because those are what a parent forgets between paying and returning. The
-// password is never included, and never could be: it is stored only as a hash.
-export async function sendWelcomeEmail({ email, appUrl, username = "" }) {
+// What a new subscription is, for the emails sent when it starts: a 7-day free
+// trial with the card on file, or a subscription paid today.
+const trialTerms = "Your 7-day free trial has started. During the trial the learner can choose one topic to study. Your card will be charged £14.99 when the trial ends, and then every month, unless you cancel before then from Account and privacy. We will email you the day before the first charge.";
+const trialTermsHtml = "<p>Your 7-day free trial has started. During the trial the learner can choose one topic to study.</p><p>Your card will be charged <strong>£14.99 when the trial ends</strong>, and then every month, unless you cancel before then from Account and privacy. We will email you the day before the first charge.</p>";
+
+// Sent once Stripe confirms the subscription, to an account that already has a
+// password. It carries the two things somebody needs to get back in - where to
+// sign in, and the username they chose on the website - because those are what
+// a parent forgets between paying and returning. The password is never
+// included, and never could be: it is stored only as a hash.
+export async function sendWelcomeEmail({ email, appUrl, username = "", trial = false }) {
   const signIn = username
     ? `Sign in at ${appUrl} with your username ${username} and the password you chose.`
     : `Sign in at ${appUrl} with the username and password you chose.`;
   const signInHtml = username
     ? `<p>Sign in with your username <strong>${username}</strong> and the password you chose.</p>`
     : `<p>Sign in with the username and password you chose.</p>`;
+  const opening = trial ? trialTerms : "Your Y7to11.AI subscription is active.";
   await send({
     email,
-    subject: "Your Y7to11.AI subscription is active",
-    plainText: `Your Y7to11.AI subscription is active.
+    subject: trial ? "Your Y7to11.AI free trial has started" : "Your Y7to11.AI subscription is active",
+    plainText: `${opening}
 
 ${signIn}
 
@@ -49,49 +53,67 @@ The first time you sign in you will be asked for the learner's details, includin
 We never include your password in an email. If you have forgotten it, use "Forgot your password?" on the sign-in page.
 
 You can cancel or change payment details at any time from Account and privacy.`,
-    html: `<h1>Your subscription is active</h1>${signInHtml}<p><a href="${appUrl}">Open Y7to11.AI</a></p><p>The first time you sign in you will be asked for the learner's details, including the school year, which cannot be changed afterwards.</p><p>We never include your password in an email. If you have forgotten it, use "Forgot your password?" on the sign-in page.</p><p>You can cancel or change payment details at any time from Account and privacy.</p>`,
+    html: `<h1>${trial ? "Your free trial has started" : "Your subscription is active"}</h1>${trial ? trialTermsHtml : ""}${signInHtml}<p><a href="${appUrl}">Open Y7to11.AI</a></p><p>The first time you sign in you will be asked for the learner's details, including the school year, which cannot be changed afterwards.</p><p>We never include your password in an email. If you have forgotten it, use "Forgot your password?" on the sign-in page.</p><p>You can cancel or change payment details at any time from Account and privacy.</p>`,
     undelivered: "The welcome email could not be delivered.",
   });
 }
 
-// Sent the moment payment clears, to an account that has no password yet.
+// Sent the moment Stripe confirms the subscription, to an account that has no
+// password yet.
 //
 // This is the way in, not a receipt, so the link lives for seven days rather
 // than the hour a password reset gets: it arrives while the parent is still on
-// the payment confirmation page and may not be opened until that evening. It is
-// still one-time and still revokes any earlier link.
-export async function sendSetPasswordEmail({ email, username, setUrl }) {
+// the confirmation page and may not be opened until that evening. It is still
+// one-time and still revokes any earlier link.
+export async function sendSetPasswordEmail({ email, username, setUrl, trial = false }) {
+  const heading = trial ? "Your free trial has started" : "Your subscription is active";
   await send({
     email,
-    subject: "Your subscription is active - set your password",
-    plainText: `Your Y7to11.AI subscription is active.
+    subject: `${heading} - set your password`,
+    plainText: `${trial ? trialTerms : "Your Y7to11.AI subscription is active."}
 
 Set the password for your account "${username}" here: ${setUrl}
 
 The link works once and expires in seven days. If it expires, use "Forgot your password?" on the sign-in page and we will send another.
 
 Once your password is set you will be asked for the learner's details, including the school year, which cannot be changed afterwards.`,
-    html: `<h1>Your subscription is active</h1><p>Set the password for your account <strong>${username}</strong>.</p><p><a href="${setUrl}">Set your password</a></p><p>The link works once and expires in seven days. If it expires, use "Forgot your password?" on the sign-in page and we will send another.</p><p>Once your password is set you will be asked for the learner's details, including the school year, which cannot be changed afterwards.</p>`,
+    html: `<h1>${heading}</h1>${trial ? trialTermsHtml : ""}<p>Set the password for your account <strong>${username}</strong>.</p><p><a href="${setUrl}">Set your password</a></p><p>The link works once and expires in seven days. If it expires, use "Forgot your password?" on the sign-in page and we will send another.</p><p>Once your password is set you will be asked for the learner's details, including the school year, which cannot be changed afterwards.</p>`,
     undelivered: "The set-password email could not be delivered.",
   });
 }
 
-// Sent at sign-up when the parent starts with the free week rather than
-// paying. The same seven-day, one-time link as after payment, and for the same
-// reason: it is the way in, and setting the password is what proves the address.
-export async function sendFreeStartEmail({ email, username, setUrl }) {
+// The day before the trial ends and Stripe takes the first payment. A parent
+// who signed up for a free trial must not be surprised by the charge, so this
+// says when, how much, and how to stop it - and that doing nothing means
+// carrying on, with every topic unlocked.
+export async function sendTrialEndingEmail({ email, topicTitle, chargeDate, accountUrl }) {
   await send({
     email,
-    subject: "Set your password to start your free week",
-    plainText: `Your Y7to11.AI account "${username}" is ready.
+    subject: "Your free trial ends tomorrow: £14.99 will be charged",
+    plainText: `The free trial on Y7to11.AI ends tomorrow, and your card will be charged £14.99 on ${chargeDate}, then every month.
 
-Set your password here: ${setUrl}
+That opens every topic in every subject, not just ${topicTitle}, and keeps everything the learner has done so far.
 
-The link works once and expires in seven days. If it expires, use "Forgot your password?" on the sign-in page and we will send another.
+If you do not want to continue, cancel before then from Account and privacy, and nothing will be charged: ${accountUrl}`,
+    html: `<h1>Your free trial ends tomorrow</h1><p>Your card will be charged <strong>£14.99 on ${chargeDate}</strong>, then every month. That opens every topic in every subject, not just <strong>${topicTitle}</strong>, and keeps everything the learner has done so far.</p><p>If you do not want to continue, <a href="${accountUrl}">cancel before then from Account and privacy</a>, and nothing will be charged.</p>`,
+    undelivered: "The trial reminder email could not be delivered.",
+  });
+}
 
-Once your password is set you will be asked for the learner's details, including the school year, which cannot be changed afterwards. Then choose one topic to study free for a week. No card is needed, and nothing is charged unless you decide to subscribe.`,
-    html: `<h1>Your account is ready</h1><p>Set the password for your account <strong>${username}</strong>.</p><p><a href="${setUrl}">Set your password</a></p><p>The link works once and expires in seven days. If it expires, use "Forgot your password?" on the sign-in page and we will send another.</p><p>Once your password is set you will be asked for the learner's details, including the school year, which cannot be changed afterwards. Then choose one topic to study free for a week. No card is needed, and nothing is charged unless you decide to subscribe.</p>`,
-    undelivered: "The set-password email could not be delivered.",
+// When a trial ended without becoming a subscription: it was cancelled, or the
+// first payment could not be taken. A trial that converted needs no email of
+// ours - Stripe's receipt says it.
+export async function sendTrialEndedEmail({ email, topicTitle, subscribeUrl }) {
+  await send({
+    email,
+    subject: "Your free trial has ended",
+    plainText: `The free trial of ${topicTitle} on Y7to11.AI has ended, and no subscription was started.
+
+Subscribe for £14.99 a month whenever you are ready, to pick up where you left off with every topic in every subject: ${subscribeUrl}
+
+The learner's setup and progress are kept, so nothing has to be done again.`,
+    html: `<h1>Your free trial has ended</h1><p>The free trial of <strong>${topicTitle}</strong> on Y7to11.AI has ended, and no subscription was started.</p><p><a href="${subscribeUrl}">Subscribe for £14.99 a month</a> whenever you are ready, to pick up where you left off with every topic in every subject. The learner's setup and progress are kept, so nothing has to be done again.</p>`,
+    undelivered: "The trial ended email could not be delivered.",
   });
 }
 

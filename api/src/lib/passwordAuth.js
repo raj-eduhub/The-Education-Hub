@@ -109,6 +109,16 @@ export async function accountAwaitsPassword(email) {
 // Returns "reset" when the password was set, "wrong-username" when the link is
 // good but the username typed is not the account it was sent for, and
 // "invalid" for a link that is malformed, expired or already used.
+// The username a set-password link was sent for, so the page can show it
+// rather than ask for it. Read only: the link is not claimed, and an expired
+// or used one answers null.
+export async function usernameForResetToken(token) {
+  if (!/^[\w-]{43}$/.test(token)) return null;
+  const reset = await findAuth(`reset-${digest(token)}`);
+  if (!reset || reset.expiresAt <= Date.now()) return null;
+  const owner = await findAuth(reset.accountId);
+  return owner?.username ?? null;
+}
 export async function completePasswordReset(token, password, username) {
   if (!/^[\w-]{43}$/.test(token)) return "invalid";
   const client = await authTable();

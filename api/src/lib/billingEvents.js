@@ -62,7 +62,12 @@ export async function handleStripeEvent(event, {
 } = {}) {
   const object = event.data.object;
 
-  if (event.type === "checkout.session.completed" && object.payment_status === "paid") {
+  // A trial checkout takes the card but no money, so Stripe reports it as
+  // "no_payment_required". It still starts a subscription - in "trialing",
+  // until Stripe charges at the end of the trial - so it is handled like a paid
+  // one, with the status that says which.
+  const trialCheckout = object.payment_status === "no_payment_required" && object.mode === "subscription";
+  if (event.type === "checkout.session.completed" && (object.payment_status === "paid" || trialCheckout)) {
     const email = object.customer_details?.email ?? object.customer_email;
     if (!email) return { handled: false, reason: "missing-email" };
 
@@ -79,7 +84,9 @@ export async function handleStripeEvent(event, {
     await updateSubscriptionByAccountKey(key, {
       plan: object.metadata?.plan ?? "learner",
       billingPeriod: object.metadata?.billingPeriod ?? "monthly",
-      status: "active",
+      // Events can arrive out of order: if Stripe has already reported the
+      // trial converted, a late checkout event must not put it back to trialing.
+      status: trialCheckout && existing?.status !== "active" ? "trialing" : "active",
       // A new payment clears any earlier failure.
       paymentFailedAt: "",
       paymentAttemptCount: 0,
@@ -120,9 +127,10 @@ export async function handleStripeEvent(event, {
           email,
           username: reset.username || username,
           setUrl: `${appUrl}/?reset=${encodeURIComponent(reset.token)}`,
+          trial: trialCheckout,
         });
       } else {
-        await sendEmail({ email, appUrl, username });
+        await sendEmail({ email, appUrl, username, trial: trialCheckout });
       }
       welcomeSent = true;
     } catch (failure) {
@@ -150,6 +158,11 @@ export async function handleStripeEvent(event, {
       stripeSubscriptionId: object.id,
       currentPeriodEnd: periodEnd(object),
       cancelAtPeriodEnd: object.cancel_at_period_end,
+      // The free trial, as Stripe runs it: the first charge is taken at
+      // trial_end. Only written when Stripe sends it, so an event without a
+      // trial never erases the record of one.
+      ...(object.trial_start ? { trialStartedAt: new Date(object.trial_start * 1000).toISOString() } : {}),
+      ...(object.trial_end ? { trialEndsAt: new Date(object.trial_end * 1000).toISOString() } : {}),
     });
     return { handled: true, status: object.status, accountKey: key };
   }

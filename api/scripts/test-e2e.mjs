@@ -1,5 +1,6 @@
 // Walks the whole flow a new customer walks - register, learner setup, the
-// free topic, pay, learn - over HTTP against a running Functions host, with Stripe and Azure
+// card trial and its topic, cancelling, subscribing, ending a trial early,
+// learn - over HTTP against a running Functions host, with Stripe and Azure
 // Communication Services replaced by local stubs. Storage, authentication, the
 // tutor guard and the model are the real thing.
 //
@@ -105,7 +106,6 @@ record(session.body?.hasAccess === true, "registration puts the account on the a
 record(session.body?.isAdmin === false, "the learner account is not an administrator", `isAdmin=${session.body?.isAdmin}`);
 
 // 2. Learner setup, before paying ----------------------------------------------
-// A free trial chooses its topic from the learner's year, so setup comes first.
 console.log("--- 2. Learner setup, before paying ---");
 const beforeBilling = await call("/billing/status");
 record(beforeBilling.body?.subscription?.status !== "active", "no active subscription before paying",
@@ -127,7 +127,7 @@ const noConsent = await call("/onboarding", json({ ...details, parentalConsent: 
 record(noConsent.status === 400, "setup without consent is refused", `HTTP ${noConsent.status}`);
 
 const setup = await call("/onboarding", json(details));
-record(setup.status === 201, "learner setup completes in the app before payment", `HTTP ${setup.status}`);
+record(setup.status === 201, "learner setup completes in the app", `HTTP ${setup.status}`);
 record(setup.body?.profile?.year === 10, "the year is stored", `year=${setup.body?.profile?.year}`);
 record(setup.body?.profile?.examBoards?.Science === "Edexcel", "per-subject boards are stored",
   JSON.stringify(setup.body?.profile?.examBoards));
@@ -140,11 +140,9 @@ record(afterSetup.body?.subscription?.onboardingComplete === true, "setup is mar
   `onboardingComplete=${afterSetup.body?.subscription?.onboardingComplete}`);
 record(!afterSetup.body?.subscription?.status, "setup writes no Stripe status, which only Stripe sets",
   `status=${afterSetup.body?.subscription?.status ?? "none"}`);
-record(!afterSetup.body?.subscription?.trialEndsAt, "the free week has not started before a topic is chosen",
-  `trialEndsAt=${afterSetup.body?.subscription?.trialEndsAt ?? "none"}`);
+record(afterSetup.body?.subscription?.trialAvailable === true, "a new account is offered the free trial",
+  `trialAvailable=${afterSetup.body?.subscription?.trialAvailable}`);
 
-// 3. The free topic -------------------------------------------------------------
-console.log("\n--- 3. The free topic ---");
 const { curriculum: catalogue } = await import("../../src/data/curriculumCatalog.js");
 const asTopic = (id) => {
   const entry = catalogue.find((item) => item.id === id);
@@ -153,113 +151,176 @@ const asTopic = (id) => {
 const freeTopic = asTopic("y10-maths-algebra");
 const lockedTopic = asTopic("y10-maths-number");
 
+const noSubscription = await call("/content", json({ type: "explanation", subject: "Maths", topic: freeTopic }));
+record(noSubscription.status === 403, "nothing is served before a trial or a subscription", `HTTP ${noSubscription.status}`);
+const tooEarly = await call("/billing/free-topic", json({ topicId: freeTopic.id }));
+record(tooEarly.status === 409, "a free topic cannot be chosen before the trial starts", `HTTP ${tooEarly.status}`);
+
+// Stripe, standing in: a signed event, as Stripe would send it.
+const sendStripe = async (type, object) => {
+  const payload = JSON.stringify({ id: `evt_${randomBytes(6).toString("hex")}`, type, data: { object } });
+  const signature = new Stripe("sk_test_stub").webhooks.generateTestHeaderString({ payload, secret: webhookSecret });
+  return fetch(`${base}/billing/webhook`, { method: "POST", headers: { "Content-Type": "application/json", "stripe-signature": signature }, body: payload });
+};
+const waitForStatus = async (wanted) => {
+  for (let i = 0; i < 30; i += 1) {
+    const status = (await call("/billing/status")).body?.subscription?.status;
+    if (status === wanted) return status;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  return (await call("/billing/status")).body?.subscription?.status;
+};
+
+// 3. The card trial ------------------------------------------------------------
+// The card is taken, nothing is charged, and Stripe holds the subscription in
+// "trialing" until it takes the first payment. The stub stands in for Stripe:
+// it answers checkout and sends the events Stripe would.
+console.log("\n--- 3. The card trial ---");
+const trialCheckout = await call("/billing/checkout", json({ trial: true }));
+record(trialCheckout.status === 200 && trialCheckout.body?.trial === true, "checkout asks Stripe for the 7-day trial",
+  `HTTP ${trialCheckout.status} trial=${trialCheckout.body?.trial}`);
+record(await waitForStatus("trialing") === "trialing", "Stripe's events put the account in its trial", "status=trialing");
+const inTrial = (await call("/billing/status")).body?.subscription;
+const firstCharge = Date.parse(inTrial?.trialEndsAt ?? "") - Date.now();
+record(Math.abs(firstCharge - 7 * 24 * 3600000) < 5 * 60000, "the first charge is due in 7 days", `trialEndsAt=${inTrial?.trialEndsAt}`);
+const secondCheckout = await call("/billing/checkout", json({ trial: true }));
+record(secondCheckout.status === 409, "a trial cannot be started twice", `HTTP ${secondCheckout.status}`);
+
 const unchosen = await call("/content", json({ type: "explanation", subject: "Maths", topic: freeTopic }));
 record(unchosen.status === 403 && unchosen.body?.code === "trial-topic-unchosen",
-  "no topic is served until the free one is chosen", `HTTP ${unchosen.status} ${unchosen.body?.code}`);
-
+  "no topic is served until the trial's topic is chosen", `HTTP ${unchosen.status} ${unchosen.body?.code}`);
 const otherYear = await call("/billing/free-topic", json({ topicId: "y7-maths-number" }));
 record(otherYear.status === 400, "a topic from another year cannot be the free one", `HTTP ${otherYear.status}`);
-
 const chosen = await call("/billing/free-topic", json({ topicId: freeTopic.id }));
-record(chosen.status === 200 && chosen.body?.freeTopicId === freeTopic.id, "the free topic is chosen",
+record(chosen.status === 200 && chosen.body?.freeTopicId === freeTopic.id, "the trial's topic is chosen",
   `HTTP ${chosen.status} ${chosen.body?.freeTopicId}`);
-const weekAhead = Date.parse(chosen.body?.trialEndsAt ?? "") - Date.now();
-record(Math.abs(weekAhead - 7 * 24 * 3600000) < 5 * 60000, "choosing it starts a week of access",
-  `ends ${chosen.body?.trialEndsAt}`);
-
 const secondChoice = await call("/billing/free-topic", json({ topicId: lockedTopic.id }));
 record(secondChoice.status === 409 && secondChoice.body?.freeTopicId === freeTopic.id,
   "the choice cannot be changed", `HTTP ${secondChoice.status} ${secondChoice.body?.freeTopicId}`);
 
 const freeLesson = await call("/content", json({ type: "explanation", subject: "Maths", topic: freeTopic }));
 record(freeLesson.status === 200, "the free topic's lesson is served", `HTTP ${freeLesson.status}`);
-
 const lockedLesson = await call("/content", json({ type: "explanation", subject: "Maths", topic: lockedTopic }));
 record(lockedLesson.status === 403 && lockedLesson.body?.code === "trial-topic-locked",
   "any other topic is refused", `HTTP ${lockedLesson.status} ${lockedLesson.body?.code}`);
-
 const lockedByKey = await call("/content", json({ type: "practice", subject: "Maths", topic: lockedTopic, rowKey: "explanation" }));
 record(lockedByKey.status === 403, "a locked topic cannot be reached by asking for a stored row directly", `HTTP ${lockedByKey.status}`);
-
 const freeActivity = await call("/progress", json({
   kind: "activity", year: 10, subject: "Maths", topicId: freeTopic.id, mode: "learn", durationSeconds: 60,
 }));
 record(freeActivity.status === 201, "study in the free topic is recorded", `HTTP ${freeActivity.status}`);
-
 const lockedActivity = await call("/progress", json({
   kind: "activity", year: 10, subject: "Maths", topicId: lockedTopic.id, mode: "learn", durationSeconds: 60,
 }));
 record(lockedActivity.status === 403, "nothing can be recorded against a locked topic", `HTTP ${lockedActivity.status}`);
-
 const lockedTutor = await call("/tutor", json({ year: 10, subject: "Maths", mode: "learn", topic: lockedTopic, question: "Explain bounds" }));
 record(lockedTutor.status === 403, "the tutor is refused in a locked topic", `HTTP ${lockedTutor.status}`);
-
 const trialDiagnostic = await call("/diagnostic", json({ year: 10, subject: "Maths", responses: [] }));
 record(trialDiagnostic.status === 403, "the placement check is part of the paid plan", `HTTP ${trialDiagnostic.status}`);
 
-// The week is moved into the past in storage, as eight days would.
-await updateSubscriptionByAccountKey(accountKey(email), { trialEndsAt: new Date(Date.now() - 60000).toISOString() });
-const expired = await call("/content", json({ type: "explanation", subject: "Maths", topic: freeTopic }));
-record(expired.status === 403 && expired.body?.code === "trial-ended", "after the week the free topic locks too",
-  `HTTP ${expired.status} ${expired.body?.code}`);
-const expiredProgress = await call("/progress", json({
-  kind: "activity", year: 10, subject: "Maths", topicId: freeTopic.id, mode: "learn", durationSeconds: 60,
-}));
-record(expiredProgress.status === 403, "and nothing more is recorded", `HTTP ${expiredProgress.status}`);
-const restart = await call("/billing/free-topic", json({ topicId: lockedTopic.id }));
-record(restart.status === 409, "the week cannot be restarted with another topic", `HTTP ${restart.status}`);
-
-// 4. Checkout -----------------------------------------------------------------
-console.log("\n--- 4. Checkout ---");
-const checkout = await call("/billing/checkout", json({}));
-record(checkout.status === 200, "checkout session is created", `HTTP ${checkout.status}`);
-// Production can use an embedded form or a hosted checkout. The local Stripe
-// stand-in uses the hosted path so the browser can complete the whole flow.
-const checkoutDestination = checkout.body?.url ?? checkout.body?.client_secret;
-record(typeof checkoutDestination === "string" && checkoutDestination.length > 0,
-  "Stripe returns a checkout destination",
-  checkout.body?.url ? "hosted checkout URL present" : checkout.body?.client_secret ? "client_secret present" : JSON.stringify(checkout.body));
-
-// 5. The webhook Stripe would send -------------------------------------------
-console.log("\n--- 5. Stripe webhook ---");
-const event = {
-  id: `evt_${randomBytes(6).toString("hex")}`,
-  type: "checkout.session.completed",
-  data: { object: {
-    payment_status: "paid",
-    customer: "cus_stub_1",
-    subscription: "sub_stub_1",
-    customer_details: { email },
-    metadata: { accountKey: accountKey(email), plan: "learner", billingPeriod: "monthly" },
-  } },
+// The emails. The schedule calls this route with a shared key; the email stub
+// records what would have been sent.
+const reminderKey = process.env.TRIAL_REMINDER_KEY ?? "e2e-trial-reminder-key-0123456789abcdef";
+const stubLog = new URL("./.stub-log.json", import.meta.url);
+const mailsTo = (subject) => {
+  try {
+    return JSON.parse(readFileSync(stubLog, "utf8")).emails
+      .filter((mail) => JSON.stringify(mail).includes(email) && JSON.stringify(mail).includes(subject)).length;
+  } catch { return 0; }
 };
-const payload = JSON.stringify(event);
-const signature = new Stripe("sk_test_stub").webhooks.generateTestHeaderString({ payload, secret: webhookSecret });
+const remind = async () => {
+  await fetch(`${base}/billing/trial-reminders`, { method: "POST", headers: { "x-trial-reminder-key": reminderKey } });
+  await new Promise((resolve) => setTimeout(resolve, 500));
+};
+const unkeyed = await call("/billing/trial-reminders", json({}));
+record(unkeyed.status === 403, "a learner cannot trigger the trial emails", `HTTP ${unkeyed.status}`);
 
-const unsigned = await fetch(`${base}/billing/webhook`, {
-  method: "POST", headers: { "Content-Type": "application/json" }, body: payload,
+const { getSubscriptionEntity } = await import("../src/lib/subscriptionStore.js");
+const stripeIds = await getSubscriptionEntity(email);
+const subscriptionObject = (fields) => ({
+  id: stripeIds.stripeSubscriptionId, object: "subscription", customer: stripeIds.stripeCustomerId,
+  metadata: { accountKey: accountKey(email), plan: "learner", billingPeriod: "monthly" },
+  cancel_at_period_end: false, ...fields,
 });
+
+await updateSubscriptionByAccountKey(accountKey(email), { trialEndsAt: new Date(Date.now() + 12 * 3600000).toISOString() });
+const endingBefore = mailsTo("Your free trial ends tomorrow");
+await remind();
+record(mailsTo("Your free trial ends tomorrow") === endingBefore + 1, "the day before the first charge, the parent is told",
+  `${mailsTo("Your free trial ends tomorrow") - endingBefore} sent`);
+await remind();
+record(mailsTo("Your free trial ends tomorrow") === endingBefore + 1, "and told only once", `${mailsTo("Your free trial ends tomorrow") - endingBefore} in all`);
+
+// Cancelled in the billing portal: Stripe keeps the trial running to its end,
+// marked to cancel, then ends it without charging.
+await sendStripe("customer.subscription.updated", subscriptionObject({ status: "trialing", cancel_at_period_end: true }));
+record((await call("/billing/status")).body?.subscription?.cancelAtPeriodEnd === true, "cancelling in the trial is recorded");
+const stillOpen = await call("/content", json({ type: "explanation", subject: "Maths", topic: freeTopic }));
+record(stillOpen.status === 200, "a cancelled trial keeps its topic to the end of the week", `HTTP ${stillOpen.status}`);
+
+const trialEnd = Math.floor(Date.now() / 1000) - 60;
+await sendStripe("customer.subscription.deleted", subscriptionObject({ status: "canceled", cancel_at_period_end: true, trial_end: trialEnd }));
+const ended = await call("/content", json({ type: "explanation", subject: "Maths", topic: freeTopic }));
+record(ended.status === 403 && ended.body?.code === "trial-ended", "when the cancelled trial ends, its topic locks too",
+  `HTTP ${ended.status} ${ended.body?.code}`);
+const endedBefore = mailsTo("Your free trial has ended");
+await remind();
+await remind();
+record(mailsTo("Your free trial has ended") === endedBefore + 1, "the parent is told once, with the way to subscribe",
+  `${mailsTo("Your free trial has ended") - endedBefore} sent`);
+const restartTopic = await call("/billing/free-topic", json({ topicId: lockedTopic.id }));
+record(restartTopic.status === 409, "an ended trial cannot pick another topic", `HTTP ${restartTopic.status}`);
+
+// 4. Subscribing ----------------------------------------------------------------
+console.log("\n--- 4. Subscribing ---");
+const afterTrial = (await call("/billing/status")).body?.subscription;
+record(afterTrial?.trialAvailable === false, "an account that has had a trial is not offered another",
+  `trialAvailable=${afterTrial?.trialAvailable}`);
+const checkout = await call("/billing/checkout", json({ trial: true }));
+record(checkout.status === 200 && checkout.body?.trial === false, "asking again gives a subscription paid from today",
+  `HTTP ${checkout.status} trial=${checkout.body?.trial}`);
+const checkoutDestination = checkout.body?.url ?? checkout.body?.client_secret;
+record(typeof checkoutDestination === "string" && checkoutDestination.length > 0, "Stripe returns a checkout destination",
+  checkout.body?.url ? "hosted checkout URL present" : "client_secret present");
+record(await waitForStatus("active") === "active", "the paid subscription is active", "status=active");
+
+const unsignedPayload = JSON.stringify({ id: "evt_unsigned", type: "checkout.session.completed", data: { object: {} } });
+const unsigned = await fetch(`${base}/billing/webhook`, { method: "POST", headers: { "Content-Type": "application/json" }, body: unsignedPayload });
 record(unsigned.status === 400, "an unsigned webhook is rejected", `HTTP ${unsigned.status}`);
 
-const delivered = await fetch(`${base}/billing/webhook`, {
-  method: "POST",
-  headers: { "Content-Type": "application/json", "stripe-signature": signature },
-  body: payload,
-});
-const deliveredBody = await delivered.json();
-record(delivered.status === 200 && deliveredBody.handled === true, "a signed webhook activates the subscription",
-  `HTTP ${delivered.status} handled=${deliveredBody.handled}`);
-record(deliveredBody.welcomeSent === true, "the welcome email is sent", `welcomeSent=${deliveredBody.welcomeSent}`);
-
-const afterPay = await call("/billing/status");
-record(afterPay.body?.subscription?.status === "active", "subscription is active", `status=${afterPay.body?.subscription?.status}`);
-record(afterPay.body?.subscription?.onboardingComplete === true, "learner setup done in the trial carries over",
-  `onboardingComplete=${afterPay.body?.subscription?.onboardingComplete}`);
-
+const afterPay = (await call("/billing/status")).body?.subscription;
+record(afterPay?.onboardingComplete === true, "learner setup carries over", `onboardingComplete=${afterPay?.onboardingComplete}`);
 const unlocked = await call("/content", json({ type: "explanation", subject: "Maths", topic: lockedTopic }));
 record(unlocked.status === 200, "paying opens every topic", `HTTP ${unlocked.status}`);
 const reopened = await call("/content", json({ type: "explanation", subject: "Maths", topic: freeTopic }));
-record(reopened.status === 200, "including the free topic after its week ran out", `HTTP ${reopened.status}`);
+record(reopened.status === 200, "including the trial's topic", `HTTP ${reopened.status}`);
+
+// 5. Ending a trial early ---------------------------------------------------------
+// A second account starts a trial and then asks for full access now: Stripe
+// charges at once and every topic opens.
+console.log("\n--- 5. Ending a trial early ---");
+const mainCookie = cookie;
+cookie = "";
+const earlyEmail = `early-${email}`;
+const earlyName = `${username}_e`;
+await deleteCredentials(earlyEmail).catch(() => {});
+await deleteUserByEmail(earlyEmail).catch(() => {});
+await deleteSubscription(earlyEmail).catch(() => {});
+await deleteProfile(earlyEmail).catch(() => {});
+await call("/auth/register", json({ username: earlyName, email: earlyEmail, password }));
+await call("/auth/verify", json({ token: await createEmailVerification(`user-${digest(earlyName)}`) }));
+await call("/onboarding", json({ ...details, studentFirstName: "Ben" }));
+await call("/billing/checkout", json({ trial: true }));
+record(await waitForStatus("trialing") === "trialing", "a second account starts its trial", "status=trialing");
+const startNow = await call("/billing/start-now", json({}));
+record(startNow.status === 200 && startNow.body?.status === "active", "ending the trial early charges and activates it",
+  `HTTP ${startNow.status} status=${startNow.body?.status}`);
+const earlyUnlocked = await call("/content", json({ type: "explanation", subject: "Maths", topic: lockedTopic }));
+record(earlyUnlocked.status === 200, "and every topic opens at once", `HTTP ${earlyUnlocked.status}`);
+const startAgain = await call("/billing/start-now", json({}));
+record(startAgain.status === 409, "there is no trial left to end", `HTTP ${startAgain.status}`);
+for (const run of [deleteCredentials, deleteUserByEmail, deleteSubscription, deleteProfile, deleteProgress]) await run(earlyEmail).catch(() => {});
+cookie = mainCookie;
 
 // 6. Learning -----------------------------------------------------------------
 console.log("\n--- 6. Learning ---");

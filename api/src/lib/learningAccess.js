@@ -4,14 +4,14 @@ import { getSubscription, grantsAccess } from "./subscriptionStore.js";
 import { userCanAccess } from "./userStore.js";
 
 // allowed means the whole curriculum, and stays the only thing most routes
-// check. trial means a set-up account that has never paid and whose free week
-// has not run out: it may study one topic. The routes that serve a topic opt in
-// through mayStudyTopic(), so any route that does not is closed to a trial by
-// default rather than open to it.
+// check. trial means a set-up account in Stripe's free trial - card on file,
+// first payment due when the trial ends - which may study one topic. The routes
+// that serve a topic opt in through mayStudyTopic(), so any route that does not
+// is closed to a trial by default rather than open to it.
 //
-// Paid comes from Stripe's status; the trial comes from the app's own
-// trialEndsAt. They are separate fields with separate owners, and this is the
-// only place they are combined.
+// All of it comes from Stripe's status: "trialing" is the trial, "active" and
+// "past_due" are paid. trialEnded marks a trial that ended without becoming a
+// subscription, so the app can say so rather than show a generic refusal.
 export async function getLearningAccess(request) {
   const principal = await getPrincipal(request);
   const email = principalEmail(principal) || (developmentBypass() ? "local@example.com" : "");
@@ -21,14 +21,11 @@ export async function getLearningAccess(request) {
   const [subscription, profile] = await Promise.all([getSubscription(email), getProfile(email)]);
   const setUp = subscription?.onboardingComplete === true && Boolean(profile);
   const allowed = setUp && grantsAccess(subscription?.status);
-  // Not started (no topic chosen yet) still counts as a trial, so the topic can
-  // be chosen. Over means the week has run out, or the account has paid before.
-  const trialOver = Boolean(subscription?.everPaid)
-    || (Boolean(subscription?.trialEndsAt) && Date.parse(subscription.trialEndsAt) <= Date.now());
+  const trial = setUp && subscription?.status === "trialing";
   return {
     allowed,
-    trial: setUp && !allowed && !trialOver,
-    trialEnded: setUp && !allowed && trialOver,
+    trial,
+    trialEnded: setUp && !allowed && !trial && Boolean(subscription?.trialStartedAt),
     freeTopicId: subscription?.freeTopicId ?? null,
     admin,
     email,
@@ -50,7 +47,7 @@ export function mayStudyTopic(access, topicId) {
 // the way on - choose this topic, or subscribe - instead of showing an error.
 export function trialRefusal(access) {
   if (access.trialEnded) {
-    return { status: 403, jsonBody: { error: "The free week has ended. Subscribe to carry on learning.", code: "trial-ended" } };
+    return { status: 403, jsonBody: { error: "The free trial has ended. Subscribe to carry on learning.", code: "trial-ended" } };
   }
   if (!access.trial) {
     return { status: 403, jsonBody: { error: "Your Y7to11.AI access is inactive or has not been added yet." } };
