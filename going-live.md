@@ -44,8 +44,31 @@ Nothing receives `hello@` or `support@` yet. Cloudflare Email Routing forwards t
 
 All in one UK region, after the subscription is on Pay-As-You-Go.
 
-- [ ] **Static Web App for the app, Standard plan** (about £7 a month). The Free plan works but has no SLA, and Microsoft positions it for hobby use. Standard also allows a separate Function App later, which brings managed identity and timer triggers. Some users report that each preview environment is billed as another $9 on Standard; check before leaving many pull requests open.
+- [ ] **Static Web App for the app, Free plan.** Microsoft labels Free "for personal projects", but nothing restricts a paid service to Standard, and the app fits within Free's limits (see below).
 - [ ] **Check the slowest model call against the timeout.** Managed functions appear to stop a request at about 45 seconds. A slow Luna attempt, its retry, then the fallback to nano could approach that.
+
+### Starting on the Free plan
+
+| Free plan limit | This app |
+| --- | --- |
+| 250 MB per environment | The built site is 6.5 MB |
+| 2 custom domains | The app needs only `app.y7to11.ai`; the marketing site is a separate app with its own two |
+| Managed functions, HTTP triggers only | Already built around this; the trial emails run from a GitHub Actions schedule |
+| Built-in sign-in providers only | Unaffected: sign-in is the app's own password login |
+| No managed identity | Unaffected: keys are kept in application settings |
+
+What Free gives up:
+
+- **No SLA and no formal support.** An Azure outage carries no promise from Microsoft.
+- **100 GB of bandwidth a month, shared by the whole subscription, with no paid overage.** Microsoft does not say what happens at the cap. Narration is the main use, at about 360 KB per minute of audio; at about five hours of listening per learner a month, the cap is reached at roughly 900 active learners, sooner if the marketing site is in the same subscription. Audio is marked cacheable, so replays do not count again.
+- **3 preview environments rather than 10**, so no more than three pull requests with preview sites at once.
+
+**Move to Standard** (about £7 a month) when either of these happens:
+
+- an outage would cost enough paying parents that the SLA and support are worth having, or
+- bandwidth passes about 70 GB a month (data transfer is shown under Metrics in the portal).
+
+Switching takes Settings → Hosting plan → Standard in the portal, with no redeploy. Standard raises the preview environments to 10, adds paid bandwidth beyond 100 GB at $0.20 per GB, and allows a separate Function App later, which brings managed identity and timer triggers. Some users report that each preview environment is billed as another $9 on Standard; check before leaving many pull requests open.
 - [ ] **Static Web App for the marketing site**, Free plan, serving `marketing/`. No workflow deploys it yet.
 - [ ] **Storage account**, Standard LRS, for the tables and the `narration` blob container.
 - [ ] **Application Insights**, connected to the app's Static Web App. There is no production monitoring at present. The first 5 GB of logs a month are free.
@@ -123,14 +146,14 @@ Figures are in GBP, exclude VAT, and were checked on 2 October 2026.
 
 | Item | Cost |
 | --- | --- |
-| App Static Web App, Standard | about £7 |
+| App Static Web App, Free (Standard, when needed: about £7) | £0 |
 | Marketing Static Web App, Free | £0 |
 | Storage: about 2 GB of tables and audio, plus requests | under £1 |
 | Application Insights, within the 5 GB free allowance | £0 |
 | Speech: narration is recorded, and edits fit the free tier | £0 |
 | `y7to11.ai` (about $80 a year) | about £5 |
 | Mailbox for `support@` (optional; forwarding is free) | £0–6 |
-| **Total** | **about £12–17** |
+| **Total** | **about £5–11** (about £12–17 on Standard) |
 
 ### Each paying subscriber, each month (£14.99)
 
@@ -148,9 +171,11 @@ A trial that does not convert costs at most 14p: 20 replies a day for seven days
 
 | Subscribers | Revenue | Running costs | Share of revenue |
 | --- | --- | --- | --- |
-| 10 | £150 | about £20 | 13% |
-| 100 | £1,500 | about £95 | 6% |
+| 10 | £150 | about £15 | 10% |
+| 100 | £1,500 | about £90 | 6% |
 | 1,000 | £15,000 | about £800–850 | 5.5% |
+
+The first two rows assume the Free plan. At 1,000 subscribers the narration alone passes Free's 100 GB, so that row assumes Standard, with a few pounds of extra bandwidth.
 
 ### What could change these figures
 
@@ -162,6 +187,7 @@ A trial that does not convert costs at most 14p: 20 replies a day for seven days
 ### Sources
 
 - [Azure Static Web Apps plans](https://learn.microsoft.com/en-us/azure/static-web-apps/plans)
+- [Azure Static Web Apps quotas](https://learn.microsoft.com/en-us/azure/static-web-apps/quotas)
 - [Report of unexpected Static Web Apps charges](https://learn.microsoft.com/en-us/answers/questions/5862727/unexpected-charges-for-azure-static-web-app-began)
 - [Azure Communication Services email pricing](https://learn.microsoft.com/azure/communication-services/concepts/email-pricing)
 - [Application Insights FAQ](https://learn.microsoft.com/en-us/azure/azure-monitor/app/application-insights-faq)
