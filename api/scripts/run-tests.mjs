@@ -2,6 +2,7 @@
 // env var set by hand; suites that need the API running say so and are skipped.
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 if (!process.env.AZURE_STORAGE_CONNECTION_STRING) {
   try {
@@ -70,7 +71,7 @@ for (const suite of suites) {
     continue;
   }
   console.log(`\n--- ${suite.name} ---`);
-  const result = spawnSync(process.execPath, [new URL(suite.script, import.meta.url).pathname.slice(1)], {
+  const result = spawnSync(process.execPath, [fileURLToPath(new URL(suite.script, import.meta.url))], {
     stdio: "inherit",
     env: process.env,
   });
