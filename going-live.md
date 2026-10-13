@@ -2,7 +2,7 @@
 
 The steps between this repository and a public Y7to11.AI that takes real money, in the order to do them, with what it will cost.
 
-Last updated: 2 October 2026
+Last updated: 13 October 2026
 
 ## Where things stand
 
@@ -15,30 +15,32 @@ Last updated: 2 October 2026
 ## 1. Fix the repository
 
 - [ ] **Pass the Stripe key to the production build.** [stripeCheckout.js](src/stripeCheckout.js) reads `VITE_STRIPE_PUBLISHABLE_KEY`, but [azure-static-web-apps.yml](.github/workflows/azure-static-web-apps.yml) passes only `VITE_GOOGLE_CLIENT_ID` to the build, so checkout would be broken once deployed. Add it to the workflow's `env:` block and as a repository secret.
-- [ ] **Point the website at the real app.** [marketing/index.html](marketing/index.html) sets `APP_URL = "http://127.0.0.1:5173"`. Until it is changed to `https://app.y7to11.ai`, every sign-up and log-in button on the public site leads nowhere.
+- [x] **Point the website at the real app.** [marketing/index.html](marketing/index.html) now sets `APP_URL` to `https://app.y7to11.co.uk`. The site leads nowhere until the domain is registered and the app is deployed.
 - [ ] **Add security headers.** [staticwebapp.config.json](staticwebapp.config.json) has no `globalHeaders`. For a paid site used by children, add a Content-Security-Policy (allowing Stripe, and Google if sign-in with Google returns), `Strict-Transport-Security`, `X-Content-Type-Options: nosniff` and `Referrer-Policy`.
 - [ ] **Record token usage.** [foundry.js](api/src/lib/foundry.js) discards the `usage` block Azure returns, so the cost of a tutor reply is estimated, not measured (see [Costs](#costs)). Log it before launch.
 - [ ] **Commit the work in progress and open a pull request into `main`.** Each pull request gets its own preview environment, which serves as staging.
 - [ ] **Turn on branch protection for `main`** so CI must pass before a merge. The deploy workflow does not wait for the tests.
 
-## 2. Register the domain
+## 2. Register the domains
 
-`y7to11.ai` was available on 2 October 2026.
+`y7to11.co.uk` is the main domain, since the service is for UK parents and follows the English curriculum. `y7to11.com` redirects to it. Neither had DNS records on 13 October 2026, so both appeared unregistered; the registrar's checkout confirms it.
 
-- [ ] **Register it.** About $80 a year at Cloudflare or Porkbun; some registrars ask for two years up front. Cloudflare is the suggested registrar: it sells at cost, includes DNS, and can point the bare domain at a Static Web App.
-- [ ] Turn on auto-renew, the registrar lock and two-factor sign-in. If a .ai domain lapses, someone else can register it.
-- [ ] Optional: register `y7to11.co.uk` and `y7to11.com` (about £10 each) to stop look-alikes, and search the UK IPO trade mark register for "Y7to11".
+- [ ] **Register both.** About £10 a year each at Cloudflare or Porkbun. Cloudflare is the suggested registrar: it sells at cost, includes DNS, and can point the bare domain at a Static Web App. A `.co.uk` domain is registered through Nominet, which asks for a UK name and address.
+- [ ] **Redirect `y7to11.com` and `www.y7to11.com` to `https://y7to11.co.uk`** with a Cloudflare redirect rule (a 301, keeping the path). This uses no Static Web App custom-domain slot.
+- [ ] Turn on auto-renew, the registrar lock and two-factor sign-in on both.
+- [ ] Search the UK IPO trade mark register for "Y7to11".
+- [ ] **Decide about `y7to11.ai`.** The brand is still written "Y7to11.AI", so some parents will type that address. It was unregistered on 13 October 2026 and costs about $80 a year. If someone else registers it, they own the address the brand name spells out. Either register it and redirect it to `y7to11.co.uk`, or consider whether the brand name should change.
 
 ### DNS layout
 
 | Name | Points to | Purpose |
 | --- | --- | --- |
-| `y7to11.ai` and `www` | Marketing Static Web App | The public website |
-| `app.y7to11.ai` | App Static Web App | The app; the trial-reminder workflow already expects this address |
-| Verification TXT, SPF, two DKIM CNAMEs, DMARC | Azure Communication Services | Lets `DoNotReply@y7to11.ai` send receipts, password resets and trial reminders without landing in spam |
+| `y7to11.co.uk` and `www` | Marketing Static Web App | The public website |
+| `app.y7to11.co.uk` | App Static Web App | The app; the trial-reminder workflow already expects this address |
+| Verification TXT, SPF, two DKIM CNAMEs, DMARC | Azure Communication Services | Lets `DoNotReply@y7to11.co.uk` send receipts, password resets and trial reminders without landing in spam |
 | MX | A mailbox provider | Receives mail for `hello@` and `support@`, which the marketing site already shows |
 
-Nothing receives `hello@` or `support@` yet. Cloudflare Email Routing forwards them to an existing inbox for free; Google Workspace or Microsoft 365 (about £5–6 per mailbox a month) are needed to reply as `support@y7to11.ai`. The domain must have a single SPF record naming both Azure Communication Services and the mailbox provider.
+Nothing receives `hello@` or `support@` yet. Cloudflare Email Routing forwards them to an existing inbox for free; Google Workspace or Microsoft 365 (about £5–6 per mailbox a month) are needed to reply as `support@y7to11.co.uk`. The domain must have a single SPF record naming both Azure Communication Services and the mailbox provider.
 
 ## 3. Create the Azure resources
 
@@ -52,7 +54,7 @@ All in one UK region, after the subscription is on Pay-As-You-Go.
 | Free plan limit | This app |
 | --- | --- |
 | 250 MB per environment | The built site is 6.5 MB |
-| 2 custom domains | The app needs only `app.y7to11.ai`; the marketing site is a separate app with its own two |
+| 2 custom domains | The app needs only `app.y7to11.co.uk`; the marketing site is a separate app with its own two |
 | Managed functions, HTTP triggers only | Already built around this; the trial emails run from a GitHub Actions schedule |
 | Built-in sign-in providers only | Unaffected: sign-in is the app's own password login |
 | No managed identity | Unaffected: keys are kept in application settings |
@@ -72,7 +74,7 @@ Switching takes Settings → Hosting plan → Standard in the portal, with no re
 - [ ] **Static Web App for the marketing site**, Free plan, serving `marketing/`. No workflow deploys it yet.
 - [ ] **Storage account**, Standard LRS, for the tables and the `narration` blob container.
 - [ ] **Application Insights**, connected to the app's Static Web App. There is no production monitoring at present. The first 5 GB of logs a month are free.
-- [ ] **Verify `y7to11.ai` in Azure Communication Services**, using the DNS records above.
+- [ ] **Verify `y7to11.co.uk` in Azure Communication Services**, using the DNS records above.
 - [ ] **Raise the budget alert** once subscribers arrive, to about twice the expected spend, and add one scoped to the Foundry resource.
 
 ## 4. Copy the content to production
@@ -91,7 +93,7 @@ Set these in the app's Static Web App, under Settings → Environment variables.
 
 | Setting | Value |
 | --- | --- |
-| `APP_BASE_URL` | `https://app.y7to11.ai` |
+| `APP_BASE_URL` | `https://app.y7to11.co.uk` |
 | `ADMIN_EMAILS` | Administrator addresses, comma-separated |
 | `AZURE_AI_FOUNDRY_ENDPOINT` | The Foundry `/openai/v1` endpoint |
 | `AZURE_AI_API_KEY` | The Foundry key |
@@ -99,7 +101,7 @@ Set these in the app's Static Web App, under Settings → Environment variables.
 | `AZURE_AI_FALLBACK_DEPLOYMENT` | `gpt-5-nano` |
 | `AZURE_STORAGE_CONNECTION_STRING` | The production storage account |
 | `AZURE_COMMUNICATION_EMAIL_CONNECTION_STRING` | The email service |
-| `AZURE_COMMUNICATION_EMAIL_SENDER` | `DoNotReply@y7to11.ai` |
+| `AZURE_COMMUNICATION_EMAIL_SENDER` | `DoNotReply@y7to11.co.uk` |
 | `STRIPE_SECRET_KEY` | `sk_live_…` |
 | `STRIPE_WEBHOOK_SECRET` | `whsec_…` from the live webhook |
 | `STRIPE_PRICE_MONTHLY` | The live £14.99 price ID |
@@ -119,14 +121,14 @@ Optional, with sensible defaults: `TRIAL_DAYS` (7), `MODEL_CALLS_PER_MINUTE` (12
 | `AZURE_STATIC_WEB_APPS_API_TOKEN` | The app's deployment token |
 | `VITE_STRIPE_PUBLISHABLE_KEY` | `pk_live_…` |
 | `VITE_GOOGLE_CLIENT_ID` | Only if Google sign-in returns |
-| `APP_BASE_URL` | `https://app.y7to11.ai`, for the trial-reminder workflow |
+| `APP_BASE_URL` | `https://app.y7to11.co.uk`, for the trial-reminder workflow |
 | `TRIAL_REMINDER_KEY` | The same value as the app setting |
 
 ## 6. Stripe live mode
 
 - [ ] Confirm the test secret key that was pasted into a chat session has been rolled ([STRIPE_INTEGRATION_TODO.md](STRIPE_INTEGRATION_TODO.md)).
 - [ ] Create the live product and its £14.99 monthly price, with no trial on the price (the trial is set at checkout).
-- [ ] Create the live webhook at `https://app.y7to11.ai/api/billing/webhook` for `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated` and `customer.subscription.deleted`.
+- [ ] Create the live webhook at `https://app.y7to11.co.uk/api/billing/webhook` for `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated` and `customer.subscription.deleted`.
 - [ ] Configure the customer portal so parents can update their card and cancel.
 - [ ] Set the statement descriptor (the name parents see on their bank statement) to `Y7TO11.AI`.
 
@@ -151,9 +153,9 @@ Figures are in GBP, exclude VAT, and were checked on 2 October 2026.
 | Storage: about 2 GB of tables and audio, plus requests | under £1 |
 | Application Insights, within the 5 GB free allowance | £0 |
 | Speech: narration is recorded, and edits fit the free tier | £0 |
-| `y7to11.ai` (about $80 a year) | about £5 |
+| `y7to11.co.uk` and `y7to11.com` (about £10 a year each) | about £2 |
 | Mailbox for `support@` (optional; forwarding is free) | £0–6 |
-| **Total** | **about £5–11** (about £12–17 on Standard) |
+| **Total** | **about £2–8** (about £9–15 on Standard) |
 
 ### Each paying subscriber, each month (£14.99)
 
@@ -193,4 +195,3 @@ The first two rows assume the Free plan. At 1,000 subscribers the narration alon
 - [Application Insights FAQ](https://learn.microsoft.com/en-us/azure/azure-monitor/app/application-insights-faq)
 - [Stripe fees in the UK, 2026](https://www.wearefounders.uk/stripe-fees-uk-2026/)
 - [Stripe Billing's 0.7% fee](https://usagebox.com/articles/stripe-billing-fees-2026-the-07-percent-math)
-- [.ai domain prices compared](https://domainoffer.net/tld/ai)

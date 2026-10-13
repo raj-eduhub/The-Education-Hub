@@ -6,7 +6,7 @@ name: Free trial emails
 # route. Each email is sent at most once per account, so a re-run is harmless.
 #
 # Needs two repository secrets:
-#   APP_BASE_URL         the deployed app, e.g. https://app.y7to11.ai
+#   APP_BASE_URL         the deployed app, e.g. https://app.y7to11.co.uk
 #   TRIAL_REMINDER_KEY   the same value as the app setting of that name (32+ characters)
 # Until both are set the job reports that it is not configured and succeeds.
 

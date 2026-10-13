@@ -57,7 +57,21 @@ async function callDeployment(payload, attempts) {
       headers,
       body: JSON.stringify(payload),
     });
-    if (response.ok) return outputText(await response.json());
+    if (response.ok) {
+      const data = await response.json();
+      // The real cost of a call, reasoning tokens included. Without it the cost
+      // of a tutor reply is only an estimate; Application Insights collects it.
+      const usage = data.usage ?? {};
+      console.log(JSON.stringify({
+        event: "model_usage",
+        model: payload.model,
+        inputTokens: usage.input_tokens ?? 0,
+        cachedTokens: usage.input_tokens_details?.cached_tokens ?? 0,
+        outputTokens: usage.output_tokens ?? 0,
+        reasoningTokens: usage.output_tokens_details?.reasoning_tokens ?? 0,
+      }));
+      return outputText(data);
+    }
 
     const retryable = response.status === 429 || response.status >= 500;
     if (retryable && attempt < attempts - 1) {
