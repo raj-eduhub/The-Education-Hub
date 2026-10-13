@@ -2,7 +2,7 @@ import { app } from "@azure/functions";
 import { getLearningAccess, mayStudyTopic, trialRefusal } from "../lib/learningAccess.js";
 import { getHabit, getProgress, getReviewQueue, recordActivity, recordAttempt, recordLesson } from "../lib/progressStore.js";
 
-const modes = ["learn", "practice", "exam", "review", "diagnostic"];
+const modes = ["learn", "flashcards", "practice", "exam", "review", "diagnostic"];
 
 app.http("progress", {
   methods: ["GET", "POST"],

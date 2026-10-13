@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import katex from "katex";
-import { contentSegments } from './contentSegments.js';
+import { contentSegments, hasMaths } from './contentSegments.js';
 
 // Worked examples for Maths come back as sentences with LaTeX between single
 // dollar signs. Everything outside the delimiters stays ordinary text, so a line
@@ -22,15 +22,9 @@ function render(expression) {
   }
 }
 
-// Whether a string carries typesettable maths: a dollar-delimited span holding a
-// LaTeX control character. Prices such as "$5 and $10" do not match, so this is
-// safe to consult for every subject - and Science, Computing, Geography and
-// Design & Technology all carry formulae, not just Maths.
-const latexPattern = /\$[^$]*[\^_{}][^$]*\$/;
-
-export function hasMaths(text) {
-  return latexPattern.test(String(text ?? ""));
-}
+// Whether a string carries typesettable maths. Defined beside the segmenter so
+// the website demo builder, which cannot import JSX, applies the same rule.
+export { hasMaths };
 
 export function MathsText({ children, enabled = true }) {
   const segments = useMemo(() => {

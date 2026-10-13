@@ -37,9 +37,13 @@ const suites = [
   // the content has to survive being turned into speech and into beats.
   { name: "speech", script: "test-speech.mjs", needsApi: false },
   { name: "playback", script: "test-playback.mjs", needsApi: false },
+  { name: "flash cards", script: "test-flashcards.mjs", needsApi: false },
   // Stored content against the catalogue it was generated from: an edited
   // outcome leaves a worked example teaching the wrong sub-topic silently.
   { name: "content audit", script: "audit-content.mjs", needsApi: false },
+  // Flash cards are dealt from the stored lesson, so every sub-topic in every
+  // year, subject and tier needs one of its own.
+  { name: "flash card decks", script: "audit-flashcards.mjs", needsApi: false },
   { name: "billing", script: "test-billing.mjs", needsApi: false },
   { name: "failed payments", script: "test-failed-payments.mjs", needsApi: false },
   { name: "support", script: "test-support.mjs", needsApi: false },

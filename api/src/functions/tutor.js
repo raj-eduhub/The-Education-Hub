@@ -9,6 +9,7 @@ import { recordFlag } from "../lib/safeguardingStore.js";
 
 const modeInstructions = {
   learn: "Give a clear explanation first, then key ideas, a fully worked example, and one check question. Do not skip calculation or reasoning steps.",
+  flashcards: "Quiz the learner with short recall prompts on the key ideas and formulas of the current sub-topic, one at a time. Wait for the answer, confirm or correct it in a sentence, then move to the next.",
   practice: "Create adaptive, original practice questions. Ask one question at a time, wait for the learner, then give constructive feedback before adjusting difficulty.",
   exam: "Use original timed, mark-based questions in the style and demand of the stated qualification without copying exam papers. State the available marks and mark submitted answers explicitly.",
   review: "Use short spaced-retrieval prompts focused on weak knowledge. Prefer recall before hints, then reinforce the correct idea concisely.",

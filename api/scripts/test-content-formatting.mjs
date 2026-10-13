@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {parseQuestion} from '../src/lib/questionBank.js';
 import {parseWorkedExample} from '../src/lib/workedExample.js';
-import {contentSegments} from '../../src/contentSegments.js';
+import {contentSegments, hasMaths} from '../../src/contentSegments.js';
 const code='```python\ndef square(n):\n    text = "ANSWER: **keep**"\n    return n ** 2\n```';
 const exam=parseQuestion('exam',`QUESTION: Write a function.\nMARKS: 2\nMARKSCHEME:\n- Correct function.\n- Correct return.\nANSWER:\n${code}\n\nFor 5 it returns 25.`);
 assert.equal(exam.answer,`${code}\n\nFor 5 it returns 25.`);
@@ -16,4 +16,8 @@ assert.deepEqual(contentSegments('First.\n\nSecond.\n```python\n    price = "$5"
  {text:'First.\n\nSecond.\n'}, {code:'    price = "$5"\n    result = n ** 2'}, {text:'\n'}, {math:'x^2'},
 ]);
 assert.deepEqual(contentSegments('$5 and $10',false),[{text:'$5 and $10'}]);
-console.log('PASS: paragraph breaks, fenced Python indentation/powers/strings, marking lists and example code survive parsing.');
+// Science, Computing and D&T formulae with no brace or script were shown raw:
+// "$W = m \times g$", "$p = mv$", "acid $\rightarrow$ salt".
+for (const text of ['$p = mv$', '$-4$', '$1:2$', '$= 8$', '$W = m \\times g$', 'acid $\\rightarrow$ salt', '$x^2$', '$ x^2 $']) assert.equal(hasMaths(text), true, text);
+for (const text of ['It costs $5 and $10 later', 'between $5-$10', 'no maths here', 'Use `echo $HOME` then `$PATH`', '```\nprint("$a$")\n```']) assert.equal(hasMaths(text), false, text);
+console.log('PASS: paragraph breaks, fenced Python indentation/powers/strings, marking lists, example code and maths detection survive parsing.');

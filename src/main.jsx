@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { BookMarked, BookOpen, Brain, Calculator, ChartNoAxesCombined, Check, CheckCircle2, ChevronRight, ClipboardCheck, ClipboardList, Cpu, CreditCard, DraftingCompass, FlaskConical, Gift, Landmark, LayoutDashboard, LifeBuoy, ListFilter, LockKeyhole, LockKeyholeOpen, LogOut, Map as MapIcon, MonitorPlay, PenLine, Play, Repeat2, RotateCcw, Send, Settings, ShieldAlert, ShieldCheck, Sparkles, Target, Timer, UserRound, Users, X } from "lucide-react";
+import { BookMarked, BookOpen, Brain, Calculator, ChartNoAxesCombined, Check, CheckCircle2, ChevronRight, ClipboardCheck, ClipboardList, Cpu, CreditCard, DraftingCompass, FlaskConical, Gift, Landmark, Layers, LayoutDashboard, LifeBuoy, ListFilter, LockKeyhole, LockKeyholeOpen, LogOut, Map as MapIcon, MonitorPlay, PenLine, Play, Repeat2, RotateCcw, Send, Settings, ShieldAlert, ShieldCheck, Sparkles, Target, Timer, UserRound, Users, X } from "lucide-react";
 import { curriculum, subjects, topicsFor } from "./curriculum.js";
 import { exampleBeats, formulaBeats } from "./lessonBeats.js";
 import { AdminDashboard } from "./AdminDashboard.jsx";
@@ -30,6 +30,7 @@ import { stopSpeaking } from "./speech.js";
 import { stopPlayback } from "./playback.js";
 import { LessonPlayer } from "./LessonPlayer.jsx";
 import { QuestionPanel } from "./QuestionPanel.jsx";
+import { FlashcardPanel } from "./FlashcardPanel.jsx";
 import { ReviewPanel } from "./ReviewPanel.jsx";
 import { ContentReview } from "./ContentReview.jsx";
 import { SafeguardingReview } from "./SafeguardingReview.jsx";
@@ -66,6 +67,7 @@ const checkLabels = {
 
 const learningModes = {
   learn: { label: "Learn", icon: BookMarked, action: "Explain this topic", prompt: "Teach me this topic Socratically. Start with one question to check what I already understand, then use a worked example." },
+  flashcards: { label: "Flash cards", icon: Layers, action: "Quiz me", prompt: "Quiz me with quick recall questions on the key ideas of this sub-topic, one at a time. Wait for my answer before giving the next." },
   practice: { label: "Practice", icon: ClipboardList, action: "Generate question", prompt: "Give me one original adaptive practice question. Do not reveal the answer until I respond." },
   exam: { label: "Exam", icon: Timer, action: "Start timed question", prompt: "Give me one original exam-style question. State the suggested time and marks available, then wait for my answer." },
   review: { label: "Review", icon: Repeat2, action: "Start recall", prompt: "Test me with one short retrieval question on this weak topic. Wait for my answer before giving a hint." },
@@ -498,6 +500,7 @@ function App() {
   const subtopics = useMemo(() => subtopicsFor(selectedTopic), [selectedTopic]);
   const selectedSubtopic =
     subtopics.find((subtopic) => subtopic.id === selectedSubtopicId) ?? subtopics[0];
+  const nextSubtopic = subtopics[subtopics.indexOf(selectedSubtopic) + 1] ?? null;
   // Hide the old selection immediately, before the fetching effects run.
   // Request tickets also prevent a slower previous request from winning.
   const explanation = explanationState.selection === selectedSubtopic?.id
@@ -1644,7 +1647,7 @@ Mark my answer.`,
               ))}
             </select>
           </label>
-          {learningMode === "learn" && !selectedLocked && <div className="subtopic-grid" aria-label="Sub-topics">
+          {(learningMode === "learn" || learningMode === "flashcards") && !selectedLocked && <div className="subtopic-grid" aria-label="Sub-topics">
             {subtopics.map((subtopic) => {
               const answers = topicAnswers(subtopic.topicId);
               const lessonDone = lessonsDone.has(subtopic.id);
@@ -1712,6 +1715,14 @@ Mark my answer.`,
             result={markResult}
             status={bankItem.status}
             topic={reviewItem ? { id: reviewItem.topicId, title: reviewItem.topicTitle, unit: "Review" } : selectedTopic}
+          /> : learningMode === "flashcards" ? <FlashcardPanel
+            key={selectedSubtopic?.id}
+            lesson={explanation}
+            onLearn={() => chooseMode("learn")}
+            onNextSubtopic={nextSubtopic ? () => setSelectedSubtopicId(nextSubtopic.id) : null}
+            subtopic={selectedSubtopic}
+            topic={selectedTopic}
+            typeset={typeset}
           /> : learningMode === "practice" || learningMode === "exam" ? <QuestionPanel
             error={bankItem.error}
             examRunning={examRunning}

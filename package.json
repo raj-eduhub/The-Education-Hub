@@ -26,7 +26,8 @@
     "prune:content": "node api/scripts/prune-content.mjs",
     "narration:cost": "node api/scripts/narration-cost.mjs",
     "narration:synthesise": "node api/scripts/synthesise-narration.mjs",
-  "narration:examples": "node api/scripts/synthesise-examples.mjs"
+  "narration:examples": "node api/scripts/synthesise-examples.mjs",
+  "website:demo": "node api/scripts/build-website-demo.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.0",

@@ -142,7 +142,7 @@ GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 - `npm run validate:curriculum` enforcing catalogue structure, tiering, board coverage and authored-content coverage as part of `npm test`
 - Every subject audited both ways: the catalogue read against the specifications and against real school schemes of work, and each piece of required content searched for across every year; see [the curriculum model](docs/curriculum-model.md#coverage-audits)
 - AI tutor chat for explanations, original quiz questions, worked examples, and answer feedback
-- Learn, Practice, Exam, and Review modes with Socratic teaching, adaptive questions, timed mark-based work, and spaced retrieval
+- Learn, Flash cards, Practice, Exam, and Review modes with Socratic teaching, recall cards from each sub-topic's key ideas and formulas, adaptive questions, timed mark-based work, and spaced retrieval
 - Azure Table Storage attempts and mastery records tracking accuracy, confidence, time, and last-practised dates
 - Student and parent progress dashboards with subject mastery and support priorities
 - Full curriculum tracker showing completed, in-progress, review-due, and not-started topics
@@ -382,6 +382,19 @@ Audio is keyed by a digest of the **spoken** text and the voice, so editing one
 sentence re-synthesises that sentence alone, and correcting the LaTeX-to-words
 rules invalidates exactly the beats those rules changed. Re-runs skip anything
 already stored; `--force` overrides that.
+
+The website's "Try it yourself" lessons are built from the same stored rows and
+recordings, one sub-topic per subject, so they show what the app serves rather
+than a hand-copied version of it. Re-run after content changes:
+
+```bash
+npm run website:demo -- --check   # reports whether the website still matches
+npm run website:demo              # rewrites the demo in marketing/index.html and marketing/demo/
+```
+
+It reads local storage, stops if any line has no recording, and replaces only
+the panels between the `demo:start` and `demo:end` markers. Which sub-topics are
+shown is set at the top of `api/scripts/build-website-demo.mjs`.
 
 Settings, alongside the others in `api/local.settings.json` or the Static Web
 Apps application settings:
